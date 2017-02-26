@@ -1,0 +1,1 @@
+Trims the animation start time to your current frame

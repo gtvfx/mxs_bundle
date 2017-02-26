@@ -1,0 +1,1 @@
+Compares all materials in the scene and allows for instancing of duplicate materials.

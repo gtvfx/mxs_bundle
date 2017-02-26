@@ -1,0 +1,1 @@
+if ::_tabMenu != undefined then _tabMenu.ILM_runTool "MapInspector" else messageBox "Error running tool" title:"ILM:"

@@ -1,0 +1,1 @@
+if ::_mxs != undefined then _mxs.RunTool "ILM_sceneSanityChecks" else messageBox "Error running tool" title:"MXS_Lib:"

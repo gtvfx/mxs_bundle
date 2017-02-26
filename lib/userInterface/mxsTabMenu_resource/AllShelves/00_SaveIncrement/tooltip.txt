@@ -1,0 +1,2 @@
+Creates an '_incrementalSave' folder in the max file root, copies the original
+max file there with a numbered suffix, then saves the current max file.
