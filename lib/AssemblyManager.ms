@@ -1,30 +1,29 @@
-/*
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-[TITLE]
-AssemblyManager
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
-[DESCRIPTION]
-Manages the loading of DotNet assemblies from the SandBox by copying them down to the user's local machine
-to avoid locking the files in the SandBox and preventing them from being updated.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-[USAGE]
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
 
-[CREATION INFO]
-Author: Gavyn Thompson
-E-mail: gthompson@ilm.com
-Company: Industrial Light and Magic
-Date created: 10/2015
-Last Updated: 01/011/2016
-
-[KEYWORDS]
-
-[VERSION HISTORY]
-
-[SEE ALSO]
-
-__END__
-*/
+***************************************************************************************************/
 
 /*
 __HELP__
@@ -48,7 +47,14 @@ __END__
 
 struct AssemblyManager
 (
-	baseDir = ((GetDir #temp) + "\\assemblies\\"),
+public
+    
+	baseDir = ( ( GetDir #temp ) + "\\assemblies\\" ),
+    
+    fn CreateBaseDir =
+    (
+        makeDir this.baseDir
+    ),
 	
 	fn GetLocalFile path_to_assembly =
 	(
@@ -57,7 +63,7 @@ struct AssemblyManager
 	
 	fn ExploreBaseDir =
 	(
-		if DoesFileExist this.baseDir then
+		if ( DoesFileExist this.baseDir ) then
 		(
 			shellLaunch this.baseDir ""
 		)
@@ -65,7 +71,7 @@ struct AssemblyManager
 	
 	fn LocalizeAssembly path_to_assembly =
 	(
-		if not DoesFileExist path_to_assembly then
+		if not ( DoesFileExist path_to_assembly ) then
 		(
 			format "***** Assembly file does not exist: % *****\n" path_to_assembly
 			return False
@@ -73,7 +79,7 @@ struct AssemblyManager
 		
 		local localFile = this.GetLocalFile path_to_assembly
 			
-		if DoesFileExist localFile then
+		if ( DoesFileExist localFile ) then
 		(
 			local success = try( DeleteFile localFile )catch( False )
             
@@ -94,25 +100,27 @@ struct AssemblyManager
 			return False
 		)
 		
-		dotNet.loadAssembly ( this.GetLocalFile path_to_assembly )
+		DotNet.LoadAssembly ( this.GetLocalFile path_to_assembly )
 	),
 	
     fn GetModule =
     (
-        ( GetThisScriptFileName() )
+        ( GetSourceFileName() )
     ),
     
     fn Help =
     (
-        ::_ilmLibrary.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
+    
+private
 	
-	private fn _init =
+	fn _init =
 	(
-		makeDir this.baseDir
+		this.CreateBaseDir()
 	),
 
 	__init__ = _init()
 )
 
-_AssemblyManager = AssemblyManager()
+AssemblyManager = AssemblyManager()

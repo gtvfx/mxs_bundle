@@ -1,75 +1,31 @@
-struct HashTableMethods
-(
-    fn PrintDnetDic dic toStr: =
-	( --Print out the Key/Value pairs of a DotNet Hashtable
-		local DNArray = dotNetObject "System.string[]" dic.keys.count  
-		dic.keys.copyTo DNArray 0 
-        
-		for i = 0 to ( dic.keys.count-1 ) do
-		(
-			local itemStr = ( DNArray.get i )
-			case toStr of
-            (
-                (unsupplied):format "% = %\n" itemStr dic.item[itemStr] 
-                default:format "% = %\n\r" itemStr dic.item[itemStr] to:toStr
-            )
-		)
-	),
-    
-	fn GetDicKeys dic =
-	( -- Collect the keys of a hash table. Returns an array of string values.
-		local DNArray = dotNetObject "System.string[]" dic.keys.count  
-		dic.keys.copyTo DNArray 0
-        
-		local out = #()
-        
-		for i = 0 to ( dic.keys.count-1 ) do
-		(
-			local itemStr = (DNArray.get i)
-			append out itemStr
-		)
-        
-		out
-	),
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-	fn GetDicValues dic =
-	(
-		local DNArray = dotNetObject "System.string[]" dic.keys.count  
-		dic.keys.copyTo DNArray 0
-        
-		local arr = #()
-		for i = 0 to (dic.keys.count-1) do
-		(
-			local itemStr = ( DNArray.get i )
-			append arr dic.item[itemStr]
-		)
-        
-		arr
-	),
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
-	fn GetKeyFromValue dic val =
-	(
-		local DNArray = dotNetObject "System.string[]" dic.keys.count  
-		dic.keys.copyTo DNArray 0
-		
-		for i = 0 to ( dic.keys.count-1 ) do
-		(
-			local itemStr = ( DNArray.get i )
-			if dic.item[itemStr] == val then
-            (
-                return itemStr
-            )
-		)
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-		undefined
-	),
-    
-    
-    fn Help =
-    (
-        format "
----------------
-CLASS USAGE:
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+/*
+__HELP__
 
 Constructor = HashTableMethods
 Instantiated Global = _hash
@@ -88,11 +44,105 @@ Methods:
     GetKeyFromValue dic val
         - A reverse lookup
         - Retuns the key string of the supplied value
+
+
+__END__
+*/
+
+
+
+struct HashTableMethods
+(
+    fn PrintDnetDic dic toStr: =
+	( --Print out the Key/Value pairs of a DotNet Hashtable
+        local denum = dic.GetEnumerator()
         
----------------\n"
+        while ( denum.MoveNext() ) do
+        (
+            local iKey = denum.Current
+            
+            case toStr of
+            (
+                (unsupplied):format "% = %\n" iKey.Key iKey.Value
+                default:format "% = %\n\r" iKey.Key iKey.Value to:toStr
+            )
+        )
+	),
+    
+	fn GetDicKeys dic =
+	( -- Collect the keys of a hash table. Returns an array of string values.
+        local denum = dic.GetEnumerator()
+        local out = #()
+        
+        while ( denum.MoveNext() ) do
+        (
+            local iKey = denum.Current
+            
+            append out iKey.Key
+        )
+        
+		out
+	),
+
+	fn GetDicValues dic =
+	(
+		local denum = dic.GetEnumerator()
+        local out = #()
+        
+        while ( denum.MoveNext() ) do
+        (
+            local iKey = denum.Current
+            
+            append out iKey.Value
+        )
+        
+		out
+	),
+
+	fn GetKeyFromValue dic val =
+	(
+        local denum = dic.GetEnumerator()
+        
+        while ( denum.MoveNext() ) do
+        (
+            local iKey = denum.Current
+            
+            if iKey.Value == val then
+            (
+                return iKey.Key
+            )
+        )
+
+		undefined
+	),
+	
+	fn MakeDict keys:#() vals:#() =
+	(
+		if keys.count != vals.count then
+		(
+			messageBox "MakeDict:\nThere must be the same number of items for both \"keys\" and \"vals\"" title:"HashTableMethods:"
+			return undefined
+		)
+		
+		local dict = dotNetObject "System.Collections.Hashtable"
+		
+		for i = 1 to keys.count do
+		(
+			dict.Add keys[i] vals[i] 
+		)
+		
+		out
+	),
+    
+    fn GetModule =
+    (
+        ( GetThisScriptFileName() )
     ),
     
-    
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetThisScriptFileName() )
+    ),
     
     private fn _init =
     (

@@ -1,5 +1,5 @@
 
-global _mxs
+global mxs
 global _maxInit
 
 
@@ -48,7 +48,6 @@ struct DefaultInit
 		)
 	),
 	
-	
 	fn _init =
 	(
 		this.LoadScriptedPlugins()
@@ -64,7 +63,6 @@ struct WorkstationInit
 	_defInit = DefaultInit(),
 	_tabInit = True,
 	
-	
 	fn LoadFilesFromDir dir fileType:".ms*" =
 	(
 		_defInit.LoadFilesFromDir dir fileType:fileType
@@ -72,8 +70,8 @@ struct WorkstationInit
 	
 	fn LoadRequiredLibs = 
 	(
-		fileIn ( ::_startupPath + "/mxsLib.ms" )
-		::_mxs.printStatus = True
+		fileIn ( ::_startupPath + "/__mxsLib.ms" )
+		::mxs.printStatus = True
 		fileIn ( ::_startupPath + "/mxsString.ms" )
 	),
 	
@@ -126,8 +124,6 @@ struct WorkstationInit
 		)
 		else False
 	),
-	
-	
 	
 	fn _init =
 	(

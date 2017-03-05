@@ -1,42 +1,97 @@
-_mxs.Using "AssemblyManager" inReload:False
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: WpfProgressBar_double
+Instantiated Global: 
+
+[METHODS]
+    GetLabelText:
+		Returns the string value of the main label
+		
+	GetLabelText_Sub:
+		Returns the string value of the sub label
+		
+	UpdateLabel <string>: 
+		Pass a string to this method to change the label text.
+		You can update the label text at any time while iterating.
+		
+	UpdateLabel_Sub <string>:
+		Pass a string to this method to change the sub label text.
+		You can update the sub label text at any time while iterating.
+	
+	Start <_steps>:
+		Use this to envoke the UI prior to iterating
+		
+	Start_Sub <_steps>:
+		Use this to clear the value of the sub progress bar and set the number of steps
+	
+	Step:
+		Call this at the end of each main iteration to increment the main progress value
+		
+	Step_Sub:
+		Call this at the end of each sub iteration to increment the sub progress value
+		
+	End:
+		Call this once you exit the iteration loop to close the UI
+
+[DESCRIPTION]
+
+
+[USAGE]
+instantiate and set properties prior to iterating:
+	caption: Progress window title
+	steps: Number of loop iterations
+
+__END__
+*/
+
+
+
+
+
+mxs.Using "AssemblyManager"
 
 -- DotNet Assemblies need to be loaded at the Global scope
 
 -- load the progress bar library
 -- Load the AssemblyManager class and use it to load the custom assembly
-if (_mxs.GetPath #assemblies) == "" then
-(
-	local iniFile = _ilmLibrary.GetUserConfigFile()
-	
-	if DoesFileExist iniFile then
-	(
-		local currEnv = (_ilmLibrary.GetCurrEnvironment())
-		local maxPythonPath = (GetIniSetting iniFile currEnv "maxpython")
-		local assemblyPath = (SubstituteString maxPythonPath "\\python" "\\assemblies")
-			
-		SetIniSetting iniFile currEnv "assemblies" assemblyPath
-			
-		_AssemblyManager.LoadAssembly (assemblyPath + "/WpfProgressBar_double.dll")
-	)
-	else
-	(
-		format "***** Could not get user config file *****\n"
-	)
-)
-else
-(
-	_AssemblyManager.LoadAssembly ( ( _mxs.GetPath #assemblies ) + "WpfProgressBar_double.dll" )
-)
+_AssemblyManager.LoadAssembly ((_ilmLibrary.GetPath #assemblies) + "WpfProgressBar_double.dll")
 
 
 
 -- load the WPF Integration library needed to create the ElementHost control
 dotNet.loadAssembly @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\v3.0\WindowsFormsIntegration.dll"
 
-::WpfProgressBar_double
+
 
 struct WpfProgressBar_double
 (
+public
+    
 	steps = 0,
 	sub_steps = 0,
 	progBar = dotNetObject "WpfProgressBar_double.UserControl_prgBar",
@@ -107,52 +162,20 @@ struct WpfProgressBar_double
 	(
 		this.maxForm.Close()
 	),
+    
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
+    ),
 	
-	fn ClassUsage =
-	(
-		format "
----------------
-CLASS USAGE:
-
-Constructor = WpfProgressBar_double
-
-instantiate and set properties prior to iterating:
-	caption: Progress window title
-	steps: Number of loop iterations
-		
-Use methods:
-	GetLabelText:
-		Returns the string value of the main label
-		
-	GetLabelText_Sub:
-		Returns the string value of the sub label
-		
-	UpdateLabel <string>: 
-		Pass a string to this method to change the label text.
-		You can update the label text at any time while iterating.
-		
-	UpdateLabel_Sub <string>:
-		Pass a string to this method to change the sub label text.
-		You can update the sub label text at any time while iterating.
-	
-	Start <_steps>:
-		Use this to envoke the UI prior to iterating
-		
-	Start_Sub <_steps>:
-		Use this to clear the value of the sub progress bar and set the number of steps
-	
-	Step:
-		Call this at the end of each main iteration to increment the main progress value
-		
-	Step_Sub:
-		Call this at the end of each sub iteration to increment the sub progress value
-		
-	End:
-		Call this once you exit the iteration loop to close the UI
----------------\n"
-	),
-	
-	private fn _init =
+private
+    
+    fn _init =
 	(		
 		-- define controls
 		this.elmntHost.dock = this.elmntHost.dock.fill

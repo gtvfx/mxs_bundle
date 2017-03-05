@@ -1,12 +1,51 @@
-/************************************************************************************
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: SaveFns
+Instantiated Global: SaveFns
+
+[METHODS]
+
+
+[DESCRIPTION]
 Class for dealing with common save methods
 
+[USAGE]
 
-************************************************************************************/
+
+__END__
+*/
+
 
 
 struct SaveFns
 (
+public
+
 	fn VerPadding inString: Number: Pad: =
 	(
 		if (inString != unsupplied) and (Number != unsupplied) and (Pad != unsupplied) do
@@ -22,10 +61,12 @@ struct SaveFns
 		maxPreName = getFileNameFile maxFileName
 		maxPreNameArr = filterString maxPreName "_"
 		maxRootName = maxPreNameArr[1]
+        
 		for x = 2 to (maxPreNameArr.count - 2) do
 		(
 			maxRootName = maxRootName + "_" +  maxPreNameArr[x]
 		)
+        
 		if not userInit then
 		(
 			curVersionNumber = ((filterString maxPreNameArr[maxPreNameArr.count - 1] "v")[1] as integer)
@@ -39,6 +80,7 @@ struct SaveFns
 			newVersionNumber = VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
 			finalMaxFileName = (maxfilepath + maxRootName + "_" + newVersionNumber + ".max")
 		)
+        
 		if doesFileExist finalMaxFileName then
 		(
 			messageBox "You are not in the most recent file. \n If you need to create a major version from this file do so manually."
@@ -145,7 +187,9 @@ struct SaveFns
 		ro._init self
 	),
 	
-	private fn __init__ =
+private
+    
+    fn __init__ =
 	(
 		self = this
 	),
@@ -153,4 +197,4 @@ struct SaveFns
 	_init = __init__()
 )
 
-_saveFns = SaveFns()
+SaveFns = SaveFns()

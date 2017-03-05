@@ -1,25 +1,50 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
 /*
 __HELP__
 
 Constructor: 
 Instantiated Global: 
 
-Methods:
+[METHODS]
 
+[DESCRIPTION]
 
+[USAGE]
 
 __END__
 */
 
 
-
-
-_mxs.Using "WpfProgressBar"
-_mxs.Using "EventTimer"
+mxs.Using "WpfProgressBar"
+mxs.Using "EventTimer"
 
 struct MeshFns
 (
+public
+
     fn IsValidMesh obj =
     (
         if ( isProperty obj #mesh ) and ( isProperty obj.mesh #numfaces ) then
@@ -42,7 +67,7 @@ struct MeshFns
 
     fn GetUniqueMatIds objArr =
     (
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
         local out = #()
         
@@ -138,9 +163,9 @@ struct MeshFns
     
 	fn ResetMesh objArr collapseMods:False =
 	( 
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
-        ::_mxs.BlockUi True
+        ::mxs.BlockUi True
         
         local prg = WpfProgressBar caption:"Reset Mesh:" steps:objArr.count
         prg.Start()
@@ -214,14 +239,14 @@ struct MeshFns
         
         prg.End()
         
-        ::_mxs.BlockUi False
+        ::mxs.BlockUi False
 	),
     
 	fn ReplaceWithInstance objArr type:1 =
 	(
 		if objArr.count != 0 then
 		(
-            objArr = ::_mxs.EnsureArgIsArray objArr
+            objArr = ::mxs.EnsureArgIsArray objArr
             
             local srcObj = ( pickObject prompt:"**** Pick Source Object ****\n" )
             format "***** srcObj: % *****\n" srcObj
@@ -274,7 +299,7 @@ struct MeshFns
 	(
         if objArr.count != 0 then
 		(
-            objArr = ::_mxs.EnsureArgIsArray objArr
+            objArr = ::mxs.EnsureArgIsArray objArr
             
             local srcObj = ( pickObject prompt:"**** Pick Source Object ****\n" )
             format "***** srcObj: % *****\n" srcObj
@@ -305,9 +330,9 @@ struct MeshFns
     
 	fn ConvertToMeshWithModifierStack objArr:( GetCurrentSelection() ) = 
 	(
-		::_mxs.BlockUi True
+		::mxs.BlockUi True
         
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
 		objArr = for obj in objArr where ( superclassof obj.baseobject == geometryClass ) and ( isGroupMember obj == false ) collect obj
             
@@ -318,16 +343,16 @@ struct MeshFns
 			GC()
 		)
 		
-        ::_mxs.BlockUi False
+        ::mxs.BlockUi False
         
 		select objArr
 	),
     
 	fn AddSmoothModWithStack objArr collapseToMod:True = 
 	(
-        ::_mxs.BlockUi True
+        ::mxs.BlockUi True
         
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
 		objArr = for obj in objArr where ( superclassof obj.baseobject == geometryClass ) and ( isGroupMember obj == false ) collect obj
             
@@ -337,7 +362,7 @@ struct MeshFns
 			if collapseToMod then maxOps.CollapseNodeTo obj obj.modifiers.count off
 		)
         
-		::_mxs.BlockUi False
+		::mxs.BlockUi False
         
 		select objArr
 	),
@@ -385,9 +410,9 @@ struct MeshFns
 		(
 			with undo off
 			(
-				::_mxs.BlockUi True
+				::mxs.BlockUi True
                 
-                objArr = ::_mxs.EnsureArgIsArray objArr
+                objArr = ::mxs.EnsureArgIsArray objArr
                 
                 InstanceMgr.MakeObjectsUnique objArr #individual
                 
@@ -421,7 +446,7 @@ struct MeshFns
                 
 				select objArr[1]
                 
-				::_mxs.BlockUi False
+				::mxs.BlockUi False
 			)
 		)
 	),
@@ -430,7 +455,7 @@ struct MeshFns
 	(
         if not ( this.IsValidMesh sourceObj ) then return ( format "***** % is not a valid mesh *****\n" sourceObj )
         
-		::_mxs.BlockUi True
+		::mxs.BlockUi True
         
         sourceObj = this.EnsureEditPoly sourceObj
         
@@ -470,12 +495,12 @@ struct MeshFns
             prg.End()
 		)
         
-        ::_mxs.BlockUi False
+        ::mxs.BlockUi False
 	),
     
 	fn DetachSplineElements sourceObj =
 	(
-        ::_mxs.BlockUi True
+        ::mxs.BlockUi True
         
 		local splineCount = numsplines sourceObj 	
         
@@ -506,12 +531,12 @@ struct MeshFns
 			prg.End()
 		)
 		
-        ::_mxs.BlockUi False
+        ::mxs.BlockUi False
 	),
     
 	fn DetachElements objArr =
 	(
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
 		if objArr.count != 0 then
 		(
@@ -534,9 +559,9 @@ struct MeshFns
     
 	fn QuadrifySelection objArr = 
 	(
-        ::_mxs.BlockUi True
+        ::mxs.BlockUi True
         
-        objArr = ::_mxs.EnsureArgIsArray objArr
+        objArr = ::mxs.EnsureArgIsArray objArr
         
 		for obj in objArr do
 		(
@@ -549,7 +574,7 @@ struct MeshFns
 		)
 		select objArr
         
-        ::_mxs.BlockUi False
+        ::mxs.BlockUi False
 	),
     
     fn GetModule =
@@ -559,10 +584,12 @@ struct MeshFns
 
     fn Help =
     (
-        ::_mxs.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( this.GetModule() )
     ),
 
-    private fn _init =
+private
+    
+    fn _init =
     (
         -- Pass
     ),

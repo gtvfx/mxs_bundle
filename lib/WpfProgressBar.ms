@@ -1,13 +1,110 @@
-_mxs.Using "AssemblyManager"
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+    UpdateLabel: Pass a string to this method to change the label text.
+				 You can update the label text at any time while iterating.
+	
+	Start: Use this to envoke the UI prior to iterating
+	
+	DoStep: Call this at the end of each iteration
+		
+	End: Call this once you exit the iteration loop to close the UI
+
+[DESCRIPTION]
+This is a WPF widget wrapped in Maxscript methods
+
+This is much simpler to use than the internal 3dsmax progress bar
+
+[USAGE]
+instantiate and set properties prior to iterating:
+	caption: Progress window title
+	steps: Number of loop iterations
+
+__END__
+*/
+
+
+
+
+/*
+__MXSDOC__
+
+[TITLE]
+WpfProgressBar
+
+[DESCRIPTION]
+
+
+[USAGE]
+See Help()
+
+[CREATION INFO]
+Author: Gavyn Thompson
+E-mail: gthompson@ilm.com
+Company: Industrial Light and Magic
+Date created: 
+Last Updated: 
+
+[KEYWORDS]
+
+
+[VERSION HISTORY]
+
+
+[SEE ALSO]
+
+__END__
+*/
+
+/
+
+
+mxs.Using "AssemblyManager"
 
 -- DotNet Assemblies need to be loaded at the Global scope
-_AssemblyManager.LoadAssembly ( ( _mxs.GetPath #assemblies ) + "/WpfProgressBar.dll")
+
+-- load the progress bar library
+-- Load the AssemblyManager class and use it to load the custom assembly
+
+AssemblyManager.LoadAssembly ((mxs.GetPath #assemblies) + "WpfProgressBar.dll")
+
 
 -- load the WPF Integration library needed to create the ElementHost control
 dotNet.loadAssembly @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\v3.0\WindowsFormsIntegration.dll"
 
+
 struct WpfProgressBar
 (
+public
+    
 	steps = 0,
 	progBar = dotNetObject "WpfProgressBar.UserControl_prgBar",
 	maxForm = dotNetObject "MaxCustomControls.MaxForm",
@@ -36,8 +133,8 @@ struct WpfProgressBar
 	
 	fn Step =
 	(
-		this.progBar.Step()
-		( dotNetClass "System.Windows.Forms.Application" ).DoEvents()
+		try(this.progBar.Step())catch(this.progBar.DoStep())
+		(dotNetClass "System.Windows.Forms.Application").DoEvents()
 	),
 	
 	fn GetLabelText =
@@ -55,31 +152,19 @@ struct WpfProgressBar
 		this.maxForm.Close()
 	),
 	
-	fn Help =
-	(
-		format "
----------------
-CLASS USAGE:
+	fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
 
-Constructor = WpfProgressBar
-
-instantiate and set properties prior to iterating:
-	caption: Progress window title
-	steps: Number of loop iterations
-		
-Use methods:
-	UpdateLabel: Pass a string to this method to change the label text.
-				 You can update the label text at any time while iterating.
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetSourceFilename() )
+    ),
 	
-	Start: Use this to envoke the UI prior to iterating
-	
-	DoStep: Call this at the end of each iteration
-		
-	End: Call this once you exit the iteration loop to close the UI
----------------\n"
-	),
-	
-	private fn _init =
+private
+    
+    fn _init =
 	(		
 		-- define controls
 		this.elmntHost.dock = this.elmntHost.dock.fill
@@ -90,7 +175,6 @@ Use methods:
 		
 		-- add ElementHost, which holds the WPF control
 		this.maxForm.controls.Add this.elmntHost
-		
 		-- add the WPF control
 		this.elmntHost.child = this.progBar
 	),
@@ -105,7 +189,6 @@ Use methods:
 
 objArr = Objects as array
 objProgress = WpfProgressBar caption:"Objects Progress:" steps:objArr.count
-
 objProgress.Start()
 for i in objArr do
 (

@@ -1,9 +1,49 @@
-/************************************************************************************
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
 Class for dealing with object wirecolor methods
 
+[USAGE]
 
-************************************************************************************/
-_mxs.Using "GenFns"
+
+__END__
+*/
+
+
+
+mxs.Using "MxsCommonFns"
+
 
 struct WireColor
 (
@@ -102,7 +142,7 @@ struct WireColor
 		if objArr.count == 0 then objArr = ( objects as array )
 		for obj in objArr do
 		(
-			local childArr = _genFns.GetChildrenRecursive obj 
+			local childArr = ::MxsCommonFns.GetChildrenRecursive obj 
 			if childArr.count != 0 then
 			(
 				childArr.wireColor = ( random [20,20,20] [230,230,230] )
@@ -167,9 +207,11 @@ struct WireColor
 		format "***** WireColor Restored *****\n"
 	),
 	
-	private fn __init__ =
+private
+    
+    fn __init__ =
 	(
-		--self = this
+        -- pass
 	),
 	
 	_init = __init__()

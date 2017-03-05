@@ -1,38 +1,40 @@
-/*
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-[TITLE]
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-[DESCRIPTION]
-
-[USAGE]
-
-[CREATION INFO]
-Author: Gavyn Thompson
-E-mail: gthompson@ilm.com
-Company: Industrial Light and Magic
-Date created: 01/08/2016
-Last Updated: 01/08/2016
-
-[KEYWORDS]
-
-[VERSION HISTORY]
-release: 01/08/2016
-
-[SEE ALSO]
-
-__END__
-*/
-
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
 /*
 __HELP__
 
 Constructor: UserProps
-Instantiated Global: _userProps
+Instantiated Global: UserProps
 
-Methods:
+[METHODS]
 
+
+[DESCRIPTION]
+
+
+[USAGE]
 
 
 __END__
@@ -40,11 +42,13 @@ __END__
 
 
 
+mxs.Using "HashTableMethods"
 
-::_ilmLibrary.load "HashTableMethods"
 
 struct UserProps
 (
+public
+    
     debug = False,
     
     fn QsortAphlabetical str1 str2 =
@@ -112,7 +116,7 @@ struct UserProps
     
     fn GetProp obj propKey nameSpace:"" =
     (
-        if nameSpace != "" and namespace[nameSpace.count] != ":" then nameSpace += ":"
+		nameSpace = this.EnsureNameSpace nameSpace
         format "PropKey: %\n" ( nameSpace + propKey )
         GetUserProp obj ( nameSpace + propKey )
     ),
@@ -145,12 +149,12 @@ struct UserProps
 		this.PropBufferStringToDictionary ( GetUserPropBuffer obj )
 	),
     
-    fn DictionaryToUserPropBuffer dic obj overwrite:True =
+    fn DictionaryToUserPropBuffer dic obj overwrite:True clearBuffer:False =
     (
         local keyArr = ::_hash.GetDicKeys dic
         Qsort keyArr this.QsortAphlabetical
         
-        if overwrite then
+        if clearBuffer then
         (
             this.ClearUserPropBuffer obj
         )
@@ -309,11 +313,11 @@ struct UserProps
         
         for k in keyArr do
         (
-            if ( matchPattern k pattern:"*:*" ) then
+            if ( MatchPattern k pattern:"*:*" ) then
             (
                 local strArr = ( FilterString k ":" )
                 
-                appendIfUnique nameSpaceArr strArr[1]
+                AppendIfUnique nameSpaceArr strArr[1]
             )
         )
         
@@ -322,15 +326,17 @@ struct UserProps
     
     fn GetModule =
     (
-        ( GetThisScriptFileName() )
+        ( GetSourceFilename() )
     ),
     
     fn Help =
     (
-        ::_ilmLibrary.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( GetSourceFilename() )
     ),
     
-    private fn _init =
+private
+
+    fn _init =
     (
         -- Pass
     ),
@@ -338,4 +344,4 @@ struct UserProps
     __init__ = _init()
 )
 
-_userProps = UserProps()
+UserProps = UserProps()

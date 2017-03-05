@@ -1,28 +1,29 @@
-/*
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-[TITLE]
-DetachElementsByMatID
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
-[DESCRIPTION]
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-[USAGE]
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
 
-[CREATION INFO]
-Author: Gavyn Thompson
-E-mail: gthompson@ilm.com
-Company: Industrial Light and Magic
-Date created: 08/17/2015
-Last Updated: 01/11/2016
-
-[KEYWORDS]
-
-[VERSION HISTORY]
-
-[SEE ALSO]
-
-__END__
-*/
+***************************************************************************************************/
 
 /*
 __HELP__
@@ -53,13 +54,17 @@ Methods:
 __END__
 */
 
+
 try( DestroyDialog _detachByMatId.ro )catch()
 
 
-_ilmLibrary.load "WpfProgressBar" inReload:True
+mxs.Using "WpfProgressBar" inReload:True
+
 
 struct DetachElementsByMatID
 (
+public
+    
     ro,
 	debug = False,
     showUi = False,
@@ -133,7 +138,7 @@ struct DetachElementsByMatID
 				
 				polyop.detachFaces obj targetFaces asNode:true name:newName
 					
-				local newObj = getnodebyname newName
+				local newObj = GetNodeByName newName
 					
 				if this.debug then format "***** newObj: % *****\n" newObj
 					
@@ -280,15 +285,17 @@ struct DetachElementsByMatID
     
     fn GetModule =
     (
-        ( GetThisScriptFileName() )
+        ( GetSourceFileName() )
     ),
     
     fn Help =
     (
-        ::_ilmLibrary.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
     
-	private fn _init =
+private
+    
+    fn _init =
 	(
 		if this.showUi then
         (

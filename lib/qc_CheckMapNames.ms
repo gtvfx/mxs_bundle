@@ -1,7 +1,52 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: qc_CheckMapNames
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
+
 
 
 struct qc_CheckMapNames
 (
+public
+    
     aggregate,
     rgx = dotnetobject "System.Text.RegularExpressions.Regex" "[a-zA-Z0-9_.-<>]",
 	sceneAssets,
@@ -130,13 +175,29 @@ struct qc_CheckMapNames
 		LoadMaxFile ( MaxFilePath + MaxFileName ) quiet:True
 	),
     
+    fn CheckMethod objArr: =
+    (
+        this.CheckForIllegalNames()
+    ),
+    
+    fn FixMethod objArr: =
+    (
+        this.CleanMapNames()
+    ),
+    
+    fn SelectMethod objArr: =
+    (
+        format "***** No Select Method *****\n"
+        undefined
+    ),
+    
     fn Run =
     (
-        if not ( this.CheckForIllegalNames() ) then
+        if not ( this.CheckMethod() ) then
         (
             if ( queryBox "Would you like to fix map names?" title:"?" ) then
             (
-                this.CleanMapNames()
+                this.FixMethod()
             )
         )
         else
@@ -144,20 +205,20 @@ struct qc_CheckMapNames
             OK
         )
     ),
-	
+    
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
     fn Help =
     (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = qc_CheckMapNames
-Instantiated Global = N/A
-
----------------\n"
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
 
-    private fn _init =
+private
+    
+    fn _init =
     (
         -- Pass
     ),

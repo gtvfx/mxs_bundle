@@ -1,7 +1,52 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
 
 
-struct qc_UnresolvedXrefControllers
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
+
+
+
+Struct qc_UnresolvedXrefControllers
 (
+Public
+    
     aggregate,
     debug = False,
     
@@ -56,19 +101,19 @@ struct qc_UnresolvedXrefControllers
         )
     ),
     
-    fn Help =
+    fn GetModule =
     (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = qc_UnresolvedXrefControllers
-Instantiated Global = N/A
-
----------------\n"
+        ( GetSourceFileName() )
     ),
 
-    private fn _init =
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
+    ),
+
+Private
+    
+    fn _init =
     (
         -- Pass
     ),

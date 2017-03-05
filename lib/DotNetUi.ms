@@ -1,89 +1,169 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+
+/*
+__HELP__
+
+Constructor: DotNetUi
+Instantiated Global: _dotNet
+
+Methods:
+
+
+
+__END__
+*/
+
 
 
 struct DotNetUi
 (
 	dnTooltip,
+    ----------------------------
 	clrWindow = ( ( colorMan.getColor #window )*255 ),
 	clrText = ( ( colorMan.getColor #text )*255 ),
-	ClrBackGround = ( ( colorMan.getColor #background )*255 ),
+	clrBackground = ( ( colorMan.getColor #background )*255 ),
+    
+    clrWindow_dnet,
+    clrText_dnet,
+    clrBackground_dnet,
+    ----------------------------
 	clr_skyblue = ( dotnetClass "System.Drawing.Color" ).SkyBlue,
 	
-	fn NormalizeRGB val =
+    fn NormalizeRGB val =
 	(
 		if val < 0 then val = 0 else if val > 255 then val = 255
 		val
 	),
+    
+    fn RgbToDnetColor rgbColor =
+    (
+        try
+        (
+            rgbColor = rgbColor as color
+        )
+        catch
+        (
+            return ( format "***** Undable to convert % to color *****\n" )
+        )
+        
+        (dotNetClass "System.Drawing.Color").fromARGB ( this.NormalizeRGB rgbColor.a ) ( this.NormalizeRGB rgbColor.r ) ( this.NormalizeRGB rgbColor.g) ( this.NormalizeRGB rgbColor.b )
+    ),
+    
+    fn OffsetDnetColorValue dnetColor offsetVal =
+    (
+        local p3 = [dnetColor.r, dnetColor.g, dnetColor.b]
+        
+        this.RgbToDnetColor ( p3 + offsetVal )
+    ),
 	
 	fn InitToolTip dNetObj caption =
 	(
-		if this.dnTooltip == undefined then
-		(
-			this.dnToolTip = dotnetobject "ToolTip"
-			this.dnToolTip.AutoPopDelay = 5000
-			this.dnToolTip.InitialDelay = 300
-			this.dnToolTip.ReshowDelay = 300
-			this.dnToolTip.ShowAlways = true
-			this.dnToolTip.IsBalloon = true
-		)
+        try( this.dnTooltip.Dispose() )catch()
+        		
+        this.dnToolTip = dotnetobject "ToolTip"
+        this.dnToolTip.AutoPopDelay = 5000
+        this.dnToolTip.InitialDelay = 300
+        this.dnToolTip.ReshowDelay = 300
+        this.dnToolTip.ShowAlways = true
+        this.dnToolTip.IsBalloon = true
+		
 		this.dnToolTip.SetToolTip dNetObj caption
 	),
 	
 	fn DestroyToolTip =
 	(
-		this.dnToolTip
 		if this.dnToolTip != undefined then
 		(
 			this.dnToolTip.RemoveAll()
 			this.dnToolTip.Dispose()
-			this.dnToolTip = undefined
+			this.dnToolTip = Undefined
 		)
-		True
 	),
 	
 	fn SetDotNetWidget dNobj caption fontSize colorOffsetInt:0 fontStyle:#bold foreColor:unsupplied =
 	(
+        if foreColor != unsupplied and ( ClassOf foreColor ) == Color then
+        (
+            foreColor = this.RgbToDnetColor foreColor
+        )
+        
+        
 		local fStyle = case fontStyle of
 		(
 			(#bold):
 			(
-				((dotNetClass "System.Drawing.FontStyle").bold)
+				( ( dotNetClass "System.Drawing.FontStyle" ).bold )
 			)
 			(#italic):
 			(
-				((dotNetClass "System.Drawing.FontStyle").italic)
+				( ( dotNetClass "System.Drawing.FontStyle" ).italic )
 			)
 			(#regular):
 			(
-				((dotNetClass "System.Drawing.FontStyle").regular)
+				( ( dotNetClass "System.Drawing.FontStyle" ).regular )
 			)
 		)
 		dNobj.text = caption
-		if foreColor == unsupplied then dNobj.forecolor = dNobj.forecolor.FromArgb clrText.x clrText.y clrText.z else dNobj.forecolor = foreColor
-		dNobj.backColor = dNobj.backcolor.FromArgb (this.NormalizeRGB (ClrBackGround.x+colorOffsetInt)) (this.NormalizeRGB (ClrBackGround.y+colorOffsetInt)) (this.NormalizeRGB (ClrBackGround.z+colorOffsetInt))
-		dNobj.Font = dotNetObject "System.Drawing.Font" "Tahoma" fontSize fStyle
+		if foreColor == unsupplied then dNobj.forecolor = this.clrText_dnet else dNobj.forecolor = foreColor
+		--dNobj.backColor = dNobj.backcolor.FromArgb ( this.NormalizeRGB ( this.clrBackground.x + colorOffsetInt ) ) ( this.NormalizeRGB ( this.clrBackground.y + colorOffsetInt ) ) ( this.NormalizeRGB ( this.clrBackground.z + colorOffsetInt ) )
+		dNobj.backColor = ( this.OffsetDnetColorValue this.clrBackground_dnet colorOffsetInt )
+        
+        dNobj.Font = ( dotNetObject "System.Drawing.Font" "Tahoma" fontSize fStyle )
 		dNobj.update()
 	),
 	
 	fn ChangeTxtBoxColor txtBox newcolor =
 	(
-		txtBox.forecolor = ( this.NormalizeRGB newcolor )
+        if ( ClassOf newcolor ) == Color then
+        (
+            newcolor = this.RgbToDnetColor newcolor
+        )
+        
+		txtBox.forecolor = newcolor
 	),
 	
 	fn SetDataGridColor dgv fontSize _forecolor:  =
 	(
-		if _forecolor == unsupplied or not ( ClassOf _forecolor == dotNetObject ) then
+		if _forecolor != unsupplied and ( ClassOf _forecolor == Color ) then
 		(
-			dgv.forecolor = dgv.forecolor.FromArgb clrText.x clrText.y clrText.z
-		)
-		else
-		(
-			dgv.forecolor = _forecolor
+			_foreColor = this.RgbToDnetColor _foreColor
 		)
 		
-		dgv.BackgroundColor = dgv.BackgroundColor.FromArgb this.clrWindow.x this.clrWindow.y this.clrWindow.z
-		dgv.DefaultCellStyle.BackColor = dgv.backcolor.FromArgb this.clrWindow.x this.clrWindow.y this.clrWindow.z
-		dgv.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ((dotNetClass "System.Drawing.FontStyle").bold)
-		try(dgv.AlternatingRowsDefaultCellStyle.BackColor = dgv.AlternatingRowsDefaultCellStyle.BackColor.FromArgb (this.clrWindow.x-15) (this.clrWindow.y-15) (this.clrWindow.z-15))catch()
+        if _foreColor == unsupplied then
+		(
+			_foreColor = this.clrText_dnet
+		)
+        
+        try( dgv.forecolor = _foreColor )catch()
+        try( dgv.BackgroundColor = this.clrWindow_dnet )catch()
+		try( dgv.DefaultCellStyle.BackColor = this.clrWindow_dnet )catch()
+		try( dgv.AlternatingRowsDefaultCellStyle.BackColor = ( this.OffsetDnetColorValue this.clrWindow_dnet -15 ) )catch()
+        try( dgv.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ( (dotNetClass "System.Drawing.FontStyle" ).bold ) )catch()
 	),
 	
 	fn InitTabs dNtab tabArr =
@@ -114,7 +194,8 @@ struct DotNetUi
 		(
 			dNrdo.appearance = dNrdo.appearance.normal
 		)
-		this.setDotNetWidget dNrdo caption fontSize
+        
+		this.SetDotNetWidget dNrdo caption fontSize
 		dNrdo.tag = tooltip
 		dNrdo.Update()
 	),
@@ -127,6 +208,7 @@ struct DotNetUi
 			#popup:(dNbtn.flatStyle = dNbtn.flatStyle.popup)
 			#system:(dNbtn.flatStyle = dNbtn.flatStyle.system)
 		)
+        
 		this.SetDotNetWidget dNbtn caption fontSize colorOffsetInt:colorOffsetInt
 		dNbtn.tag = tooltip
 		dNbtn.Update()
@@ -134,11 +216,11 @@ struct DotNetUi
 	
 	fn InitTxtBx tbx caption fontSize tooltip:"" =
 	(
-		tbx.backcolor = tbx.backcolor.FromArgb clrWindow.x clrWindow.y clrWindow.z
-		tbx.forecolor = tbx.forecolor.FromArgb clrText.x clrText.y clrText.z
+		tbx.backcolor = this.clrWindow_dnet
+		tbx.forecolor = this.clrText_dnet
 		tbx.text = caption
-		tbx.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ((dotNetClass "System.Drawing.FontStyle").bold)
-		tbx.BorderStyle = (dotNetClass "System.Windows.Forms.BorderStyle").FixedSingle
+		tbx.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ( ( dotNetClass "System.Drawing.FontStyle" ).bold )
+		tbx.BorderStyle = ( dotNetClass "System.Windows.Forms.BorderStyle" ).FixedSingle
 		tbx.MultiLine = false
 		tbx.AcceptsReturn = false
 		tbx.AcceptsTab = false
@@ -152,10 +234,15 @@ struct DotNetUi
 		this.SetDotNetWidget lbl caption fontSize fontStyle:fontStyle foreColor:foreColor
 	),
 	
-	fn ChangeDgvCellColor dgvCell color =
+	fn ChangeDgvCellColor dgvCell _color =
 	(
+        if ( ClassOf _color ) == Color or ( ClassOf _color ) == Point3 then
+        (
+            _color = this.RgbToDnetColor _color
+        )
+        
 		local newStyle = dotNetObject "System.Windows.Forms.DataGridViewCellStyle"
-		newStyle.foreColor = color
+		newStyle.foreColor = _color
 		dgvCell.Style = newStyle
 	),
 	
@@ -190,18 +277,18 @@ struct DotNetUi
 		)
 	),
 	
-	fn FilterDataGridRows dgv filterTxt cellIndex:0 = -- function for the search feature
+	fn FilterDataGridRows dgv filterTxt cellIndex:1 = -- function for the search feature
 	(
 		if filterTxt == "" or filterTxt == "Search" then
 		(
-			for i in 0 to dgv.rows.count-1 do
+			for i = 0 to dgv.rows.count-1 do
 			(
 				dgv.rows.item[i].visible = true
 			)
 		)
 		else
 		(
-			for i in 0 to dgv.rows.count-1 do
+			for i = 0 to dgv.rows.count-1 do
 			(
 				if not matchPattern dgv.rows.item[i].cells.item[cellIndex].value pattern:("*"+filterTxt+"*") then
 				(
@@ -214,16 +301,82 @@ struct DotNetUi
 			)
 		)
 	),
+    
+    fn ResizeImage DotNetBitmap width: height: =
+    (
+        if width == unsupplied or height == unsupplied then
+        (
+            throw "ResizeImage requires valid integer values for the 'width' and 'height' parameters."
+        )
+        
+        --local imgBits = DotNetBitmap.PixelFormat
+        
+        local outImg = ( dotnetobject "System.Drawing.Bitmap" width height ) --imgBits
+        local graphic =  ( dotnetclass "System.Drawing.Graphics" ).fromImage outImg
+        
+        graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
+        graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
+        graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic	
+        
+        local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
+        graphic.DrawImage DotNetBitmap rect
+        
+        local out = Copy outImg
+        
+        outImg.Dispose()
+        graphic.Dispose()
+        DotNetBitmap.Dispose()
+        GC quiet:True
+        
+        out
+    ),
+    
+    fn DisplayImage filePath =
+    (
+        local image = ( dotNetClass "System.Drawing.Bitmap" ).fromFile filePath
+        
+        --local pformat = image.PixelFormat
+        local width = image.Width
+        local height = image.Height
+        
+        local dest = dotnetobject "System.Drawing.Bitmap" width height --pformat
+        local graphic = (dotnetclass "System.Drawing.Graphics").fromImage dest
+        
+        graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
+        graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
+        graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic
+        
+        local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
+        graphic.DrawImage image rect
+        
+        local clipboard = dotnetclass "Clipboard"
+        clipboard.SetImage dest
+        
+        image.Dispose()
+        dest.Dispose()
+        graphic.Dispose()
+        
+        local cBitmap = GetclipboardBitmap()
+        
+        if cBitmap != undefined then
+        (
+            Display cBitmap
+        )
+    ),
 	
-	fn InitDgv dgv fontsize colAr multiSelct:True _forecolor: =
+	fn InitDgv dgv fontsize colAr multiSelct:True _forecolor: AllowUserToAddRows:False =
 	(
+        -- Example Col:
+        -- #(#Icon,"OPT:",True,#center,optIcon)
+        
 		dgv.Columns.Clear()
+        dgv.ShowCellToolTips = False
 		dgv.MultiSelect = multiSelct
-		dgv.AllowUserToAddRows = off
-		dgv.AutoSize = on
+		dgv.AllowUserToAddRows = AllowUserToAddRows
+		dgv.AutoSize = True
 		dgv.AutoSizeColumnsMode = dgv.AutoSizeColumnsMode.Fill
-		dgv.ShowEditingIcon = dgv.RowHeadersVisible = off
-		dnSelectionMode = dotNetClass "System.Windows.Forms.DataGridViewSelectionMode"
+		dgv.ShowEditingIcon = dgv.RowHeadersVisible = False
+		local dnSelectionMode = dotNetClass "System.Windows.Forms.DataGridViewSelectionMode"
 		dgv.SelectionMode = dnSelectionMode.FullRowSelect
 		dgv.AllowUserToResizeRows = False
 		dgv.AllowUserToOrderColumns = False
@@ -232,7 +385,8 @@ struct DotNetUi
 		
 		for col in colAr do
 		(
-			dnNewColumn
+			local dnNewColumn
+            
 			case col[1] of
 			(
 				(#Text):dnNewColumn = dotNetObject "System.Windows.Forms.DataGridViewTextBoxColumn"
@@ -243,7 +397,9 @@ struct DotNetUi
 					-- Need to pass an image
 					if  col[5] != undefined and (DoesFileExist col[5]) then
 					(
-						dnNewColumn.image = (dotNetClass "System.Drawing.Bitmap").fromFile col[5]
+                        local sourceImg = (dotNetClass "System.Drawing.Bitmap").fromFile col[5]
+                        
+						dnNewColumn.image = ( this.ResizeImage sourceImg width:48 height:48 )
 					)
 				)
 				(#Combo):dnNewColumn = dotNetObject "System.Windows.Forms.DataGridViewComboBoxColumn"
@@ -252,7 +408,7 @@ struct DotNetUi
 			dnNewColumn.name = col[2]
 			dnNewColumn.HeaderText = col[2]
 			dnNewColumn.ReadOnly = col[3]
-			dnAlignment = dotNetClass "System.Windows.Forms.DataGridViewContentAlignment"
+			local dnAlignment = dotNetClass "System.Windows.Forms.DataGridViewContentAlignment"
 			
 			case col[4] of
 			(
@@ -272,6 +428,33 @@ struct DotNetUi
 		)
 		
 		dgv.update()
+	),
+	
+	fn initTreeview trv fontsize:10 forecolor:( this.RgbToDnetColor this.clrText ) =
+	(
+		-- looking into this tv ops struct? not sure if its a maxsript lib that autodesk uses for their tool dev...
+		
+		::tvops.InitTreeView trv pFullRowSel:true pAllowDrop:true
+	
+		-- tvops.InitImageList tv imgFiles pSize:16 pTransparentColor:transparency 
+		-----------------------------------------
+		--trv.drawMode = trv.drawmode.OwnerDrawText
+		--trv.imageList = IL
+		trv.showLines = true
+		trv.showPlusMinus = true
+		trv.scrollable = true
+		trv.sorted = false
+		trv.labelEdit = false
+		trv.hideSelection = false
+		trv.fullRowSelect = true
+		--------------
+		trv.checkBoxes = true
+		trv.backcolor = this.RgbToDnetColor this.clrWindow
+		trv.forecolor = forecolor
+		
+		trv.font = dotnetobject "System.Drawing.Font" "Tahoma" fontsize (dotnetclass"System.Drawing.FontStyle").bold
+		
+		trv.update()
 	),
     
     fn GetComboBoxItems dgvCell =
@@ -348,16 +531,37 @@ struct DotNetUi
 		)
 		dic
 	),
-	
+    
+    fn DicFromDataGrid dgv keyCellIndex:0 valueCellIndex:1 =
+    (
+        local dic = dotNetObject "System.Collections.Hashtable"
+        
+        for i = 0 to dgv.rows.count-1 do
+        (
+            if ( dgv.rows.item[i].cells.item[keyCellIndex].value != undefined ) and ( dgv.rows.item[i].cells.item[valueCellIndex].value != undefined ) then
+            (
+                dic.add dgv.rows.item[i].cells.item[keyCellIndex].value dgv.rows.item[i].cells.item[valueCellIndex].value
+            )
+        )
+        
+        dic
+    ),
+    
+    fn GetModule =
+    (
+        ( GetThisScriptFileName() )
+    ),
+    
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetThisScriptFileName() )
+    ),
 	
 	private fn _init =
 	(
-		format "
----------------
-CLASS USAGE: DotNetUi
-
-instantiated global: _dotNet
----------------\n"
+        this.clrWindow_dnet = this.RgbToDnetColor this.clrWindow 
+        this.clrText_dnet = this.RgbToDnetColor this.clrText
+        this.clrBackGround_dnet = this.RgbToDnetColor this.clrBackGround
 	),
 
 	__init__ = _init()

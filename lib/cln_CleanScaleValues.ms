@@ -1,5 +1,48 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+Methods:
+
+
+
+__END__
+*/
+
+
+
 struct cln_CleanScaleValues
 (
+public
+
     aggregate,
     debug = False,
     progBar = undefined,
@@ -13,9 +56,9 @@ struct cln_CleanScaleValues
     mapped fn SetScaleController_mapped objArr _controller:ScaleXYZ =
     (
         /* 
-                Converts the scale controller on all objects to ScaleXYZ.
-                This is a more accurate mathematical representation of values and far less prone to precision errors
-                */
+            Converts the scale controller on all objects to ScaleXYZ.
+            This is a more accurate mathematical representation of values and far less prone to precision errors
+        */
         if ( classOf objArr.transform.controller ) != PRS then this.SetTransformController_mapped ( objArr as array )
         
         objArr.scale.controller = _controller()
@@ -23,10 +66,7 @@ struct cln_CleanScaleValues
     ),
     
     fn FixHelperScaleValues objArr:#() =
-    (
-        /* 
-                Collects all helpers from the objArr and runs a function to set their scale back to [1,1,1] without scaling thier children
-                */
+    ( -- Collects all helpers from the objArr and runs a function to set their scale back to [1,1,1]
         if ( objArr != undefined ) and ( objArr.count != 0 ) then
         (
             local arr = for i in objArr where ( SuperClassOf i ) == Helper collect i
@@ -37,8 +77,8 @@ struct cln_CleanScaleValues
     fn FixNonUniformScale _progressBar:this.progBar objArr:this.objArr =
     (
         /* 
-                Resets the transform of objects with scale values not equal to [1,1,1]
-                */
+            Resets the transform of objects with scale values not equal to [1,1,1]
+        */
         
         if objArr != undefined and objArr.count != 0 then
         (
@@ -53,15 +93,12 @@ struct cln_CleanScaleValues
             (
                 if _progressBar != undefined then _progressBar.UpdateLabel_Sub obj.name
                 
-               -- if ( classOf obj.transform.controller != PRS ) then this.SetTransformController_mapped #(obj) _controller:PRS
-                
                 local objScale = obj.scale.controller.value
                 local st = objScale as string
                 
                 if st != "[1,1,1]" then
                 (
                     this.SetScaleController_mapped #( obj ) _controller:ScaleXYZ
-                    
                     
                     local xmod = xform()
                     
@@ -112,21 +149,10 @@ struct cln_CleanScaleValues
     (
         this.FixNonUniformScale objArr:objArr
     ),
+
+private
     
-    
-    fn Help =
-    (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = 
-Instantiated Global = 
-
----------------\n"
-    ),
-
-    private fn _init =
+    fn _init =
     (
         if ( this.aggregate != undefined ) and ( IsProperty this.aggregate #RefactorObjs ) then this.aggregate.RefactorObjs()
     ),

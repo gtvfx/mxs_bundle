@@ -1,40 +1,34 @@
-/*
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-[TITLE]
-VertToVolumeAnalyzer
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
-[DESCRIPTION]
-Class for analyzing objects using a ratio derived from volume to vertex count.
-- methods for collecting objects within a certion ratio
-- purposed for finding objects that are small but dense
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-[USAGE]
-Methods can be called individually or you can use the Run method to launch a UI
-
-[CREATION INFO]
-Author: Gavyn Thompson
-E-mail: gthompson@ilm.com
-Company: Industrial Light and Magic
-Date created: 01/06/2016
-Last Updated: 01/06/2016
-
-[KEYWORDS]
-
-[VERSION HISTORY]
-
-[SEE ALSO]
-
-__END__
-*/
-
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
 /*
 __HELP__
 
 Constructor: VertToVolumeAnalyzer
-Instantiated Global: _vtv
+Instantiated Global: VertToVolumeAnalyzer
 
-Methods:
+[METHODS]
 
     CalculateVolumeVertexCount <obj>
         - Calculates the volume of the nodeLocalBoundingBox
@@ -57,17 +51,42 @@ Methods:
     
     Run
         - Executes the UI method
+
+
+[DESCRIPTION]
+Class for analyzing objects using a ratio derived from volume to vertex count.
+- methods for collecting objects within a certion ratio
+- purposed for finding objects that are small but dense
+
+[USAGE]
+Methods can be called individually or you can use the Run method to launch a UI
+
+for obj in geometry where (VertToVolumeAnalyzer.GetVertToVolumeRatio obj) > 10 do delete obj
+
+__END__
+*/
+
+
+
+
+
+/*
+__HELP__
+
+
     
 __END__
 */
 
-try(destroyDialog _vtv.ro)catch()
+try(destroyDialog VertToVolumeAnalyzer.ro)catch()
 
-_ilmLibrary.load "WpfProgressBar"
-_ilmLibrary.load "DotNetUi"
+mxs.Using "WpfProgressBar"
+mxs.Using "DotNetUi"
 
 struct VertToVolumeAnalyzer
 (
+public
+
 	ro,
     showUi = False,
 	cacheArr = #(),
@@ -240,10 +259,12 @@ struct VertToVolumeAnalyzer
     
     fn Help =
     (
-        ::_ilmLibrary.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( GetThisScriptFileName() )
     ),
     
-	private fn _init =
+private
+    
+    fn _init =
 	(
 		if this.showUi then
         (
@@ -254,11 +275,6 @@ struct VertToVolumeAnalyzer
 	__init__ = _init()
 )
 
-_vtv = VertToVolumeAnalyzer()
+VertToVolumeAnalyzer = VertToVolumeAnalyzer()
 
 
-/*
-for i in geometry where (GetVertToVolumeRatio i) > 10 do delete i
-
-
-*/

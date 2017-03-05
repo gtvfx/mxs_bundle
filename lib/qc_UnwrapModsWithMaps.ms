@@ -1,11 +1,59 @@
-struct qc_UnwrapModsWithMaps
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
+
+
+
+
+Struct qc_UnwrapModsWithMaps
 (
+public
+    
     aggregate,
     debug = False,
     
     fn GetMapLoaders =
     (
-        out = ( GetClassInstances BitMapTexture )
+        local out = ( GetClassInstances BitMapTexture )
         if VRayHDRi != undefined then
         (
             out += ( GetClassInstances VRayHDRi )
@@ -17,7 +65,7 @@ struct qc_UnwrapModsWithMaps
 	(
 		local bMaps = this.GetMapLoaders()
         
-		out = #()
+		local out = #()
 		for b in bMaps do
 		(
 			for d in ( refs.dependents b ) where ( classof d ) == unwrap_uvw and ( refs.dependentNodes d ).count > 0 do append out d
@@ -98,19 +146,19 @@ struct qc_UnwrapModsWithMaps
         )
     ),
     
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
     fn Help =
     (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = qc_UnwrapModsWithMaps
-Instantiated Global = N/A
-
----------------\n"
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
 
-    private fn _init =
+private
+    
+    fn _init =
     (
         -- Pass
     ),

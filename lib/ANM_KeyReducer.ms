@@ -1,5 +1,5 @@
 /***************************************************************************************************
-Copyright (C) 2013 - 2014  Gavyn Thompson
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,20 +15,22 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				Gavyn Thompson
+Author:				    Gavyn Thompson
 Company:				GTVFX
-Website:				www.gtvfx.com
-Email:				gthompson@gtvfx.com
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
 ScriptVersion:			v2.00
 Updated:				08/23/2015
 [Purpose]
 Reduces the keyframes on animation controllers while maintaining overall animation.
 Best when used on animation controllers that have been baked out on every frame.
 ***************************************************************************************************/
-_mxs.Using "DotNetUi"
 
-try(destroyDialog _keyReducer.ro)catch()
-struct keyReducerStruct
+
+mxs.Using "DotNetUi"
+
+try(destroyDialog KeyReducer.ro)catch()
+struct KeyReducer
 (
 	self,
 	ro,
@@ -178,4 +180,4 @@ struct keyReducerStruct
 	init = _init()
 )
 
-_keyReducer = keyReducerStruct()
+KeyReducer = KeyReducer()

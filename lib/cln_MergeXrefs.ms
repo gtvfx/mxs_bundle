@@ -1,5 +1,49 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+Methods:
+
+
+
+__END__
+*/
+
+
+
+
 struct cln_MergeXrefs
 (
+public
+
     aggregate,
     debug = False,
     progBar = undefined,
@@ -71,23 +115,10 @@ struct cln_MergeXrefs
         this.MergeXrefObjects _progressBar:_progressBar
         this.MergeXrefControllers _progressBar:_progressBar
     ),
-    
-    
-    
-    
-    fn Help =
-    (
-        format "
----------------
-CLASS USAGE:
 
-Constructor = cln_MergeXrefs
-Instantiated Global = N/A
-
----------------\n"
-    ),
-
-    private fn _init =
+private
+    
+    fn _init =
     (
         if this.aggregate != undefined and ( isProperty this.aggregate #_progressBar ) then 
         (

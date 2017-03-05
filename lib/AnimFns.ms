@@ -1,3 +1,30 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+
 /*
 __HELP__
 
@@ -14,7 +41,7 @@ __END__
 */
 
 
-::_mxs.Load "MeshFns"
+::mxs.Using "MeshFns"
 
 
 struct AnimFns
@@ -232,13 +259,6 @@ struct AnimFns
 		createdialog ro_offsetKeyframes
 	),
     
-    
-    
-    
-    
-    
-    
-    
     fn GetModule =
     (
         ( GetSourceFileName() )
@@ -246,8 +266,7 @@ struct AnimFns
 
     fn Help =
     (
-        -- Static Method
-        ::_ilmLibrary.GetScriptHelp ( GetSourceFilename() )
+        ::mxs.GetScriptHelp ( GetSourceFilename() )
     ),
 
     private fn _init =

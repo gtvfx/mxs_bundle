@@ -1,5 +1,5 @@
 /***************************************************************************************************
-Copyright (C) 2013 - 2014  Gavyn Thompson
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				Gavyn Thompson
+Author:				    Gavyn Thompson
 Company:				GTVFX
-Website:				www.gtvfx.com
-Email:				gthompson@gtvfx.com
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
 ScriptVersion:			v2.0
 Updated:				08/23/2015
-[Purpose]
+[Purpose]:
 Set the Out-Of-Range Types for the selected objects
 Optionally you can change the tangents on the first and last frames.
 This is only for Position, Rotation, Scale, and Visibility
@@ -30,11 +30,11 @@ This is only for Position, Rotation, Scale, and Visibility
 /*------------------------------------------------------------------------------------------------
 					Using
 ------------------------------------------------------------------------------------------------*/
-_mxs.Using "DotNetUi" inReload:False
+mxs.Using "DotNetUi"
 
 
-try(destroyDialog _setORT.ro)catch()
-struct setORT_lib 
+try(destroyDialog SetOutOfRangeType.ro)catch()
+struct SetOutOfRangeType 
 (
 	self,
 	ro,
@@ -357,9 +357,9 @@ struct setORT_lib
 			fn _init pself =
 			(
 				self = pself
-				_dotNet.initDnetBtn dNbtn_refresh "Refresh controller list" 8 style:#flat colorOffsetInt:10 tooltip:"Refresh the controller list for your current selection"
-				_dotNet.initDnetBtn dNbtn_set "Set ORT for selected properties" 10 style:#popup colorOffsetInt:10 tooltip:"Go through all objects in your selection and\nset the ORT for the selected properties."
-				_dotNet.initDgv dgv_cons 12 (GetColArr()) multiSelct:True
+				::::_dotNet.initDnetBtn dNbtn_refresh "Refresh controller list" 8 style:#flat colorOffsetInt:10 tooltip:"Refresh the controller list for your current selection"
+				::::_dotNet.initDnetBtn dNbtn_set "Set ORT for selected properties" 10 style:#popup colorOffsetInt:10 tooltip:"Go through all objects in your selection and\nset the ORT for the selected properties."
+				::::_dotNet.initDgv dgv_cons 12 (GetColArr()) multiSelct:True
 				
 				self.nodeArr = (getCurrentSelection())
 				dispCons = #()
@@ -387,12 +387,12 @@ struct setORT_lib
 			
 			on dNbtn_refresh mouseEnter arg do
 			(
-				_dotNet.initToolTip dNbtn_refresh dNbtn_refresh.tag
+				::::_dotNet.initToolTip dNbtn_refresh dNbtn_refresh.tag
 			)
 			
 			on dNbtn_copy01 MouseLeave arg do
 			(
-				_dotNet.destroyToolTip()
+				::_dotNet.destroyToolTip()
 			)
 			
 			on dNbtn_set mouseClick arg do
@@ -410,12 +410,12 @@ struct setORT_lib
 			
 			on dNbtn_set mouseEnter arg do
 			(
-				_dotNet.initToolTip dNbtn_set dNbtn_set.tag
+				::_dotNet.initToolTip dNbtn_set dNbtn_set.tag
 			)
 			
 			on dNbtn_set MouseLeave arg do
 			(
-				_dotNet.destroyToolTip()
+				::_dotNet.destroyToolTip()
 			)
 			
 			on ro open do
@@ -441,5 +441,5 @@ struct setORT_lib
 	init = _init()
 )
 
-_setORT = setORT_lib()
+SetOutOfRangeType = SetOutOfRangeType()
 

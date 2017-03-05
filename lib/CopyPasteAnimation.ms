@@ -1,16 +1,54 @@
-/******************************************************************************************
-Class for copying the animation from one object onto another
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: CopyPasteAnimation
+Instantiated Global: CopyPasteAnimation
+
+Methods:
+
+CopyPasteAnim <from_obj> <to_obj>
 
 
-******************************************************************************************/
+__END__
+*/
 
-::_CopyPasteAnimation
+
+
+
 
 struct CopyPasteAnimation
 (
-	private fn CopyAnimation obj =
+public
+    
+	fn CopyAnimation obj =
 	(
-		out = #()
+		local out = #()
 		--position
 		append out obj.pos.x_position.controller.keys
 		append out obj.pos.y_position.controller.keys
@@ -30,7 +68,7 @@ struct CopyPasteAnimation
 		out
 	),
 
-	private fn AppendKeys from_obj_anim to_obj_anim =
+	fn AppendKeys from_obj_anim to_obj_anim =
 	(
 		for x = 1 to from_obj_anim.count do
 		(
@@ -39,32 +77,38 @@ struct CopyPasteAnimation
 				appendKey to_obj_anim[x] from_obj_anim[x][i]
 			)
 		)
-		
 	),
 
-	public fn CopyPasteAnim from_obj to_obj =
+	fn CopyPasteAnim from_obj to_obj =
 	(
 		deleteKeys to_obj #allKeys
 		
-		from_obj_anim = CopyAnimation from_obj
-		to_obj_anim = CopyAnimation to_obj
+		from_obj_anim = this.CopyAnimation from_obj
+		to_obj_anim = this.CopyAnimation to_obj
 		
-		AppendKeys from_obj_anim to_obj_anim
+		this.AppendKeys from_obj_anim to_obj_anim
 	),
+    
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
+    ),
 	
-	private fn _init =
+private 
+    
+    fn _init =
 	(
-				format "
----------------
-CLASS USAGE:
 		
-Use <CopyPasteAnim from_obj to_obj> 
----------------\n"
 	),
 
 	__init__ = _init()
 )
 
-_CopyPasteAnimation = CopyPasteAnimation()
+CopyPasteAnimation = CopyPasteAnimation()
 
 

@@ -1,33 +1,80 @@
-_ilmLibrary.Load "ilmEventTimer"
-_ilmLibrary.load "CopyPasteAnimation"
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-struct qc_Groups
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
+
+
+mxs.Using "EventTimer"
+mxs.Using "CopyPasteAnimation"
+
+
+Struct qc_Groups
 (
+Public
+    
 	aggregate,
     debug = False,
 	
-	fn GetAllGroupHeads =
+	fn GetAllGroupHeads objArr:( objects as array ) =
 	(
-		local groupArr = for i in objects where isGroupHead i collect i
+		local groupArr = for obj in objArr where ( isGroupHead obj ) collect obj
 		groupArr
 	),
 	
-	fn SelectAllGroupHeads =
+	fn SelectAllGroupHeads objArr:( objects as array ) =
 	(
-		select (this.GetAllGroupHeads())
+		select ( this.GetAllGroupHeads objArr:objArr )
 	),
 		
-	fn ConvertGroupsToNulls =
+	fn ConvertGroupsToNulls objArr:( objects as array ) =
 	(
-		local groupConvert = EventTimer caption:"Converting groups"
+		local groupConvert = ::EventTimer caption:"Converting groups"
 		SetCommandPanelTaskMode #Create
 		::_ilmLibrary.BlockUi True
 		
-		local groupHeadArr = (this.GetAllGroupHeads())
+		local groupHeadArr = ( this.GetAllGroupHeads objArr:objArr )
 			
 		for g in groupHeadArr do
 		(
-			setGroupOpen g True
+			SetGroupOpen g True
 			
 			local tNull = point transform:g.transform name:g.name cross:False box:True axisTripod:True
 			
@@ -40,7 +87,7 @@ struct qc_Groups
 				::_CopyPasteAnimation.CopyPasteAnim g tNull
 			)
 			
-			for i in groupObjArr where (isValidNode i) and (i.parent == g) do i.parent = tNull
+			for i in groupObjArr where ( isValidNode i ) and ( i.parent == g ) do i.parent = tNull
 		)
 		
 		delete groupHeadArr
@@ -51,9 +98,9 @@ struct qc_Groups
 		True
 	),
 	
-	fn CheckForGroups =
+	fn CheckForGroups objArr:( objects as array ) =
 	(
-		local arr = this.GetAllGroupHeads()
+		local arr = this.GetAllGroupHeads objArr:objArr
         
         local msg = "There are "+arr.count as string+" groups in this scene"
         format "***** % *****\n" msg
@@ -73,33 +120,35 @@ struct qc_Groups
 		)
 	),
     
-    fn Run =
+    fn Run objArr:( objects as array ) =
     (
-        if ( this.CheckForGroups() ) then
+        if ( this.CheckForGroups objArr:objArr ) then
         (
             if ( queryBox "Would you like to convert all groups to nulls?" title:"?" ) then
             (
-                this.ConvertGroupsToNulls()
+                this.ConvertGroupsToNulls objArr:objArr
             )
         )
     ),
 	
-	fn ClassUsage =
-	(
-		format "
----------------
-CLASS USAGE:
-
-Constructor = qc_Groups
-Instantiated Global = N/A
-
----------------\n"
-	),
+	fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
+    fn Help =
+    (
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
+    ),
 	
-	private fn _init =
+Private
+    
+    fn _init =
 	(
 		-- Pass
 	),
 
 	__init__ = _init()
 )
+
+

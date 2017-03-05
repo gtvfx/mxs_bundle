@@ -1,29 +1,29 @@
-/*
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-[TITLE]
-AlembicPurge
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
-[DESCRIPTION]
-The goal of this class is to convert all Alembic class objects and contrillers to native Max ones
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-[USAGE]
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
 
-[CREATION INFO]
-Author: Gavyn Thompson
-E-mail: gthompson@ilm.com
-Company: Industrial Light and Magic
-Date created: 10/01/2015
-Last Updated: 10/01/2015
-
-[KEYWORDS]
-
-[VERSION HISTORY]
-
-[SEE ALSO]
-
-__END__
-*/
+***************************************************************************************************/
 
 /*
 __HELP__
@@ -40,10 +40,10 @@ Methods:
 Example:
 	_alembicPurge = (AlembicPurge objectArray:(objects as array))
 
-	OR:
+	OR: 
 
 	_alembicPurge = AlembicPurge()
-	_alembicPurge.objectArray = (GetCurrentSelection())
+	_alembicPurge.objectArray = ( GetCurrentSelection() )
 	_alembicPurge.Run()
 	
 Notes:
@@ -56,12 +56,13 @@ __END__
 
 
 
-_ilmLibrary.load "WpfProgressBar"
+mxs.load "WpfProgressBar"
 
-::AlembicPurge
 
 struct AlembicPurge
 (
+public
+    
 	objectArray,
 	
 	fn ConvertTransformController obj ctrl:PRS =
@@ -73,7 +74,7 @@ struct AlembicPurge
 	(
 		if AlembicTimeControl != undefined then
 		(
-			arr = GetClassInstances AlembicTimeControl
+			local arr = GetClassInstances AlembicTimeControl
 			if arr.count != 0 then
 			(
 				for i in arr do
@@ -92,8 +93,12 @@ struct AlembicPurge
 	(
 		for i in obj.modifiers do
 		(
-			if MatchPattern ((ClassOf i) as string) pattern:"*alembic*" then return True
+			if ( MatchPattern ( ( ClassOf i ) as string ) pattern:"*Alembic*" ) then
+            (
+                return True
+			)
 		)
+		
 		False
 	),
 	
@@ -110,9 +115,10 @@ struct AlembicPurge
 		False
 	),
 	
-	fn CollectAlembicObjects objArr:(Objects as array) =
+	fn CollectAlembicObjects objArr:( objects as array ) =
 	(
 		local out = #()
+        
 		for obj in objArr do
 		(
 			if ( this.AlembicModifierCheck obj ) then
@@ -124,6 +130,7 @@ struct AlembicPurge
 				append out obj
 			)
 		)
+        
 		out
 	),
 
@@ -131,27 +138,31 @@ struct AlembicPurge
 	(
 		if objArr.count != 0 then
 		(
-			_objProgress = WpfProgressBar caption:"Purging Alembic Objects:" steps:objArr.count
+            objArr = this.CollectAlembicObjects objArr:objArr
+            
+			local _objProgress = WpfProgressBar caption:"Purging Alembic Objects:" steps:objArr.count
 			_objProgress.Start()
-			for obj in objArr do
+            
+            for obj in objArr do with undo off
 			(
 				_objProgress.UpdateLabel obj.name
 				
-				if (this.AlembicModifierCheck obj) and SuperClassOf obj == GeometryClass then
+				if ( this.AlembicModifierCheck obj ) and SuperClassOf obj == GeometryClass then
 				(
-					if (CanConvertTo obj Editable_Mesh) then
+					if ( CanConvertTo obj Editable_Mesh ) then
 					(
 						ConvertTo obj Editable_Mesh
 					)
 				)
 				
-				if (this.AlembicControllerCheck obj) then
+				if ( this.AlembicControllerCheck obj ) then
 				(
 					this.ConvertTransformController obj ctrl:PRS
 				)
 				
 				_objProgress.Step()
 			)
+            
 			_objProgress.End()
 		)
 	),
@@ -160,60 +171,38 @@ struct AlembicPurge
 	(
 		if this.objectArray != undefined then
 		(
-			_ilmLibrary.BlockUi True
+			cui.commandPanelOpen = False
+			::mxs.BlockUi True
 			
 			this.CollapseAlembicObjs this.objectArray
 			this.PurgeAlembicTimeControls()
 			
 			format "***** Alembic Purged *****\n"
 			
-			while (_ilmLibrary.BlockUi False).count != 0 do _ilmLibrary.BlockUi False
+			while ( ::mxs.BlockUi False ).count != 0 do ::mxs.BlockUi False
+			cui.commandPanelOpen = True
 		)
+        else
+        (
+            
+        )
 	),
     
     fn GetModule =
     (
-        ( GetThisScriptFileName() )
+        ( GetSourceFilename() )
     ),
     
     fn Help =
     (
-        ::_ilmLibrary.GetScriptHelp ( this.GetModule() )
+        ::mxs.GetScriptHelp ( GetSourceFilename() )
     ),
 	
-	fn ClassUsage =
+private
+    
+    fn _init =
 	(
-		format "
----------------
-CLASS USAGE:
-
-Constructor = AlembicPurge
-		
-Properties:
-	objectArray: Array of objects that this tool will operate on
-		
-Methods:
-	- Run():
-		If instantiated with the objectArray defined then the Run method will be called automatically
-
-Example:
-	_alembicPurge = (AlembicPurge objectArray:(objects as array))
-
-	OR:
-
-	_alembicPurge = AlembicPurge()
-	_alembicPurge.objectArray = (GetCurrentSelection())
-	_alembicPurge.Run()
-	
-Notes:
-	Preserving animation from Alembic caches is something that still needs to be addressed.
-
----------------\n"
-	),
-	
-	private fn _init =
-	(
-		this.Run()
+		-- pass
 	),
 	
 	__init__ = _init()

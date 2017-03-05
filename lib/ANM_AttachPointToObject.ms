@@ -1,5 +1,5 @@
 /***************************************************************************************************
-Copyright (C) 2013 - 2014  Gavyn Thompson
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,17 +19,20 @@ Author:				Gavyn Thompson
 Company:				GTVFX
 Website:				www.gtvfx.com
 Email:				gthompson@gtvfx.com
-ScriptVersion:			v1.20
-Updated:				08/23/2015
+ScriptVersion:			
+Updated:				
 [Purpose]
 Creates an attachment constrain from one object to another. By default this tool generates
 a point helper to attach to another object. 
 This is useful if you need a locator to follow a deforming mesh such as a point-cached character.
 ***************************************************************************************************/
-_mxs.Using "DotNetUi" inReload:False
+
+
+mxs.Using "DotNetUi"
 
 try(destroyDialog _atch.ro)catch()
-struct attachPointStruct
+
+struct AttachPointStruct
 (
 	self,
 	ro,
@@ -263,4 +266,4 @@ struct attachPointStruct
 	init = _init()
 )
 
-_atch = attachPointStruct()
+_atch = AttachPointStruct()

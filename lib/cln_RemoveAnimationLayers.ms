@@ -1,18 +1,61 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+Methods:
+
+
+
+__END__
+*/
+
+
+
+
 struct cln_RemoveAnimationLayers
 (
+public
+
     aggregate,
     debug = False,
     progBar = undefined,
     objArr,
-    classList = 
-    #(
-        Float_Layer, 
-        Point3_Layer, 
-        Point4_Layer,
-        Position_Layer,
-        Rotation_Layer,
-        Scale_Layer
-    ),
+    classList = #(
+                        Float_Layer, 
+                        Point3_Layer, 
+                        Point4_Layer,
+                        Position_Layer,
+                        Rotation_Layer,
+                        Scale_Layer
+                    ),
     
     fn RemoveAnimLayers _progressBar:this.progBar =
     ( -- remove all layer controller types from the scene if possible...
@@ -68,26 +111,14 @@ struct cln_RemoveAnimationLayers
         format "***** Removed % animation layers *****\n" ( origAnimLayerCount - animLayerCount )
     ),
     
-    
     fn Run =
     (
         this.RemoveAnimLayers _progressBar:this.progBar
     ),
     
+private
     
-    fn Help =
-    (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = cln_RemoveAnimationLayers
-Instantiated Global = N/A
-
----------------\n"
-    ),
-
-    private fn _init =
+    fn _init =
     (
         if this.aggregate != undefined and ( isProperty this.aggregate #_progressBar ) then 
         (

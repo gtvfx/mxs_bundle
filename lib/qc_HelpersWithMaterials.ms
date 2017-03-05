@@ -1,24 +1,65 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
 
 
 struct qc_HelpersWithMaterials
 (
+public
+    
     aggregate,
     debug = False,
-    helperClasses = #(Point, Dummy),
+    helperClasses = ( helpers as array ), --#(Point, Dummy),
     
     fn GetAllHelpersWithMaterials =
 	(
 		local out = #()
         
-        for helperClass in this.helperClasses do
+        for h in helperClasses do
         (
-            for h in ( GetClassInstances helperClass ) do
+            local depNodes = refs.dependentNodes h
+            for n in depNodes where ( isProperty n #material ) and ( n.material != undefined ) do
             (
-                local depNodes = refs.dependentNodes h
-                for n in depNodes where ( isProperty n #material ) and ( n.material != undefined ) do
-                (
-                    appendIfUnique out n
-                )
+                appendIfUnique out n
             )
         )
         
@@ -45,7 +86,6 @@ struct qc_HelpersWithMaterials
 		)
         
 		delete pl
-		--select helperArr
 	),
     
 	fn CheckHelpersWithMaterials =
@@ -81,19 +121,19 @@ struct qc_HelpersWithMaterials
         )
     ),
     
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
     fn Help =
     (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = qc_HelpersWithMaterials
-Instantiated Global = N/A
-
----------------\n"
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
-
-    private fn _init =
+    
+private
+    
+    fn _init =
     (
         -- Pass
     ),

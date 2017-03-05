@@ -1,21 +1,36 @@
-/*************************************************************************************
-__MXSDOC__
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-Author:				Gavyn Thompson
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
 Company:				GTVFX
-Website:				www.gtvfx.com
-Email:				gthompson@gtvfx.com
-ScriptVersion:			v1.0
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
 Updated:				08/29/2013
 [Purpose]
 Constains a point to a selected object and bakes the cameras focus distance to that point.
 
-__END__
 *************************************************************************************/
-_mxs.Using "GenFns" inReload:False
+
+
+mxs.Using "MxsCommonFns"
 
 try(destroyDialog _bakeVRCamFocus.ro)catch()
-struct bakeVRCamFocus_struct
+struct BakeVrayCameraFocus
 (
 	self,
 	meshArr = #(),
@@ -181,4 +196,4 @@ struct bakeVRCamFocus_struct
 )
 
 
-_bakeVRCamFocus = bakeVRCamFocus_struct()
+BakeVrayCameraFocus = BakeVrayCameraFocus()

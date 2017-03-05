@@ -1,16 +1,38 @@
-/*|==================== Using ====================|\n"*/
-_mxs.Using "EventTimer"
-_mxs.Using "WpfProgressBar_double"
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
 
-/*|======================================================|\n"*/
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+[Purpose]
+
+***************************************************************************************************/
+
+
+mxs.Using "EventTimer"
+mxs.Using "WpfProgressBar_double"
 
 
 
 struct AssetPlugin
-(
-	/* 
-	Construct for plugin object
-	 */
+( -- Construct for plugin object
 	title = "",
 	method = unsupplied,
 	aux = unsupplied,
@@ -19,10 +41,7 @@ struct AssetPlugin
 )
 
 struct AssetPluginManager
-(
-	/* 
-	The Plugin manager is inherited by the main tool and handles the plugins
-	 */
+(-- The Plugin manager is aggregated by the main tool and handles the plugins
 	_resourcePath, -- Path to folder containing plugin files
 	_pluginsLoaded = False,
 	_plugins = #(), -- Array of AssetPlugin objects
@@ -36,12 +55,12 @@ struct AssetPluginManager
 			return False
 		)
 		format "***** Loading Plugin: % | active:% *****\n" title active
-		append _plugins (AssetPlugin title:title method:method aux:aux active:active description:description)
+		append this._plugins (AssetPlugin title:title method:method aux:aux active:active description:description)
 	),
 	
 	fn init refresh:false =
 	(
-		if (not _pluginsLoaded or refresh) then
+		if (not this._pluginsLoaded or refresh) then
 		(
 			-- Load Plugins
 			format "--------------------------------------------------------------------------------------------------------------\n"
@@ -50,25 +69,22 @@ struct AssetPluginManager
 			this._plugins = #()
 			
 			-- Load Plugin Files
-			local filenames = getFiles (_resourcePath + "*.ms")
+			local filenames = getFiles (this._resourcePath + "*.ms")
 			sort filenames
 			for filename in filenames do filein filename
 			
 			format "--------------------------------------------------------------------------------------------------------------\n"
-			
-			-- Load State from INI
-			--loadCustomState()
 		)
 	)
 )
 
 
-/*
-asset cleanse is a script to automatically cleanse mesh objects from technicall imperfections that can bug up the pipeline.
-*/
+
+-- asset cleanse is a script to automatically cleanse mesh objects from technicall imperfections that can bug up the pipeline.
+
+
 struct Asset_Cleanse
 (
-	self,
 	ro,
 	
 	nameSpace = "AssetCleanse:",
@@ -79,7 +95,6 @@ struct Asset_Cleanse
 	
 	excludeSuperClassArr = #( Helper, Light, Camera ),
 	excludeClassArr = #( TargetObject ), -- see the init function for additional third party classes
-	lameCustomAttr = #(#day1refCA),
 	complete = False,
 	-----
     objArr = #(),
@@ -201,7 +216,7 @@ struct Asset_Cleanse
 	(
 		if this.allObjects.count != 0 then
 		(
-			::_mxs.BlockUi True
+			::mxs.BlockUi True
 			setCommandPanelTaskMode #create 
 			
 			this.RefactorObjs()
@@ -210,7 +225,7 @@ struct Asset_Cleanse
 			
 			this.RunPlugins()
 			
-			::_mxs.BlockUi False
+			::mxs.BlockUi False
 		)
 		else
 		(

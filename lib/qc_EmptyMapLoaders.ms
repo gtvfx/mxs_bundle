@@ -1,18 +1,65 @@
+/***************************************************************************************************
+Copyright (C) 2013 - 2017  Gavyn Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. if not, see <http://www.gnu.org/licenses/>.
+***************************************************************************************************/
+/***************************************************************************************************
+Author:				    Gavyn Thompson
+Company:				GTVFX
+Website:				https://github.com/gtvfx
+Email:				    gftvfx@gmail.com
+ScriptVersion:			
+Updated:				
+***************************************************************************************************/
+/*
+__HELP__
+
+Constructor: 
+Instantiated Global: 
+
+[METHODS]
+
+
+[DESCRIPTION]
+
+
+[USAGE]
+
+
+__END__
+*/
+
+
 
 
 struct qc_EmptyMapLoaders
 (
+public
+    
     aggregate,
     debug = False,
     
     fn GetAllEmptyMapLoaders =
 	(
 		local bitMapArr = for b in ( Getclassinstances bitmaptexture asTrackViewPick:on ) where b.anim.filename == undefined or b.anim.filename == "" collect b
+        
 		if VrayHdri != undefined then
         (
             local vrArr = for v in ( Getclassinstances VrayHdri asTrackViewPick:on ) where v.anim.HdriMapName == undefined or v.anim.HdriMapName == "" collect v
             bitMapArr += vrArr
         )
+        
         bitMapArr
 	),
 	
@@ -32,15 +79,9 @@ struct qc_EmptyMapLoaders
 		)
 	),
 	
-	fn RemoveEmptyMapLoaders =
+	fn CheckEmptyMapLoaders =
 	(
 		local emptyLoaderArr = this.GetAllEmptyMapLoaders()
-		this.RemoveMapLoaders emptyLoaderArr
-	),
-	
-	fn CheckEmptyBitmapTextures =
-	(
-		local emptyLoaderArr = GetAllEmptyMapLoaders()
         
         local msg = "There are " + ( emptyLoaderArr.count as string ) + " empty map loaders"
         format "***** % *****\n" msg
@@ -60,30 +101,52 @@ struct qc_EmptyMapLoaders
         )
 	),
     
+    fn RemoveEmptyMapLoaders =
+	(
+		local emptyLoaderArr = this.GetAllEmptyMapLoaders()
+		this.RemoveMapLoaders emptyLoaderArr
+	),
+    
+    fn CheckMethod objArr: =
+    (
+        this.CheckEmptyBitmapTextures()
+    ),
+    
+    fn FixMethod objArr: =
+    (
+        this.RemoveEmptyMapLoaders()
+    ),
+    
+    fn SelectMethod objArr: =
+    (
+        format "***** No Select Method *****\n"
+        undefined
+    ),
+    
     fn Run =
     (
-        if not ( this.CheckEmptyBitmapTextures() ) then
+        if not ( this.CheckMethod() ) then
         (
             if ( queryBox "Would you like to remove all empty bitmap loaders?" title:"?" ) then
             (
-                this.RemoveEmptyMapLoaders()
+                this.FixMethod()
             )
         )
     ),
     
+    fn GetModule =
+    (
+        ( GetSourceFileName() )
+    ),
+    
     fn Help =
     (
-        format "
----------------
-CLASS USAGE:
-
-Constructor = qc_EmptyMapLoaders
-Instantiated Global = N/A
-
----------------\n"
+        ::mxs.GetScriptHelp ( GetSourceFileName() )
     ),
-
-    private fn _init =
+    
+private
+    
+    fn _init =
     (
         -- Pass
     ),
