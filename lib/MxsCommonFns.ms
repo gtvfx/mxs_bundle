@@ -1392,11 +1392,115 @@ public
     
 --) END: Modifier Methods
     
-	fn SetObjectPropertiesFromDict obj propDict =
+--( Property Methods
+	
+	fn GetObjectPropDict obj =
 	(
+		local dict = dotNetObject "System.Collections.Hashtable"
+		
+		for prop in ( GetPropNames obj ) do
+		(
+			local propVal = ( GetProperty obj prop )
+			
+			case ( ClassOf propVal ) of
+			(
+				( ArrayParameter ):
+				(
+					dict.add ( prop as string ) ( ::_hash.MxsArrayToDotNetArray propVal )
+				)
+				default:
+				(
+					dict.add ( prop as string ) propVal
+				)
+			)
+		)
+		
+		dict
+	),
+	
+	fn GetNodeDataObject obj =
+	(
+		if ( not IsValidNode obj ) then
+		(
+			format "***** % is not a valid node *****\n" obj
+			return undefined
+		)
+		
+		struct NodeDataObject
+		(
+			obj,
+			-------
+			layer, pivot, transform, 
+			minimum, maximum, center,
+			name, baseobject, material,
+			parent, children, mesh,
+			displayByLayer, motionByLayer, renderByLayer,
+			colorByLayer, globalIlluminationByLayer,
+			isTarget, lookAt, target, targetDistance,
+			isHidden, isNodeHidden, isHiddenInVpt,
+			isFrozen, isNodeFrozen, isSelected,
+			xray, boxMode, allEdges, vertexTicks,
+			backFaceCull, showTrajectory, ignoreExtents,
+			showFrozenInGray, wireColor, showLinks, showLinksOnly,
+			showVertexColors, vertexColorType, vertexColorsShaded,
+			isDependent, visibility, renderable,
+			inheritVisibility, primaryVisibility, secondaryVisibility,
+			receiveShadows, castShadows, applyAtmospherics, renderOccluded, gbufferChannel,
+			imageMotionBlurMultiplier, motionBlurOn, motionBlurOnController, motionBlur,
+			generatecaustics, rcvcaustics, generateGlobalIllum, rcvGlobalIllum,
+			
+			
+		private
+			
+			fn __init__ =
+			(
+				for each in ( GetPropNames this ) do
+				(
+					if ( each == #obj ) then continue
+					
+					try
+					(
+						SetProperty this each ( GetProperty this.obj each )
+					)
+					catch
+					(
+						format "***** Could not SetProperty: ObjDataObject.% from % *****\n" each this.obj
+					)
+				)
+			),
+			
+			init = __init__()
+		)
+		
+		NodeDataObject obj
+	),
+	
+	fn SetNodePropertiesFromDataObject obj dataObject skipPropArr:#() =
+	(
+		-- ensure that the values of the array are names instead of string so that we can accurately compare them to the prop names.
+		if ( skipPropArr.count != 0 ) then skipPropArr = for item in skipPropArr collect ( item as name )
+		
+		for prop in ( GetPropNames dataObject ) where ( FindItem skipPropArr each == 0 ) do
+		(
+			try
+			(
+				SetProperty obj prop ( GetProperty dataObject prop )
+			)
+			catch
+			(
+				format "***** Could not SetProperty for this object: % prop:% *****\n" obj prop
+			)
+		)
+	),
+	
+	fn SetObjectPropertiesFromDict obj propDict skipPropArr:#() =
+	(
+		-- ensure that the values of the array are strings instead of names so that we can accurately compare them to the key values.
+		if ( skipPropArr.count != 0 ) then skipPropArr = for item in skipPropArr collect ( item as string )
+		
 		local dictKeys = ::_hash.GetDicKeys propDict
 		
-		for each in dictKeys do
+		for each in dictKeys where ( FindItem skipPropArr each == 0 ) do
 		(
 			if ( IsProperty obj each ) then
 			(
@@ -1433,6 +1537,8 @@ public
             )
         )
     ),
+	
+--)
 	
 	fn GetRandomColor =
 	(

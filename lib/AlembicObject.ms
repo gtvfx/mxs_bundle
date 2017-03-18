@@ -37,11 +37,11 @@ Methods:
 __END__
 */
 
-mxs.Using "GenPyFns"
+mxs.Using "MxsPyFns"
 
 python.execute "
-from mxs.lib import AlembicApi
-reload(AlembicApi)
+from mxs.lib import alembic_api
+reload(alembic_api)
 "
 
 PYTHON_RETURN = undefined
@@ -61,7 +61,7 @@ public
 		local pyCmd = StringStream ""
 		
 		format "
-abcObject = genAlembicApi.AlembicObject(r'%')
+abcObject = alembic_api.AlembicObject(r'%')
 		" this.abcFile to:pyCmd
 		
 		python.execute ( pyCmd as string )
@@ -69,14 +69,14 @@ abcObject = genAlembicApi.AlembicObject(r'%')
 	
 	fn GetAllObjectNames =
 	(
-		this.objectNames = ::_genPyFns.ListToArray "abcObject.objectNames"
+		this.objectNames = ::MxsPyFns.ListToArray "abcObject.objectNames"
 	),
 	
 	fn CollectChildrenNameList objName skipNameArr:#() =
 	(
 		local out = #()
 		
-		::_genPyFns.ArrayToList skipNameArr "_skipNameList"
+		::MxsPyFns.ArrayToList skipNameArr "_skipNameList"
 		
 		local pyCmd = StringStream ""
 		

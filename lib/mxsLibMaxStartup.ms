@@ -1,11 +1,25 @@
 
-global mxs
-global _maxInit
-
+::mxs
+::_maxInit
 
 ::_codeEnv
 ::_codeRoot
-::_startupPath
+
+(
+	local sysenv = (dotNetClass "System.Environment")
+	
+	if ( sysenv.GetEnvironmentVariable "MXS_PATH" != undefined ) then
+	(
+		::_codeEnv = "SYS"
+		::_codeRoot = sysenv.GetEnvironmentVariable "MXS_CODEROOT"
+	)
+	else if ( sysenv.GetEnvironmentVariable "MXS_CONFIG_FILE" != undefined ) then
+	(
+		local mxsConfigFile = ( sysenv.GetEnvironmentVariable "MXS_CONFIG_FILE" )
+		::_codeEnv = GetINISetting mxsConfigFile "GLOBALS" "environment"
+		::_codeRoot = GetINISetting mxsConfigFile _codeEnv "coderoot"
+	)
+)
 
 
 struct DefaultInit
@@ -38,7 +52,7 @@ struct DefaultInit
 		 */
 		format "|=============== Loading Scripted Plugins ===============|\n"
 		local sPluginDir = (::_codeRoot + @"\Lib\ScriptPlugins")
-		if DoesFileExist sPluginDir then
+		if ( DoesFileExist sPluginDir ) then
 		(
 			this.LoadFilesFromDir sPluginDir
 		)
@@ -70,15 +84,15 @@ struct WorkstationInit
 	
 	fn LoadRequiredLibs = 
 	(
-		fileIn ( ::_startupPath + "/__mxsLib.ms" )
+		fileIn ( ::_codeRoot + @"\lib\__mxsLib.ms" )
 		::mxs.printStatus = True
-		fileIn ( ::_startupPath + "/mxsString.ms" )
+		fileIn ( ::_codeRoot + @"\lib\mxsString.ms" )
 	),
 	
 	fn PrepTempDir =
 	(
-		local tempDir = (sysInfo.tempDir + "ToolList/")
-		if DoesFileExist tempDir then
+		local tempDir = (sysInfo.tempDir + "ToolList\\")
+		if ( DoesFileExist tempDir ) then
 		(
 			local tempFiles = getFiles (tempDir + "*.ms")
 			for tempFile in tempFiles do deleteFile tempFile
@@ -95,7 +109,7 @@ struct WorkstationInit
 		
 		local startupDir = (::_codeRoot + @"\lib\startup")
 		
-		if (DoesFileExist startupDir) then
+		if ( DoesFileExist startupDir ) then
 		(
 			this.LoadFilesFromDir startUpDir
 		)
@@ -104,7 +118,7 @@ struct WorkstationInit
 	fn DisableWindowsGhosting =
 	(
 		format "========== Disabling windows ghosting ==========\n"
-		local sFile = (::_codeRoot + @"\lib\systemLibs\user32DLL.ms")
+		local sFile = ( ::_codeRoot + @"\lib\systemLibs\user32DLL.ms" )
 		if doesFileExist sFile then
 		(
 			fileIn sFile
@@ -116,10 +130,10 @@ struct WorkstationInit
 	fn InitTabMenu =
 	(
 		format "========== Initializing tab menu library ==========\n"
-		local sFile = (::_codeRoot + @"\lib\userInterface\mxsTabMenu.ms")
-		if doesFileExist sFile then
+		local sFile = ( ::_codeRoot + @"\lib\userInterface\mxsTabMenu.ms" )
+		if ( DoesFileExist sFile ) then
 		(
-			fileIn sFile
+			FileIn sFile
 			True
 		)
 		else False
@@ -135,11 +149,11 @@ struct WorkstationInit
 		
 		this.LoadStartupLibs()
 		
-		if not (this.DisableWindowsGhosting()) then throw "ilmMaxStartUp Error:Failed to disable Windows ghosting"
+		if not ( this.DisableWindowsGhosting() ) then throw "ilmMaxStartUp Error:Failed to disable Windows ghosting"
 			
-		if not (this.InitTabMenu()) then throw "ilmMaxStartUp Error:Failed to load the tab menu"
+		if not ( this.InitTabMenu() ) then throw "ilmMaxStartUp Error:Failed to load the tab menu"
 			
-		if this._tabInit then ::_tabMenu.Run() -- Allows for bypassing the Tab Menu Display
+		if this._tabInit then ::TabMenu.Run() -- Allows for bypassing the Tab Menu Display
 			
 		format "|========================================================|\n"
 	),

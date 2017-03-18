@@ -29,7 +29,7 @@ Updated:
 __HELP__
 
 Constructor: DotNetUi
-Instantiated Global: _dotNet
+Instantiated Global: DotNetUi
 
 Methods:
 
@@ -42,6 +42,8 @@ __END__
 
 struct DotNetUi
 (
+public
+	
 	dnTooltip,
     ----------------------------
 	clrWindow = ( ( colorMan.getColor #window )*255 ),
@@ -111,7 +113,6 @@ struct DotNetUi
         (
             foreColor = this.RgbToDnetColor foreColor
         )
-        
         
 		local fStyle = case fontStyle of
 		(
@@ -557,14 +558,16 @@ struct DotNetUi
         ::mxs.GetScriptHelp ( GetThisScriptFileName() )
     ),
 	
-	private fn _init =
+private
+	
+	fn __init__ =
 	(
         this.clrWindow_dnet = this.RgbToDnetColor this.clrWindow 
         this.clrText_dnet = this.RgbToDnetColor this.clrText
         this.clrBackGround_dnet = this.RgbToDnetColor this.clrBackGround
 	),
 
-	__init__ = _init()
+	init = __init__()
 )
 
-_dotNet = DotNetUi()
+DotNetUi = DotNetUi()

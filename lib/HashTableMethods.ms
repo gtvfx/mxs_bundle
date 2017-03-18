@@ -133,6 +133,64 @@ struct HashTableMethods
 		
 		out
 	),
+	
+	fn MxsArrayToDotNetArray arr =
+	(
+		if arr.count == 0 then return #()
+		
+		local dNetArr = undefined
+		local baseClass = ( ClassOf arr[1] )
+		
+		case baseClass of
+		(
+			( BooleanClass ): dNetArr = dotNetObject "System.Boolean[]" arr.count
+			( Integer ): dNetArr = dotNetObject "System.Int32[]" arr.count
+			( String ): dNetArr = dotNetObject "System.String[]" arr.count
+			( Float ): dNetArr = dotNetObject "System.Single[]" arr.count
+			default:
+			(
+				format "***** Array component class not supported: % index:% *****\n" arr[1] 1
+				return #()
+			)
+		)
+		
+		for i = 0 to (arr.count - 1) do
+		(
+			local dNetVal = undefined
+			local dNetIndex = dotNetObject "System.Int32" i
+			
+			case baseClass of
+			(
+				( BooleanClass ): dNetVal = dotNetObject "System.Boolean" arr[i+1]
+				( Integer ): dNetVal = dotNetObject "System.Int32" arr[i+1]
+				( String ): dNetVal = dotNetObject "System.String" arr[i+1]
+				( Float ): dNetVal = dotNetObject "System.Single" arr.count
+				default:
+				(
+					format "***** Array component class not supported: % index:% *****\n" arr[i+1] i
+					dNetVal = undefined
+				)
+			)
+			
+			dNetArr.SetValue dNetVal dNetIndex
+		)
+		
+		dNetArr
+	),
+
+	fn DotNetArrayToMxsArray dotNetArr =
+	(
+		mxsArr = #()
+		mxsArr.count = dotNetArr.Length
+		
+		for i = 0 to ( dotNetArr.Length - 1 ) do
+		(
+			mxsArr[i+1] = ( dotNetArr.GetValue i )
+			
+		)
+		
+		mxsArr
+	),
     
     fn GetModule =
     (

@@ -14,7 +14,7 @@
 global MONTHS = #("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
-global _mxsLib
+global mxs
 
 (
 	struct SimpleDict
@@ -45,7 +45,7 @@ global _mxsLib
 		fn HasKey inKey =
 		(
 			local out = undefined
-			if ( _mxs.debugLevel > 0 ) then
+			if ( ::mxs.debugLevel > 0 ) then
 			(
 				format "HasKey() searching m_keys for inKey: %\n" inKey inValue
 				print ("m_keys: " + m_keys as string)
@@ -58,7 +58,7 @@ global _mxsLib
 		
 		fn SetValue inKey inValue =
 		(
-			if ( _mxs.debugLevel > 0 ) then format "_mxs.SetValue() inkey: % inValue: %\n " inKey inValue
+			if ( ::mxs.debugLevel > 0 ) then format "::mxs.SetValue() inkey: % inValue: %\n " inKey inValue
 			for i = 1 to m_keys.count do
 			(
 				if ( toLower ( inKey as string ) == toLower ( m_keys[i] as string ) ) then
@@ -120,10 +120,12 @@ global _mxsLib
 					<string>
 			---------------------------------------------------------------------*/
 			pathID = toLower ( pathID as string )
+			
 			if ( paths.HasKey pathID ) then
 			(
 				return paths.GetValue pathID
 			)
+			
 			return ""
 		),
 		
@@ -163,6 +165,8 @@ global _mxsLib
 		--							PUBLIC MEMBERS
 		------------------------------------------------------------------------------
 		configFile,
+		
+		max_version = ( MaxVersion() )[1],
 		
 		major = 0,
 		minor = 1,
@@ -441,6 +445,7 @@ global _mxsLib
 					<boolean>
 			---------------------------------------------------------------------*/
 			local tIndex = findItem this._libraries inLibName
+			
 			if ( tIndex > 0 ) then
 			(
 				if ( this.printStatus ) then
@@ -448,10 +453,11 @@ global _mxsLib
 					print ( "Clearing Library: " + inLibName + "." )
 				)
 				
-				this.ClearGlobal ( "_" + inLibName )
+				this.ClearGlobal inLibName
 				deleteItem this._libraries tIndex
 				return True
 			)
+			
 			return False
 		),
 		
@@ -493,6 +499,7 @@ global _mxsLib
 				deleteItem this._externals tIndex
 				return True
 			)
+			
 			return False
 		),
 		
@@ -552,7 +559,6 @@ global _mxsLib
 				this.load inLibName
 			)
 			
-	
 			local tLib = execute tLibraryStr
 			
 			if (ClassOf tLib) == StructDef then
@@ -812,7 +818,7 @@ global _mxsLib
 				\return				
 					<string>
 			---------------------------------------------------------------------*/
-			return ( this.GetPath #codeRoot inEnvironment:inEnvironment )
+			return ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment )
 		),
 		
 		fn GetCurEnv =
@@ -924,7 +930,19 @@ global _mxsLib
 				\return			
 					<string>
 			---------------------------------------------------------------------*/
-			out = ( GetINISetting ( this.GetUserConfigFile() ) (this.GetCurEnv()) "netRoot" )
+			
+			local out = undefined
+			
+			if ( this.max_version > 18000 ) then
+			(
+				
+			)
+			else
+			(
+				out = ( GetINISetting ( this.GetUserConfigFile() ) (this.GetCurEnv()) "netRoot" )
+			)
+			
+			out
 		),
 		
 		fn EnsureArgIsArray arg =
@@ -1303,7 +1321,7 @@ global _mxsLib
 		
 		fn FindLibFile inLibName inRelativePath:unsupplied =
 		(
-			local pathArr = ( FilterString ( this.GetPath #mxsPath ) "," )
+			local pathArr = ( FilterString ( this.GetPath #MXS_PATH ) "," )
 			
 			for p in pathArr do
 			(
@@ -1353,7 +1371,7 @@ global _mxsLib
 			local tLoadAsExternal = ( inRelativePath != unsupplied )
 			local tFileStr = undefined
 			
-			if inAbsPath != unsupplied and (DoesFileExist inAbsPath) then
+			if ( inAbsPath != unsupplied ) and ( DoesFileExist inAbsPath ) then
 			(
 				tFileStr = ( inAbsPath + "\\" + inLibName + ".ms" )
 				if ( not DoesFileExist tFileStr ) then
@@ -1585,33 +1603,61 @@ global _mxsLib
 			---------------------------------------------------------------------*/
 			this._environments.Clear()
 			
-			local configFile = this.GetUserConfigFile()
-			
-			if ( DoesFileExist configFile ) then
+			if ( ::_codeEnv == "SYS" ) then
 			(
-				this._activeEnvironment = getINISetting configFile "GLOBALS" "environment"
+				this._activeEnvironment = ::_codeEnv
 				
-				for tSection in getINISetting configFile do
-				(
-					if ( tSection != "GLOBALS" ) then
-					(
-						local tEnvironment = EnvironmentClass()
-						
-						for tKey in getINISetting configFile tSection do
-						(
-							tEnvironment.SetPath tKey ( getINISetting configFile tSection tKey )
-						)
-						
-						tEnvironment.name = tSection
-						
-						this._environments.SetValue ( toLower( tSection ) ) tEnvironment
-					)
-				)
+				local tEnvironment = EnvironmentClass()
 				
-				this.SetCodePath this._activeEnvironment
+				local sysenv = this.GetSysEnv()
 				
-				return True
+				tEnvironment.SetPath "NETROOT" ( sysenv.GetEnvironmentVariable "NETROOT" )
+				tEnvironment.SetPath "MXS_PATH" ( sysenv.GetEnvironmentVariable "MXS_PATH" )
+				tEnvironment.SetPath "MXS_CODEROOT" ( sysenv.GetEnvironmentVariable "MXS_CODEROOT" )
+				tEnvironment.SetPath "MXS_LIB" ( sysenv.GetEnvironmentVariable "MXS_LIB" )
+				tEnvironment.SetPath "MXS_TOOLS" ( sysenv.GetEnvironmentVariable "MXS_TOOLS" )
+				tEnvironment.SetPath "MXS_STARTUPPATH" ( sysenv.GetEnvironmentVariable "MXS_STARTUPPATH" )
+				tEnvironment.SetPath "MXS_ASSEMBLIES" ( sysenv.GetEnvironmentVariable "MXS_ASSEMBLIES" )
+				tEnvironment.SetPath "PYTHONPATH" ( sysenv.GetEnvironmentVariable "PYTHONPATH" )
+				
+				tEnvironment.name = ::_codeEnv
+				
+				this._environments.SetValue ( toLower( ::_codeEnv ) ) tEnvironment
 			)
+			else
+			(
+				throw "Trying to get UserConfigFile"
+				
+				local configFile = this.GetUserConfigFile()
+				
+				if ( DoesFileExist configFile ) then
+				(
+					this._activeEnvironment = getINISetting configFile "GLOBALS" "environment"
+					
+					for tSection in getINISetting configFile do
+					(
+						if ( tSection != "GLOBALS" ) then
+						(
+							local tEnvironment = EnvironmentClass()
+							
+							for tKey in getINISetting configFile tSection do
+							(
+								tEnvironment.SetPath tKey ( getINISetting configFile tSection tKey )
+							)
+							
+							tEnvironment.name = tSection
+							
+							this._environments.SetValue ( toLower( tSection ) ) tEnvironment
+						)
+					)
+					
+					this.SetCodePath this._activeEnvironment
+					
+					return True
+				)
+			)
+			
+			
 			return False
 		),
 		
@@ -1884,8 +1930,9 @@ global _mxsLib
 				if setDefault then this.SaveConfigData()
 				
 				--globalVars.set #toolboxDir ( this.GetCodePath() )
-				global toolboxDir = this.GetCodePath()
-
+				--global toolboxDir = this.GetCodePath()
+				local toolboxDir = this.GetCodePath()
+			
 				-- Store the current libraries so they can be reloaded after clearing.
 				local currentLibraries = deepcopy this._libraries
 				this.ClearLibraries()
@@ -1893,8 +1940,8 @@ global _mxsLib
 				-- Setting this will ensure that ReloadAll will actually reload the libraries that were loaded originally.
 				this._libraries = currentLibraries
 				this.ReloadAll()
-
-
+				
+				
 				format "code Path: %" toolboxDir
 				out = toolboxDir
 			)
@@ -2127,8 +2174,8 @@ global _mxsLib
 
 	)
 	
-	_mxs = mxsLibraryStruct()
-	_mxs.LoadConfigData()	
+	::mxs = mxsLibraryStruct()
+	::mxs.LoadConfigData()	
 )
 
---_mxs.load "ToolListXML"
+--::mxs.load "ToolListXML"
