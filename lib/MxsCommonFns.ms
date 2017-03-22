@@ -251,31 +251,6 @@ public
 	),
 	
 --)
-	
---( Site data and validation
-	
-	fn GetLocation =
-	(
-		/* 
-		This variable holds the local site designation. Used to perform site specific tasks.
-		 */
-		local out = SystemTools.GetEnvVariable "LFL_SITE"
-		out
-	),
-	
-	fn IsValidRsa =
-	(
-		/* 
-		This method validates the existense of the RSA token file used to create the connection from
-		a users Windows PC to thier Linux workstation.
-		 */
-		
-		local rsaFile = ( "//" + ( this.GetLocation() ) + "/home/" + sysInfo.username + "/.ssh/id_rsa" )
-		
-		( DoesFileExist rsaFile )
-	),
-	
---) END: Site data and validation
 
 --( Hierarchies
 	
@@ -385,11 +360,16 @@ public
 		arr
 	),
 	
-	fn GetChildrenRecursive obj arr:#() skipNamePattern: skipClass: skipSuperClass: =
+	fn GetChildrenRecursive obj arr:#() skipNamePattern: skipClassArr: skipSuperClassArr: debug:False =
 	(
 		/* 
 		recurses downstream through a node's hierarchy collecting all nodes below obj
                 */
+		
+		-- ensure that these arguments are array values
+		if ( skipClassArr != unsupplied ) then skipClassArr = ::_ilmLibrary.EnsureArgIsArray skipClassArr
+		if ( skipSuperClassArr != unsupplied ) then skipSuperClassArr = ::_ilmLibrary.EnsureArgIsArray skipSuperClassArr
+		
 		
 		fn GetSkipCaseFromSkipPattern obj pattern =
 		( -- This imbedded function allows us to match against either a single name pattern or an array of name patterns
@@ -413,33 +393,48 @@ public
 			out
 		)
 		
-		-- A boolean that will exit the recurse if set to true
-		local skipCase = False
 		
 		if obj.children.count != 0 then
 		(
+			if debug then format "***** Evaluating children: % *****\n" obj.children
+			
 			for c in obj.children do
 			(
+				local skipCase = False -- A boolean that will exit the recurse if set to true
+				
+				if debug then format "***** Child: % *****\n" c
+				
 				if ( skipNamePattern != unsupplied ) then
 				(
+					if debug then format "***** Testing for skipNamePattern: % *****\n" skipNamePattern
+						
 					skipCase = ( GetSkipCaseFromSkipPattern c skipNamePattern )
+					
+					if debug then format "***** skipCase: % *****\n" skipCase
 				)
 				
-				if not skipCase and ( skipClass != unsupplied ) and ( skipClass != undefined ) then
+				if not skipCase and ( skipClassArr != unsupplied ) and ( skipClassArr != undefined ) then
 				(
-					skipCase = ( ( ClassOf c ) == skipClass )
+					if debug then format "***** Testing for skpClass: % *****\n" skipClassArr
+						
+					skipCase = ( FindItem skipClassArr ( ClassOf c ) != 0 )
+					
+					if debug then format "***** skipCase: % *****\n" skipCase
 				)
 				
-				if not skipCase and ( skipSuperClass != unsupplied ) and ( skipSuperClass != undefined ) then
+				if not skipCase and ( skipSuperClassArr != unsupplied ) and ( skipSuperClassArr != undefined ) then
 				(
-					skipCase = ( ( SuperClassOf c ) == skipSuperClass )
+					if debug then format "***** Testing for skipSuperClassArr: % *****\n" skipSuperClassArr
+						
+					skipCase = ( FindItem skipSuperClassArr ( skipSuperClassArr c ) != 0 )
+					
+					if debug then format "***** skipCase: % *****\n" skipCase
 				)
-                
+				
 				if not skipCase then
 				(
 					append arr c
-					
-					this.GetChildrenRecursive c arr:arr skipNamePattern:skipNamePattern skipClass:skipClass skipSuperClass:skipSuperClass
+					this.GetChildrenRecursive c arr:arr skipNamePattern:skipNamePattern skipClassArr:skipClassArr skipSuperClassArr:skipSuperClassArr
 				)
 			)
 		)
