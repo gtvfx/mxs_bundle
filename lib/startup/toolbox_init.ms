@@ -1,1 +1,0 @@
-try ( FileIn @"G:\repos\mxs_bundle\lib\toolbox\install_quiet.ms" ) catch ( format "!!!!! Couldn't install the toolbox !!!!!\n" )

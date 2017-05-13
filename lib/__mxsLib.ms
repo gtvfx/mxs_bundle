@@ -818,7 +818,7 @@ global mxs
 				\return				
 					<string>
 			---------------------------------------------------------------------*/
-			return ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment )
+			return ( pathconfig.NormalizePath ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment ))
 		),
 		
 		fn GetCurEnv =
