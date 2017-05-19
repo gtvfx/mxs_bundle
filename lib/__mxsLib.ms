@@ -175,6 +175,8 @@ global mxs
 		printStatus = false,
 		debugLevel = 0,
 		
+		toollist = #(),
+		
 		------------------------------------------------------------------------------
 		--							PRIVATE MEMBERS
 		------------------------------------------------------------------------------
@@ -818,7 +820,7 @@ global mxs
 				\return				
 					<string>
 			---------------------------------------------------------------------*/
-			return ( pathconfig.NormalizePath ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment ))
+			pathconfig.NormalizePath ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment )
 		),
 		
 		fn GetCurEnv =
@@ -855,23 +857,24 @@ global mxs
 			local codePath = this.GetCodePath()
 			--codePath = (substituteString (PathConfig.removePathLeaf codePath) "\\" "/")
 			
-			(codePath + "/tools/")
+			pathConfig.NormalizePath (codePath + "/tools/")
 		),
 		
 		fn GetUserDir env:#local =
 		(
 			local userDir = undefined
+			
 			case env of
 			(
 				(#network):
 				(
-					userDir = ((this.GetNetRoot()) + @"" + sysInfo.userName)
+					userDir = (( this.GetNetRoot() ) + @"" + sysInfo.userName )
 					if not doesFileExist userDir then makeDir userDir
 					userDir
 				)
 				(#local):
 				(
-					userDir = systemTools.getEnvVariable("USERPROFILE")
+					userDir = systemTools.getEnvVariable "USERPROFILE"
 					userDir
 				)
 			)
@@ -1601,6 +1604,7 @@ global mxs
 				\return				
 					<boolean>
 			---------------------------------------------------------------------*/
+			
 			this._environments.Clear()
 			
 			if ( ::_codeEnv == "SYS" ) then
@@ -1623,6 +1627,8 @@ global mxs
 				tEnvironment.name = ::_codeEnv
 				
 				this._environments.SetValue ( toLower( ::_codeEnv ) ) tEnvironment
+				
+				return True
 			)
 			else
 			(
@@ -1786,81 +1792,51 @@ global mxs
 			return outName
 		),
 		
-		fn GetToolLocation toolName =
+		fn GetToolList =
 		(
-			local thisTool = this.getTool toolName
-			local thisToolLocation = undefined
+			local dirArr = GetDirectories ( ( this.GetToolPath() ) + "*" )
 			
-			if thisTool != undefined then
-			(
-				thisToolLocation = thisTool.getLocation()
-			)
-			
-			thisToolLocation
+			this.toollist = for dir in dirArr where ( GetFiles ( dir + "\\*.ms" )).count != 0 collect ( TrimRight ( pathConfig.stripPathToLeaf dir ) "\\" )
 		),
 		
-		fn getTool toolName =
+		fn GetTool toolName =
 		(
-			local thisTool = undefined
-			local pattern = (toLower toolName)
-			local mxsTools = _ToolListXML.getTools()
-							
-			for mxsTool in mxsTools where matchpattern (toLower mxsTool.name) pattern:pattern do
-			(				
-				thisTool = mxsTool
-				exit
-			)
-			
-			thisTool
-		),
-		
-		fn runTool toolName =
-		(
-			local toolPath = undefined
-			local thisTool = undefined
-			
-			if classof ToolName == string then
+			if ( FindItem this.toollist toolName ) != 0 then
 			(
-				thisTool = this.getTool toolName
-				if thisTool != undefined then toolPath = thisTool.getLocation()
+				local toolDir = for dir in ( GetDirectories ( ( this.GetToolPath() ) + "*" )) where ( MatchPattern ( pathConfig.StripPathToLeaf dir ) pattern:( toolName + "*" )) collect dir
+				
+				if ( toolDir.count != 0 ) then
+				(
+					toolDir = toolDir[1]
+					
+					local sFile = ( GetFiles (toolDir + "\\*.ms" ))[1]
+					
+					if DoesFileExist sFile then
+					(
+						return sFile
+					)
+				)
+				else
+				(
+					MessageBox ( "Could not find the directory for the given tool name: " + ( toolName as string ) title:"mxs Error" )
+				)
 			)
 			else
 			(
-				thisTool = toolname
-				toolname = thisTool.name
-				toolPath = thisTool.getLocation()
+				MessageBox ( "No tool matches the given name: " + ( toolName as string )) title:"mxs Error"
 			)
 			
+			undefined
+		),
+		
+		fn RunTool toolName =
+		(
+			local sFile = this.getTool toolName
 			
-			local toolsrc = undefined
-			
-			-- run the script
-			if thisTool != undefined then
+			if sFile != undfefined then
 			(
-				toolSrc = toolPath + thisTool.src
+				FileIn sFile
 			)
-			
-			if thisTool != undefined and toolsrc != undefined and doesFileExist toolsrc then 
-			(
-				-- JJ 16/5/2014 - Ignore Toollist to be added to the stat file and pass toolname instead of tool script path as argument
-				if toolName != "ToolList" then
-				(
-					format "Toolname is %\n" toolName
-					-- add stats to the file
-					--_ToolListXML.addStatistics toolSrc
-					_ToolListXML.addStatistics thisTool.name
-				)
-				
---			local numTimesRun = 0
---			local statID = fileproperties.findProperty #custom toolSrc
---			if (statID != 0) then
---				numTimesRun = fileproperties.getPropertyValue #custom statID
---			numTimesRun += 1
---			fileproperties.addProperty #custom toolSrc numTimesRun
-							
-				filein toolSrc
-			)
-			else messagebox ("Tool not found!\n\n\tTool: " + toolname + "\n\tSource: " + (if toolSrc != undefined then toolsrc else "undefined")) title:"mxsLib.runTool()"
 		),
 		
 		fn SetActiveEnvironment environmentID =
@@ -2171,11 +2147,12 @@ global mxs
 			if toFile == undefined then toFile = listener
 			format "% % % [%] \"%\" \"%\" \"%\"\n" host rfc931 username date message status details to:toFile
 		)
-
 	)
 	
 	::mxs = mxsLibraryStruct()
-	::mxs.LoadConfigData()	
+	
+	::mxs.LoadConfigData()
+	::mxs.GetToolList()
 )
 
 --::mxs.load "ToolListXML"

@@ -1,3 +1,0 @@
-Manages the creation of VRay Light Select Elements based on a layer naming convention.
-All lights on a layer will be included in that Light Select Element.
-Layers are found by matching the pattern of the nameTag variable. You can change this variable if necessary for your pipeline.

@@ -1,2 +1,0 @@
-Analyzes your scene and collect all unique Object IDs and Material IDs.
-Will create Multmatte Elements from the IDs with a logical naming convention.

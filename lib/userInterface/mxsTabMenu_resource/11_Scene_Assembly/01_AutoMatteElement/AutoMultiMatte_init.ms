@@ -1,1 +1,0 @@
-if ::_tabMenu != undefined then _tabMenu.ILM_runTool "AutoMatteElement" else messageBox "Error running tool" title:"ILM:"

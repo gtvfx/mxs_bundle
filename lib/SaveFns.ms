@@ -56,11 +56,11 @@ public
 		)
 	),
 	
-	fn SaveMajorVersion_FN userInit:false=
+	fn SaveMajorVersion userInit:false=
 	(
-		maxPreName = getFileNameFile maxFileName
-		maxPreNameArr = filterString maxPreName "_"
-		maxRootName = maxPreNameArr[1]
+		local maxPreName = getFileNameFile maxFileName
+		local maxPreNameArr = filterString maxPreName "_"
+		local maxRootName = maxPreNameArr[1]
         
 		for x = 2 to (maxPreNameArr.count - 2) do
 		(
@@ -69,16 +69,16 @@ public
         
 		if not userInit then
 		(
-			curVersionNumber = ((filterString maxPreNameArr[maxPreNameArr.count - 1] "v")[1] as integer)
-			userInit = maxPreNameArr[maxPreNameArr.count]
-			newVersionNumber = VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
-			finalMaxFileName = maxfilepath + maxRootName + "_" + newVersionNumber + "_" + userInit + ".max"
+			local curVersionNumber = (( filterString maxPreNameArr[maxPreNameArr.count - 1] "v" )[1] as integer )
+			local userInit = maxPreNameArr[maxPreNameArr.count]
+			local newVersionNumber = this.VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
+			local finalMaxFileName = ( maxfilepath + maxRootName + "_" + newVersionNumber + "_" + userInit + ".max" )
 		)
 		else
 		(
-			curVersionNumber = ((filterString maxPreNameArr[maxPreNameArr.count] "v")[1] as integer)
-			newVersionNumber = VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
-			finalMaxFileName = (maxfilepath + maxRootName + "_" + newVersionNumber + ".max")
+			local curVersionNumber = ((filterString maxPreNameArr[maxPreNameArr.count] "v")[1] as integer)
+			local newVersionNumber = this.VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
+			local finalMaxFileName = (maxfilepath + maxRootName + "_" + newVersionNumber + ".max")
 		)
         
 		if doesFileExist finalMaxFileName then
@@ -91,20 +91,31 @@ public
 		)
 	),
 	
-	fn SaveIncrement_FN =
+	fn SaveIncrement =
 	(
-		makeDir (maxfilepath + "_incrementalSave")
-		maxPreName = getFileNameFile maxFileName
-		verSaveFiles = (getfiles (maxFilePath + "_incrementalSave" + "\\" + maxPreName + "*.max"))
-		verSaveFilesArr = 	for v in verSaveFiles collect (getFileNameFile v)
-		verNum = (verSaveFilesArr.count + 1)
+		if maxfilepath == "" then
+		(
+			return ( MessageBox "You'll need to save your Max file before you can incrementl" title:"GTVFX: Error" )
+		)
+		
+		makeDir ( maxfilepath + "_incrementalSave" )
+		
+		local maxPreName = getFileNameFile maxFileName
+		local verSaveFiles = (getfiles (maxFilePath + "_incrementalSave" + "\\" + maxPreName + "*.max"))
+		local verSaveFilesArr = 	for v in verSaveFiles collect (getFileNameFile v)
+		local verNum = ( verSaveFilesArr.count + 1 )
+			
 		if verNum < 10 then verNumPadding = "00"
 		if verNum >= 10 and verNum < 100 then verNumPadding = "0"
 		if verNum >= 100 then verNumPadding = ""
-		verMaxFileName = maxFilePath + "_incrementalSave\\" + maxPreName  + "_" + verNumPadding + (verNum as string) + ".max"
-		newSaveFile = maxFilePath + maxFileName
+		
+		local verMaxFileName = maxFilePath + "_incrementalSave\\" + maxPreName  + "_" + verNumPadding + (verNum as string) + ".max"
+		local newSaveFile = maxFilePath + maxFileName
+		
 		renameFile newSaveFile verMaxFileName
 		saveMaxFile newSaveFile useNewFile:true
+		
+		format "***** SaveIncrement Successful *****\n"
 	),
 	
 	fn CancelShutdown =
@@ -114,17 +125,17 @@ public
 	
 	fn LaunchDeadlineSlave =
 	(
-		if not (shellLaunch "deadlineSlave.exe" "") then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
+		if not ( shellLaunch "deadlineSlave.exe" "" ) then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
 	),
 	
 	fn LaunchBackburnerSlave =
 	(
-		if not (shellLaunch "Slave.exe" "") then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
+		if not ( shellLaunch "Slave.exe" "" ) then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
 	),
 	
 	fn SaveAndCloseMax slave_dl:false slave_bb:false=
 	(
-		saveIncrement_FN()
+		this.SaveIncrement()
 		if slave_dl then launchDeadlineSlave()
 		else if slave_bb then launchBackburnerSlave()
 		quitMax #noPrompt
@@ -132,14 +143,14 @@ public
 	
 	fn SaveAndRestart =
 	(
-		saveIncrement_FN()
+		this.SaveIncrement()
 		dosCommand "shutdown -t 30 -f -r -d up:125:1 -c \"Save & Close By GTVFX: 30 Seconds to restart...\""
 		quitMax #noPrompt
 	),
 	
 	fn SaveAndShutdown =
 	(
-		saveIncrement_FN()
+		this.SaveIncrement()
 		dosCommand "shutdown -t 30 -f -s -d up:125:1 -c \"Save & Close By GTVFX: 30 Seconds to shutdown...\""
 		quitMax #noPrompt
 	),
@@ -152,10 +163,12 @@ public
 			local clrWindow = ((colorMan.getColor #window)*255)
 			local clrText = ((colorMan.getColor #text)*255)
 			local ClrBackGround = ((colorMan.getColor #background)*255)
+			
 			group "Save And Close Options:"
 			(
 				dropDownList ddl_option items:#("Quit Max","Quit Max and Launch Deadline Slave","Restart","Shutdown")
 			)
+			
 			dotNetControl dNbtn_execute "button" height:40 
 			hyperLink hyp_website "www.gtvfx.com" color:orange  hoverColor:red visitedColor:orange address:"http://www.gtvfx.com" offset:[ro.width/2-50,0]
 			
@@ -164,6 +177,7 @@ public
 				self = pself
 				self.initDnetBtn dNbtn_execute "Save & Close" 12 colorOffsetInt:15 tooltip:"Execute the selected option."
 			)
+			
 			on dNbtn_execute mouseClick do
 			(
 				case ddl_option.selected of
@@ -174,15 +188,18 @@ public
 					("Shutdown"): self.saveAndShutdown()
 				)
 			)
+			
 			on dNbtn_execute MouseEnter arg do
 			(
 				self.initToolTip dNbtn_execute dNbtn_execute.tag
 			)
+			
 			on dNbtn_execute MouseLeave arg do
 			(
 				self.destroyToolTip()
 			)
 		)
+		
 		createDialog ro
 		ro._init self
 	),

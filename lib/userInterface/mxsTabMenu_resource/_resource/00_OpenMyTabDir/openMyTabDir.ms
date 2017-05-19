@@ -1,1 +1,1 @@
-if ::_tabMenu != undefined then shellLaunch (_tabMenu.GetUserDir()) ""
+if ( ::TabMenu != undefined ) then(	ShellLaunch ( ::TabMenu.GetUserDir() ) "")

@@ -1,9 +1,0 @@
-<data version="1.00" type="3dsmax" name="MaterialInstancer">
-  <iconAlpha></iconAlpha>
-  <icon>materialIcon_001_24i.png</icon>
-  <toolTip>Compares all materials in the scene and allows for instancing of duplicate materials.</toolTip>
-  <DisplayName>MaterialInstancer</DisplayName>
-  <disabled>false</disabled>
-  <src>MaterialInstancer.ms</src>
-  <category>General_Use_Tools::CleanUp</category>
-</data>

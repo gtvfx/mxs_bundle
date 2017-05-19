@@ -1,9 +1,0 @@
-<data version="1.00" type="3dsmax" name="ILM_sceneSanityChecks">
-  <iconAlpha></iconAlpha>
-  <icon>jokerIcon_001_24i.png</icon>
-  <toolTip>An assortment of sanity checks with accompanying fixes.</toolTip>
-  <DisplayName>ILM_sceneSanityChecks</DisplayName>
-  <disabled>false</disabled>
-  <src>ILM_sceneSanityChecks.ms</src>
-  <category>General_Use_Tools::CleanUp</category>
-</data>

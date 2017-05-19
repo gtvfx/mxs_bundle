@@ -1,1 +1,0 @@
-if ::_tabMenu != undefined then _tabMenu.ILM_runTool "Lights2Aov" else messageBox "Error running tool" title:"ILM:"

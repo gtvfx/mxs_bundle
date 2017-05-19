@@ -1,1 +1,1 @@
-if ::_tabMenu != undefined then _tabMenu.ILM_runTool "SaveIncrement" else messageBox "Error running tool" title:"ILM:"
+mxs.RunTool "SaveIncrement"

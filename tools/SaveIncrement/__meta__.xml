@@ -1,9 +1,0 @@
-<data version="1.00" type="3dsmax" name="SaveIncrement">
-  <iconAlpha></iconAlpha>
-  <icon>/saveIcon_001_24i.png</icon>
-  <toolTip>Creates an '_incrementalSave' folder in the max file root, copies the original\nmax file there with a numbered suffix, then saves the current max file.</toolTip>
-  <DisplayName>SaveIncrement</DisplayName>
-  <disabled>false</disabled>
-  <src>saveIncrement.ms</src>
-  <category>General_Use_Tools::Utilities</category>
-</data>
