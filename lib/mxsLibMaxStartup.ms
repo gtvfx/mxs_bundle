@@ -75,7 +75,7 @@ struct DefaultInit
 struct WorkstationInit
 (
 	_defInit = DefaultInit(),
-	_tabInit = True,
+	_tabInit = False,
 	
 	fn LoadFilesFromDir dir fileType:".ms*" =
 	(

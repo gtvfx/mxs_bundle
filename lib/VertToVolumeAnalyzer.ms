@@ -80,7 +80,16 @@ __END__
 
 try(destroyDialog VertToVolumeAnalyzer.ro)catch()
 
-mxs.Using "WpfProgressBar"
+-- We can aggregate the Python module to Maxscript by using the python.import method
+if ( ::progress_bar == undefined ) and ( ( MaxVersion() )[1] > 18000 ) then ::progress_bar = python.import "mxs.lib.widgets.progress_bar"
+-- in order to use the reload() method to get changes to the python module, we'll first need to load the module into the Python instance
+-- even though we've already imported the module through aggregation into Maxscript.
+python.execute "from mxs.lib.widgets import progress_bar"
+-- We can then call the reload method on the module
+python.execute "reload(progress_bar)"
+
+
+
 mxs.Using "DotNetUi"
 
 struct VertToVolumeAnalyzer
@@ -134,30 +143,28 @@ public
 	
 	fn AnalyzeObjects objArr =
 	(
-        ::_ilmLibrary.BlockUi True
+        ::mxs.BlockUi True
         
 		this.cacheArr = #()
         
-        local _progBar = ::WpfProgressBar caption:"Calculating Vertex to Volume Ratio:" steps:objArr.count
-        _progBar.UpdateLabel "Analyzing vertices:"
-        _progBar.Start() 
+		local _progBar = ::progress_bar.Run title:"Calculating Vertex to Volume Ratio:" maximum:objArr.count
         
 		--local arr = #()	
         
 		for obj in objArr while not Keyboard.EscPressed do
 		(
-            _progBar.UpdateLabel ( "Calculating Ratio For: " + obj.name )
+            _progBar.update_label ( "Calculating Ratio For: " + obj.name )
             
 			local ratio = ( this.GetVertToVolumeRatio obj )
             
 			append this.cacheArr #( obj, ratio )
             
-            _progBar.Step()
+            _progBar.step()
 		)
         
-        _progBar.End()
+        _progBar.close()
         
-        ::_ilmLibrary.BlockUi False
+        ::mxs.BlockUi False
 	),
 	
 	fn GetObjsByRatio ratio =
@@ -202,7 +209,7 @@ public
                 
                 self.cacheArr = #()
                 
-                ::_dotNet.InitDnetBtn dNbtn_collect "Analyze Objects" 12 style:#popup colorOffsetInt:10 tooltip:""
+                ::DotNetUi.InitDnetBtn dNbtn_collect "Analyze Objects" 12 style:#popup colorOffsetInt:10 tooltip:""
 			)
             
             on chk_selection changed state do

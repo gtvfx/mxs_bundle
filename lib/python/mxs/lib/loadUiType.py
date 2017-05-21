@@ -1,4 +1,9 @@
-import PySide
+try:
+    from PySide import QtCore, QtGui
+except:
+    from PySide2 import QtCore, QtWidgets
+
+
 import pysideuic
 import xml.etree.ElementTree as xml
 from cStringIO import StringIO
@@ -22,6 +27,10 @@ def loadUiType(uiFile):
 
         #Fetch the base_class and form class based on their type in the xml from designer
         form_class = frame['Ui_%s'%form_class]
-        base_class = eval('PySide.QtGui.%s'%widget_class)
+
+        try: #PySide
+            base_class = eval('PySide.QtGui.%s'%widget_class)
+        except: #PySide2
+            base_class = eval('PySide.QtWidgets.%s'%widget_class)
 
     return base_class, form_class

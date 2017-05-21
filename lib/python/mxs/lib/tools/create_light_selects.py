@@ -1,24 +1,15 @@
-'''
-Created on Apr 19, 2014
-
-@author: gavyn.thompson
-3dsmax, Vray
-Create Light Select Elements By Layer
-'''
+try:
+    from PySide import QtCore, QtGui
+except:
+    from PySide2 import QtCore, QtWidgets
 
 import webbrowser
-from PySide import QtCore, QtGui
-from gen.lib.loadUiType import *
 import os,sys
 import MaxPlus
 import pymxs
 mxs = pymxs.runtime
 
-
-base,form = loadUiType(os.path.join(os.path.dirname(__file__),'ui','CLSEBL.ui'))
-
-# print "MaxPlus Method"
-# base,form = MaxPlus.loadUiType(os.path.join(os.path.dirname(__file__),'ui','CLSEBL.ui'))
+base,form = MaxPlus.LoadUiType(os.path.join(os.path.dirname(__file__),'ui','creat_light_selects.ui'))
 
 
 
@@ -30,9 +21,10 @@ class CreateLightSelects(base, form):
         super(CreateLightSelects, self).__init__(parent)
         self.setupUi(self)
         
-        QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Plastique'))            
-        
-        #pyside_uiloader.loadUi(UI, self)
+        try: # PySide
+            QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Plastique'))
+        except: # PySide2
+            QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Plastique'))
         
         self.drawTableData()
         self.connectWidgets()
@@ -109,16 +101,16 @@ class CreateLightSelects(base, form):
 
     
 def Run():
-    print "updated"
-    app = QtGui.QApplication.instance()
-    if not app:
-        app = QtGui.QApplication([])
-        
-    tool = CreateLightSelects(MaxPlus.GetQMaxWindow())
-    MaxPlus.MakeQWidgetDockable(tool, 12), #Make dockable on Left, Right and Bottom 
-    #tool.move(800,400)
+    try: # PySide
+        tool = CreateLightSelects(MaxPlus.GetQMaxWindow())
+        print "Running with PySide"
+    except: # PySide2
+        tool = CreateLightSelects(MaxPlus.GetQMaxMainWindow())
+        print "Running with PySide2"
+
     tool.show()
+    return tool
     
 
 if __name__ == '__main__':
-    pass
+    print "running create_light_selects"
