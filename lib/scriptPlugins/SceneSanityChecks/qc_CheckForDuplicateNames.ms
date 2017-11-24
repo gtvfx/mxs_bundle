@@ -1,4 +1,4 @@
-_mxs.Using "CheckForDuplicateNames"
+::mxs.Using "CheckForDuplicateNames"
 
 	
 -- register the plugin

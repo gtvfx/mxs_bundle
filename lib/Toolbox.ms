@@ -40,7 +40,7 @@ struct toolbox_lib
 	self,
 	thePos,
 	theSize,
-	startUp = true,
+	startUp = false,
 	meshArr,
 	attachPointArr,
 	bakePointArr,
@@ -94,8 +94,8 @@ struct toolbox_lib
 	tHeight = 8,
 	bHeight = 19,
 	bWidth = 132,
-	priColor = 15,
-	secColor = -5,
+	priColor = 25,
+	secColor = 5,
 	
 --( Dot Net Functions
 	

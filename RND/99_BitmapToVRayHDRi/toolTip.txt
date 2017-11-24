@@ -1,3 +1,0 @@
-Recursively goes through the scene and converts all BitmapTexture
-loaders to VRayHDRi loaders.
-Transfers loader settings.

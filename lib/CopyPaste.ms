@@ -45,13 +45,23 @@ struct CopyPaste
     localDir = ( ( GetDir #temp )+ @"\copypaste\" ),
     networkDir,
     
-    fn Copy fileName objArr:( GetCurrentSelection() ) location:this.localDir =
+    fn Copy fileName objArr:unsupplied location:this.localDir =
 	(
+		if objArr == unsupplied then
+		(
+			objArr = ( GetCurrentSelection() )
+		)
+		
+		if location[location.count] != "\\" then
+		(
+			location = location + "\\"
+		)
+		
         makeDir location
         
         if objArr.count > 0 then
         (
-            SaveNodes objArr ( location + fileName )
+            SaveNodes objArr ( location + fileName + ".max" )
         )
         else
         (
@@ -61,7 +71,12 @@ struct CopyPaste
     
     fn Paste filename location:this.localDir =
     (
-        local file = ( location + fileName )
+		if location[location.count] != "\\" then
+		(
+			location = location + "\\"
+		)
+		
+        local file = ( location + fileName + ".max" )
         
         if ( DoesFileExist file ) then
         (

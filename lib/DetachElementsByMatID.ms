@@ -15,54 +15,55 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				    Gavyn Thompson
-Company:				GTVFX
-Website:				https://github.com/gtvfx
-Email:				    gftvfx@gmail.com
-ScriptVersion:			
-Updated:				
-[Purpose]
-
+__MXSDOC__
+Author: Gavyn Thompson
+Company: GTVFX
+Website: https://github.com/gtvfx
+Email: gftvfx@gmail.com
+__END__
 ***************************************************************************************************/
 
-/*
-__HELP__
 
-Constructor: DetachElementsByMatID
-Instantiated Global: 
-
-Parameters:
-	objectArray <undefined>:
-		Array of objects that this tool will run on
-		
-	parseMaterial <True>:
-		If True then the Multimaterial of each object will be parsed to the correct material list item
-		
-	debug <False>:
-		- If True then several elements will print to the listener
-		
-Methods:
-	Run():
-		You can use this method with default values.
-			objectArray will become your current selection
-			all other props will pass their default values
-		
-		You can set properties prior to running and then use Run() to begin.
+::DetachElementsByMatID = ""
 
 
-
-__END__
-*/
-
-
-try( DestroyDialog _detachByMatId.ro )catch()
-
-
-mxs.Using "WpfProgressBar" inReload:True
+mxs.using "DotNetUi"
+mxs.using "Logger"
 
 
 struct DetachElementsByMatID
 (
+	/*DOC_--------------------------------------------------------------------
+	__HELP__
+	
+	Takes an object with multip face mat ID assignments and breaks it appart
+	into multiple objects of the same face mat IDs
+	
+	Members:
+		[Var] ShowUI = false
+		[Var] debug = false
+		[Var] ro = undefined
+		
+		[FN] BreakMultMatByObj
+		[FN] CollectFacesById
+		[FN] CollectUniqueFaceIds
+		[FN] DetachElementById
+		[FN] GetModule
+		[FN] KillInstances
+		[FN] ValidateObj
+		[FN] batch
+		[FN] help
+		[FN] run
+		[FN] ui
+	
+	Args:
+	 	ro (MaxScript Rollout)
+		debug (boolean)
+		showUi (boolean)
+	
+	__END__
+	--------------------------------------------------------------------_END*/
+	
 public
     
     ro,
@@ -71,6 +72,18 @@ public
 	
 	fn CollectUniqueFaceIds obj =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Loops through all of the faces of the inputed Editable_Poly object and returns
+		an array of all unique IDs.
+		
+		Args:
+		 	obj (Editable_Poly)
+		
+		Returns:
+			(array[integer])
+		
+		--------------------------------------------------------------------_END*/
+		
 		local out = #()
         
 		for i = 1 to ( polyop.getnumfaces obj ) do
@@ -83,6 +96,19 @@ public
 
 	fn CollectFacesById obj id =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Loops through all the faces of the inputed Editable_Poly object and returns
+		an array of face indices that match the inputed mat id
+		
+		Args:
+		 	obj (Editable_Poly)
+			id (integer)
+		
+		Returns:
+			(array[integer])
+		
+		--------------------------------------------------------------------_END*/
+		
 		local out = #{}
         
 		for i = 1 to ( polyop.getnumfaces obj ) do
@@ -95,6 +121,20 @@ public
 	
 	fn BreakMultMatByObj obj id =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Takes a multiMaterial currently assigned to the inputed obj and
+		assigns just the submaterial matching the inputed id. So the obj
+		only has a float material as a result.
+		
+		Args:
+		 	obj (NODE)
+			id (integer)
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		if ( classOf obj.material == multiMaterial ) then
 		(
 			if obj.material[id] != undefined then
@@ -103,7 +143,7 @@ public
 			)
 			else
 			(
-				format "***** id(%) did not match a material of obj: % *****\n" id obj
+				::Logger.error "id({1}) did not match a material of obj: {2}" args:#(id, obj) cls:this
 				obj.material = obj.material.materialList[1]
 			)
 		)
@@ -111,77 +151,124 @@ public
 	
 	fn DetachElementById obj parseMaterial:True =
 	(
-		with Redraw off
+		/*DOC_--------------------------------------------------------------------
+		This is the main logic for the struct. This collects all unique face mat IDs
+		and then detaches groups of faces with the same ID as elements. If 
+		parseMaterial is True then it will also explicitly assign the shader to the
+		detached object that matches the group's face ID from the current 
+		multimaterial on the object.
+		
+		Keeps wirecolor, parent and gbufferchannel from original obj
+		
+		Converts all objects to Editable_Mesh
+		
+		Args:
+		 	obj (NODE)
+		
+		Kwargs:
+			parseMaterial (boolean)
+		
+		Returns:
+			objArr: (array[NODE])
+		
+		--------------------------------------------------------------------_END*/
+		
+		
+		::mxs.BlockUi True
+		
+		local objArr = #()
+		local idArr = this.CollectUniqueFaceIds obj
+		
+		::Logger.debug "idArr: {1}" args:#(idArr) cls:this
+		
+		for id in idArr do
 		(
-			SetCommandPanelTaskMode #create
-			
-			local objArr = #()
-			local idArr = this.CollectUniqueFaceIds obj
-			if this.debug then format "***** idArr: % *****\n" idArr
-			
-			for id in idArr do
-			(
-				if (polyop.getnumfaces obj) == 0 then
-				(
-					Delete obj
-					exit
-				)
-				
-				local faceArr = this.CollectFacesById obj id
-				if this.debug then format "***** faceArr: % | % *****\n" faceArr.count faceArr
-				
-				local newName = ( uniquename ( obj.name as string ) )
-					
-				obj.EditablePoly.SetSelection #Face faceArr
-					
-				local targetFaces = polyop.getFaceSelection obj
-				
-				polyop.detachFaces obj targetFaces asNode:true name:newName
-					
-				local newObj = GetNodeByName newName
-					
-				if this.debug then format "***** newObj: % *****\n" newObj
-					
-				if parseMaterial then
-				(
-					this.BreakMultMatByObj newObj id
-				)
-					
-				append objArr newObj
-				newObj.wireColor = obj.wirecolor
-				newObj.parent = obj.parent
-				newObj.gbufferchannel = obj.gbufferchannel
-				
-				centerpivot newObj
-				ResetXForm newObj 
-				ConvertTo newObj (Editable_Mesh)
-			)
-			
-			if (polyop.getnumfaces obj) == 0 then
+			-- remove any empty elements
+			if ( polyop.getnumfaces obj ) == 0 then
 			(
 				Delete obj
+				exit
 			)
 			
-			objArr
+			local faceArr = this.CollectFacesById obj id
+			::Logger.debug "faceArr: {1} | {2}" args:#(faceArr.count, faceArr) cls:this
+			
+			local newName = ( uniquename ( obj.name as string ) )
+				
+			obj.EditablePoly.SetSelection #Face faceArr
+				
+			local targetFaces = polyop.getFaceSelection obj
+			
+			polyop.detachFaces obj targetFaces asNode:true name:newName
+				
+			local newObj = GetNodeByName newName
+			::Logger.debug "newObj: {1}" args:#(newObj) cls:this
+				
+			if parseMaterial then
+			(
+				this.BreakMultMatByObj newObj id
+			)
+				
+			append objArr newObj
+			
+			newObj.wireColor = obj.wirecolor
+			newObj.parent = obj.parent
+			newObj.gbufferchannel = obj.gbufferchannel
+			
+			centerpivot newObj
+			ResetXForm newObj 
+			ConvertTo newObj (Editable_Mesh)
 		)
+		
+		if (polyop.getnumfaces obj) == 0 then
+		(
+			Delete obj
+		)
+		
+		::mxs.BlockUi False
+		
+		objArr
 	),
 	
 	fn KillInstances objArr =
 	(
-		/*  Removes all instancing (Makes all objects unique) */
+		/*DOC_--------------------------------------------------------------------
+		Removes all instancing (Makes all objects unique)
+		
+		Args:
+		 	objArr (array[NODE])
+		
+		Returns:
+			(boolean)
+		
+		--------------------------------------------------------------------_END*/
+		
 		InstanceMgr.MakeObjectsUnique objArr #individual 
 	),
 		
 	fn ValidateObj obj =
 	(
-		if (CanConvertTo obj Editable_Poly) then
+		/*DOC_--------------------------------------------------------------------
+		Tests if the inputed object can be converted to Editable_Poly
+		Collapses the modifier stack
+		Converts to Editable_Poly
+		
+		Args:
+		 	obj (NODE)
+		
+		Returns:
+			(boolean)
+		
+		--------------------------------------------------------------------_END*/
+		
+		if ( CanConvertTo obj Editable_Poly ) then
 		(
 			if obj.modifiers.count != 0 then
 			(
 				CollapseStack obj
 			)
 			
-			if (ClassOf obj != Editable_Poly) then
+			if ( ClassOf obj != Editable_Poly ) then
 			(
 				ConvertTo obj Editable_Poly
 			)
@@ -190,44 +277,63 @@ public
 		)
 		else
 		(
-			format "***** % is not a valid object *****\n" obj.name
+			::Logger.error "{1} is not a valid object" args:#(obj) cls:this
 			False
 		)
 	),
     
     fn Batch objArr parseMaterial:True =
     (
+		/*DOC_--------------------------------------------------------------------
+		This takes an array of objects, validates them and passes them through
+		the DetachElementById method.
+		
+		Args:
+		 	objArr (array[NODE])
+		
+		Kwargs:
+			parseMaterial (boolean)
+		
+		Returns:
+			(array[NODE]) : All of the objects generated from the detach process
+		
+		--------------------------------------------------------------------_END*/
+		
+		local out = #()
+		
         objArr = for obj in objArr where ( this.ValidateObj obj ) collect obj
         
         if objArr.count == 0 then return ( format "Nothing to analyze\n" )
         
-        if this.debug then format "***** Passed objArr: % *****\n" objArr
+		::Logger.debug "Passed objArr: {1}" args:#(objArr) cls:this
         
-        ::_ilmLibrary.BlockUi True
+        ::mxs.BlockUi True
         
-        format "|---------- Killing Instances ----------|\n"
+		::Logger.info "Killing Instances" args:#() cls:this
         this.KillInstances objArr
-        
-        local objProgress = WpfProgressBar caption:"Detach Elements by Material ID:" steps:objArr.count
-        objProgress.Start()
         
         for obj in objArr do
         (
-            objProgress.UpdateLabel obj.name
-            
-            this.DetachElementById obj parseMaterial:parseMaterial
+            local objElements = this.DetachElementById obj parseMaterial:parseMaterial
+			join out objElements
             GC()
-            
-            objProgress.Step()
         )
         
-        objProgress.End()
-        
-        while ( ::_ilmLibrary.BlockUi False ).count != 0 do ::_ilmLibrary.BlockUi False
+        ::mxs.BlockUi False
+		
+		out
     ),
 	
 	fn Ui =
     (
+		/*DOC_--------------------------------------------------------------------
+		Generates a simple UI for running the logic
+		
+		Returns:
+			(MaxScript Rollout)
+		
+		--------------------------------------------------------------------_END*/
+		
         rollout ro "Detach Elements by MatId:" width:400
 		(
 			local self
@@ -249,7 +355,7 @@ public
 			(
 				self = pself
                 
-                ::_dotNet.InitDnetBtn dNbtn_collect "Detach Elements" 12 style:#popup colorOffsetInt:10 tooltip:""
+                ::DotNetUi.InitDnetBtn dNbtn_collect "Detach Elements" 12 style:#popup colorOffsetInt:10 tooltip:""
 			)
             
             on chk_selection changed state do
@@ -280,23 +386,58 @@ public
     
     fn Run =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Simple method so that you can always just call the <object>.Run() method
+		to get the tool.
+		
+		See Also:
+			[FN] Ui
+		
+		--------------------------------------------------------------------_END*/
+		
 		this.Ui()
 	),
     
     fn GetModule =
-    (
-        ( GetSourceFileName() )
-    ),
-    
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetSourceFileName() )
-    ),
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get the full path to the current MaxScript file
+	
+		Returns:
+			String
+		--------------------------------------------------------------------_END*/
+	
+		( GetSourceFileName() )
+	),
+	
+	fn Help _fn: =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get help on the current module or a specific function
+	
+		Kwargs:
+			_fn (string) : Name of the internal method as a string
+	
+		Returns:
+			VOID
+	
+		--------------------------------------------------------------------_END*/
+	
+		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
+	),
     
 private
     
     fn _init =
 	(
+		/*DOC_--------------------------------------------------------------------
+		This method is run upon instantiation of the struct
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		if this.showUi then
         (
             this.Run()
@@ -306,7 +447,7 @@ private
 	__init__ = _init()
 )
 
-_detachByMatId = DetachElementsByMatID()
+DetachElementsByMatID = DetachElementsByMatID()
 
 
 

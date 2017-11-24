@@ -1,1 +1,0 @@
-fn reBuildTabUI =(	if ::TabMenu != undefined then	(		tab = "Assembly"		if GetDialogPos TabMenu.ro != [0,0] then		(			tab = TabMenu.ro.dNtab_switch.selectedTab.text		)		TabMenu.clearIconCache()		TabMenu.ui()		TabMenu.ro.refreshDataGrid dgv_tools tab:tab	))reBuildTabUI()

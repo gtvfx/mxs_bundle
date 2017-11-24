@@ -1,78 +1,193 @@
-/*!
-	\file			mxsLib.ms
+/***************************************************************************************************
+__MXSDOC__
+GTVFX appropriation of Blur 3dsmax code library.
+Much of the logic has been completely rewritten and structured much differently
+but the design concept remains much the same as the original Blur implementaion
 
-	\remarks		GTVFX appropriation of blur 3dsmax code library. 
-	
-	\author		Gavyn Thompson
-	\author		Email: gthompson@gtvfx.com
-	\author		Company:gtvfx
-	\date			05/11/2015
-	
-*/
+Author: Gavyn Thompson
+Company: GTVFX
+Website: https://github.com/gtvfx
+Email: gftvfx@gmail.com
+__END__
+***************************************************************************************************/
 
---global _ToolListXML
-global MONTHS = #("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+/***************************************************************************************************
+__HELP__
+
+[Purpose]
+
+The primary purpose of this package is to facilitate a module based approach to MaxScript
+libraries.This attempts to replicate the utility of C# namespaces and the ‘Using’ operator,
+or the Python ‘import’ operator. The result isn’t one-to-one, but the use-case is similar and
+very functional.
+
+[Environment Variables]
+
+"MXSPATH"
+	This is a semicolon separated path that behaves much like the PYTHONPATH
+	The individual paths are searched when sourcing a module.
+	The first module found while searching is returned and loaded
+
+"MXS_CODEROOT"
+	This is the base path to the code directories of the main MXS package
+
+"MXS_TOOLS"
+	This is a semicolon separated path that behaves much like the PYTHONPATH
+	Much like modules, there is logic here to support a tool framework that can be 
+	expanded by child packages.
+
+[Coding standards]
+
+- All modules must be within a directory that is in the MXSPATH environment variable
+
+- Supported MaxScript files are .ms and .mse
+
+- Libraries are searched for by filename
+	Sourcing in the Logger module would look like this:
+		- mxs.using “Logger”
+		- This will search the paths in the MXSPATH, in order, until it finds a file named 
+		Logger.ms or Logger.mse.
+		- It will then return the module and perform a FileIn operation on it
+
+- All modules should create a global variable of the same name upon being loaded
+	- Logger.ms should create a global variable ‘Logger’
+	- This global variable is used to track if the module is already loaded or not
+
+- This global variable should either contain an instance of a Struct or it should contain the
+uninstantiated struct for objects that will be instanced by the consumer.
+
+- It’s a good practice to compose your Struct with the same name that you will instantiate it with,
+if for no other reason than reducing the number of variables in the system. But this also makes
+it more intuitive as a consumer if you know that you’re going to call a global variable that
+matches the name of the module you’re sourcing.
+	- For example:
+		- struct Logger ( <logic> )  
+		- Logger = Logger() -- Instantiate the struct to a global variable of the same name
+
+- You can have helper structs within the module so long as they are only used by the main 
+struct and not intended to be used individually. 
+	- This ensures that the usage of the structs are intuitive and we’re not just sourcing in 
+	random global variables without any guidance on how to use them.
+
+- Each module should contain these two methods:
+	- Fn GetModule = ( GetSourceFileName() )
+	- Fn Help = ( ::mxs.GetScriptHelp (GetSourceFileName()) )
+	- These methods can be used by the main module for various purposes.
+	- The Help method is purposefully written as a static method so that it can be called on an 
+	un-instantiated object.
+- All modules should contain a Help block above the start of the code.
+	- This should just be a commented block with the text ‘__HELP__’ at the beginning and 
+	‘__END__’ to finish it off. 
+	- The main mxs lib has a method that parses the text file and returns this block of text and 
+	prints it to the listener window.
+	- In this way we can provide help for consuming modules without external documentation.
+- Variable scoping:
+	- All variables should have their scope declared
+		- Variables used only within a function should be declared as ‘local’
+			- local foo
+		- Variables and Methods within a struct should always be called using the ‘this’ keyword.
+			- this.foo
+			- this.foo()
+		- Global variables should always be prefixed with a double-colon, ‘::’.
+			- This ensures that the compiler will only search the variable from the global pool.
+			- It also makes your code easier to read as this tells the reader that the variable 
+			is coming from another source not defined in the current scope.
+			- Technical info about this can be found here:
+				- https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2015/ENU/MAXScript-Help/files/GUID-382E7583-DD2A-4DF5-B568-71502DF95ED9-htm.html
+- Module sourcing loops!
+	- If a module is sourcing in another module that, in turn, sources it, you’ll need to do a 
+	forward declaration of your modules global variable before all of your ‘using’ declarations.
+	- For example: MeshFns and MaterialFns source oneanother. In these modules, 
+	you’ll find that we define their global variables prior to our ‘using’ declarations by just 
+	defining it as an empty string. ( ::MeshFns = “” )
+
+
+__END__
+***************************************************************************************************/
+
 
 
 global mxs
 
+
 (
 	struct SimpleDict
 	(
+		/*DOC_--------------------------------------------------------------------
+		Simple Dictionary type class for storing data in the mxsLib
+		
+		Args:
+		 	m_keys (array[string])
+			m_values (array[*])
+			count (integer)
+		
+		--------------------------------------------------------------------_END*/
+		
 		m_keys = #(),
 		m_values = #(),
 		count = 0,
 		
 		fn Clear = 
 		(
-			m_keys = #()
-			m_values = #()
-			count = 0
+			this.m_keys = #()
+			this.m_values = #()
+			this.count = 0
 		),
 		
 		fn GetValue inKey =
 		(
-			for i = 1 to m_keys.count do
+			for i = 1 to this.m_keys.count do
 			(
-				if ( toLower ( inKey as string ) == toLower ( m_keys[i] as string ) ) then
+				if ( toLower ( inKey as string ) == toLower ( this.m_keys[i] as string ) ) then
 				(
-					return ( m_values[i] )
+					return ( this.m_values[i] )
 				)
 			)
+			
 			return ""
 		),
 		
 		fn HasKey inKey =
 		(
 			local out = undefined
-			if ( ::mxs.debugLevel > 0 ) then
+			
+			if ( ::mxs != undefined ) and ( ::mxs.debugLevel > 0 ) then
 			(
 				format "HasKey() searching m_keys for inKey: %\n" inKey inValue
-				print ("m_keys: " + m_keys as string)
+				print ("m_keys: " + this.m_keys as string)
 			)
-			out = ( findItem m_keys ( toLower ( inKey as string ) ) != 0 )
+			
+			out = ( findItem this.m_keys ( toLower ( inKey as string ) ) != 0 )
 			out
 		),
 		
-		fn keys = ( return m_keys ),
+		fn keys =
+		(
+			this.m_keys
+		),
 		
 		fn SetValue inKey inValue =
 		(
-			if ( ::mxs.debugLevel > 0 ) then format "::mxs.SetValue() inkey: % inValue: %\n " inKey inValue
-			for i = 1 to m_keys.count do
+			if ( ::mxs != undefined ) and ( ::mxs.debugLevel > 0 ) then format "::mxs.SetValue() inkey: % inValue: %\n " inKey inValue
+			
+			for i = 1 to this.m_keys.count do
 			(
-				if ( toLower ( inKey as string ) == toLower ( m_keys[i] as string ) ) then
+				if ( toLower ( inKey as string ) == toLower ( this.m_keys[i] as string ) ) then
 				(
-					m_values[i] = inValue
+					this.m_values[i] = inValue
 					return True
 				)
 			)
-			append m_keys inKey
-			append m_values inValue
-			count = m_keys.count
+			
+			append this.m_keys inKey
+			append this.m_values inValue
+			this.count = this.m_keys.count
 		),
 		
-		fn values = ( return m_values )
+		fn values =
+		(
+			this.m_values
+		)
 	)
 	
 	struct mxsCallback
@@ -84,108 +199,109 @@ global mxs
 	)
 	
 	-------------------------------------------------------------------------------------------------------------
-	--								DEFINE LIBRARY FUNCTIONALITY
+	--					DEFINE LIBRARY FUNCTIONALITY
 	-------------------------------------------------------------------------------------------------------------
-	
-	struct externalLibraryStruct
-	(
-		/*!--------------------------------------------------------------------
-			\remarks Tracks externally loaded _libraries
-		---------------------------------------------------------------------*/
-		name = "",
-		relativePath = ""
-	)
 	
 	struct EnvironmentClass
 	(
-		/*!--------------------------------------------------------------------
-			\remarks Stores environment paths
-		---------------------------------------------------------------------*/
-		name			= "",
-		paths			= SimpleDict(),
+		/*DOC_--------------------------------------------------------------------
+		Stores environment paths
+		
+		Args:
+		 	name (string)
+			paths (SimpleDict)
+		
+		--------------------------------------------------------------------_END*/
+		
+		name = "",
+		paths = SimpleDict(),
 		
 		fn GetPath pathID =
-		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the path whose ID matches the inputed string, or an empty
-					string if none is found
-				
-				\param		pathID		<string>
+		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the path whose ID matches the inputed string, or an empty
+			string if none is found
 			
-				\history
-					- EKH 11/16/06: Created
+			Args:
+			 	pathID (string)
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			Returns:
+				path: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
 			pathID = toLower ( pathID as string )
 			
-			if ( paths.HasKey pathID ) then
+			if ( this.paths.HasKey pathID ) then
 			(
-				return paths.GetValue pathID
+				return this.paths.GetValue pathID
 			)
 			
-			return ""
+			""
 		),
 		
 		fn GetPathIDs =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the paths keys - path IDs for this environment
-				\history
-					- EKH 11/16/06: Created
-				\return				
-					<array>[ <string>, .. ]
-			---------------------------------------------------------------------*/
-			return paths.keys()
+			/*DOC_--------------------------------------------------------------------
+			Returns the paths keys - path IDs for this environment
+			
+			Args:
+			 	ARG1 (type)
+			
+			Returns:
+				(array[string])
+			
+			--------------------------------------------------------------------_END*/
+			
+			this.paths.keys()
 		),
 		
 		fn SetPath pathID path =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Sets the path ID's path value ( all path ID's are converted
-					to lower case strings )
-				
-				\param		pathID		<string>
-				\param		path		<string>
+			/*DOC_--------------------------------------------------------------------
+			Sets the path ID's path value ( all path ID's are converted to lower case strings )
 			
-				\history
-					- EKH 11/16/06: Created
-			---------------------------------------------------------------------*/
-			paths.SetValue ( toLower ( pathID as string ) ) path
+			Args:
+			 	pathID (string)
+				path (string)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			this.paths.SetValue ( toLower ( pathID as string ) ) path
 		)
 	)
 	
 	struct mxsLibraryStruct
 	(
 		------------------------------------------------------------------------------
-		--							PUBLIC MEMBERS
+		--				PUBLIC MEMBERS
 		------------------------------------------------------------------------------
-		configFile,
 		
 		max_version = ( MaxVersion() )[1],
 		
-		major = 0,
-		minor = 1,
-		reloadedLibs = #(),
-		classID = "mxsLib",
+		classID = "MXS",
 		printStatus = false,
 		debugLevel = 0,
 		
+		toolDict = dotNetObject "System.Collections.Hashtable",
 		toollist = #(),
 		
+		sysEnv = this.GetSysEnv,
+		
+		-- Stores UI settings like positoin and dimensions
+		uiSettingsIni = ( (GetDir #ui) + "mxsUiSettings.ini" ),
+		
 		------------------------------------------------------------------------------
-		--							PRIVATE MEMBERS
+		--				PRIVATE MEMBERS
 		------------------------------------------------------------------------------
 		_environments = SimpleDict(),
 		_activeEnvironment = "",
 		
 		_libraries = #(),
-		_constantLibraries = #( "mxsLib", "mxsString" ),
-		_externals = #(),
+		_constantLibraries = #(),
 		
 		_callbackTypes = #(),
 		_callbackIDs = #(),
@@ -205,20 +321,19 @@ global mxs
 		
 		fn _normEnv environmentID =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Normalizes inputed environmentID.  Function is setup for backwards
-					compatibility, setting code path 'local' and 'network' to work with
-					new environments and turns the ID to lowercase
-				
-				\param		environmentID 		<string>
+			/*DOC_--------------------------------------------------------------------
+			Normalizes inputed environmentID.  Function is setup for backwards
+			compatibility, setting code path 'local' and 'network' to work with
+			new environments and turns the ID to lowercase
 			
-				\history
-					- EKH 11/16/06: Created
+			Args:
+			 	environmentID (string)
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			Returns:
+				outEnvironmentID: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
 			if ( this.debugLevel > 4 ) then format "_normEnv() environmentID: %\n" (if environmentID == "" then "\"\"" else environmentID)
 			
 			if ( environmentID == "" ) then
@@ -229,68 +344,32 @@ global mxs
 			
 			if ( this.debugLevel > 4 ) then format "\tnormalized environmentID: %\n" (if environmentID == "" then "\"\"" else environmentID)
 
-			outEnvironmentID = toLower environmentID
+			local outEnvironmentID = toLower environmentID
 			
 			if ( this.debugLevel > 4 ) then format "\tout: %" (if outEnvironmentID == "" then "\"\"" else outEnvironmentID)
 				
 			return outEnvironmentID
 		),
 		
-		fn _normPath inPath inPathSeparator:"/" =
+		fn BlockUi state flags:unsupplied =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Normalizes the inputed path, separating folders by the given
-					string
-				
-				\param		inPath				<string>
-				\param		inPathSeparator		<string>
-				
-				\history
-						- Created: EKH 04/17/06
-				
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			if ( inPath == "" or inPath == undefined ) then
-			(
-				return ""
-			)
-				
-			local tUNCHeader = ""
+			/*DOC_--------------------------------------------------------------------
+			stacks calls to disable common ui elements
 			
-			if ( inPath[1] == "\\" and inPath[2] == "\\" ) then
-			(
-				tUNCHeader = "\\\\"
-			)
-				
-			local tPathList = filterstring inPath "\\/"
+			Args:
+			 	state (boolean)
 			
-			outPath = tUNCHeader
+			Kwargs:
+				flags (name | array[name])
 			
-			for i = 1 to tPathList.count do
-			(
-				outPath += tPathList[i] + inPathSeparator
-			)
+			Returns:
+				_blockStack: (array)
 			
-			return outPath
-		),
-		
-		fn blockUi state flags:unsupplied =
-		(
-			/*!--------------------------------------------------------------------
-			\remarks
-				stacks calls to disable common ui elements
-				
-			\param		state		<boolean>
-			\param		state		<name>|<nameArray>
-				
-			\return
-				<array>
-			---------------------------------------------------------------------*/
+			--------------------------------------------------------------------_END*/
+			
 	 		flags = if flags == unsupplied then #(#all) else flags
 	 		if classof flags != Array then flags = #(flags)	
-
+			
 			if ( state ) then
 			(
 				if ( finditem flags #all != 0 ) then
@@ -298,7 +377,7 @@ global mxs
 					flags = #(#mateditor,#renderSceneDialog,#sceneRedraw,#cmdPanel)
 				)
 				append _blockStack flags
-
+				
 				-- store each flag option as its own counter.  for dialogs that open and close, only add the count 
 				-- if the dialog is open or there's already a count in progress.
 				( _blockCount_cursor += 1 )
@@ -363,7 +442,7 @@ global mxs
 					if _blockCount_sceneRedraw 	== 0 then
 					(
 						while isSceneRedrawDisabled() do enableSceneRedraw()
-						-- GK 10/14/11 this call is not updating the viewport camera label (max 2010) so it appears that the camera has not switched
+						-- This call is not updating the viewport camera label (max 2010) so it appears that the camera has not switched
 						-- trying a safeframe toggle to work around this
 						redrawViews()
 						max safeframe toggle
@@ -383,7 +462,7 @@ global mxs
 				
 				if ( findItem lastFlagSet #mateditor != 0 and _blockCount_matEditor > 0 ) then
 				( 
-					_blockCount_MatEditor -= 1 
+					_blockCount_matEditor -= 1 
 					if _blockCount_matEditor == 0 then
 					(
 						matEditor.open()
@@ -416,43 +495,42 @@ global mxs
 		
 		fn ClearGlobal inString =
 		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Clears the global value by setting it to undefined
-				
-				\param		inString		<string>
-				
-				\history
-						- EKH 04/17/06: Created
-						- EKH 11/28/06: Now uses globalVars struct
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			Clears the global value using the globalVars struct
 			
-			execute ( ( inString as string ) + " = undefined" )
+			Args:
+			 	inString (string)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			globalVars.remove ( inString as string )
 		),
 		
 		fn ClearLibrary inLibName =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Clears the global variable associated with the inputed library
-					name, thus setting it to undefined and removing it from data.
-					Also removes the library ID from the library list
-				
-				\param		inLibName		<string>
-				
-				\history
-						- EKH 04/17/06: Created
-				
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			Clears the global variable associated with the inputed library
+			name, thus setting it to undefined and removing it from data.
+			Also removes the library ID from the library list
+			
+			Args:
+			 	inLibName (string)
+			
+			Returns:
+				(Boolean)
+			
+			--------------------------------------------------------------------_END*/
+			
 			local tIndex = findItem this._libraries inLibName
 			
 			if ( tIndex > 0 ) then
 			(
 				if ( this.printStatus ) then
 				(
-					print ( "Clearing Library: " + inLibName + "." )
+					format "[%] --- Clearing Library: %\n" this.classId inLibName
 				)
 				
 				this.ClearGlobal inLibName
@@ -463,102 +541,58 @@ global mxs
 			return False
 		),
 		
-		fn ClearExternalLibrary inLibName =
+		fn ClearLibraries =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Clears the external library (not found withing the root
-					library path) from data and from the externals list
-				
-				\param		inLibName		<string>
-				
-				\history
-						- Created: EKH 04/17/06
-				
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			local tIndex = 0
+			/*DOC_--------------------------------------------------------------------
+			Sets all the global library variables that are loaded to being
+			undefined and then clears the library array.
 			
-			for i = 1 to this._externals.count do
-			(
-				if ( this._externals[i].name == inLibName ) then
-				(
-					tIndex = i
-					exit
-				)
-			)
+			Returns:
+				(VOID)
 			
-			if ( tIndex > 0 ) then
-			(
-				if ( this.printStatus ) then
-				(
-					print ( "Clearing External: " + inLibName + "." )
-				)
-				
-				this.ClearGlobal inLibName inIsLibrary:True
-				
-				deleteItem this._externals tIndex
-				return True
-			)
+			--------------------------------------------------------------------_END*/
 			
-			return False
-		),
-		
-		fn ClearLibraries inClearLocals:True inClearExternals:True =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Sets all the global library variables that are loaded to being
-					undefined and then clears the library array.
-				
-				\param		inClearLocals		<boolean>
-				\param		inClearExternals	<boolean>
-				
-				\history
-						- Created: EKH 04/17/06
-			---------------------------------------------------------------------*/
 			if ( this.debugLevel > 0 ) then 	format "ClearLibraries() inClearLocals: % inClearExternals: %\n" inClearLocals inClearExternals
 			
-			if inClearLocals then
+			for index = this._libraries.count to 1 by -1 do
 			(
-				for index = this._libraries.count to 1 by -1 do
-				(
-					local tLibName = this._libraries[index]
-					this.ClearLibrary tLibName
-				)
+				local tLibName = this._libraries[index]
+				this.ClearLibrary tLibName
 			)
-			
-			if inClearExternals then
+		),
+		
+		fn QsortAphlabetical str1 str2 =
+		(
+			case of
 			(
-				for tExternal in this._externals do
-				(
-					this.ClearExternalLibrary tExternal.name
-				)
+				(str1 < str2): -1
+				(str1 > str2): 1
+				default: 0
 			)
 		),
 		
 		fn Dir inLibName inPrintTo: =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Displays info about the library specified
-				
-				\param		inLibName		<string>
-				\param		printTo			<windostream> | <filestream> | <stringstream>
-				
-				\history
-					- Created: DGH 06/16/06
-				
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			Displays info about the library specified
+			
+			Args:
+			 	inLibName (string)
+			
+			Kwargs:
+				inPrintTo (<windostream> | <filestream> | <stringstream>)
+			
+			Returns:
+				libinfo: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
 			local libinfo = stringstream ""
 				
 			local tLibraryStr = inLibName
 			if (execute tLibraryStr == undefined ) then
 			(
-				this.load inLibName
+				this.Using inLibName
 			)
 			
 			local tLib = execute tLibraryStr
@@ -578,9 +612,10 @@ global mxs
 			(
 				p = p as string
 				local pValue = getproperty tLib p
+				
 				if (classof pValue == MAXScriptFunction) then
 				(
-					if (findstring p "__" != undefined)	then
+					if ( p[1] == "_" )	then
 					(
 						append pPrivateFuncs p
 					)
@@ -591,7 +626,7 @@ global mxs
 				)
 				else
 				(
-					if (findstring p "__" != undefined)	then
+					if ( p[1] == "_" ) then
 					(
 						append pPrivateVars p
 					)
@@ -600,9 +635,15 @@ global mxs
 						append pVars p
 					)
 				)
-			)			
+			)
+			
+			Qsort pFuncs this.QsortAphlabetical
+			Qsort pPrivateFuncs this.QsortAphlabetical
+			Qsort pVars this.QsortAphlabetical
+			Qsort pPrivateVars this.QsortAphlabetical
+			
 			-- print all the info collected about the library
-			format "---------------------------------------\n" to:libinfo 
+			format "\n---------------------------------------\n" to:libinfo 
 			format "MXS Library: %\n" inLibName  to:libinfo 
 			format "---------------------------------------\n" to:libinfo 
 			
@@ -636,27 +677,25 @@ global mxs
 			)
 			
 			format "%\n" libinfo to:inPrintTo
-			
-			--return libinfo 		
 		),
 		
 		fn Debug inItem inIncludeHead:true inIndent:"" inPrintTo: =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Displays info about the item specified
-				
-				\param		inItem			<object> | <property> | <struct>	Item to debug
-				\param		inIncludeHead	<boolean>							Includes info about the item name
-				\param		inIndent		<string>							Amount of indentation
-				\param		inPrintTo		<windostream> | <filestream> | <stringstream>
-				
-				\history
-					- Created: DGH 06/27/06
-				
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			Displays info about the item specified
+			
+			Args:
+			 	inItem (<object> | <property> | <struct>) : Item to debug
+			
+			Kwargs:
+				inIncludeHead (boolean) : Includes info about the item name
+				inIndent (string) : Amount of indentation
+				inPrintTo (<windostream> | <filestream> | <stringstream>)
+			
+			Returns:
+				info: (string)
+			
+			--------------------------------------------------------------------_END*/
 			
 			local info = stringstream ""
 			
@@ -677,6 +716,7 @@ global mxs
 			(
 				p = p as string
 				local pValue = getproperty inItem p
+				
 				if (classof pValue == MAXScriptFunction) then
 				(
 					if (findstring p "__" != undefined)	then
@@ -784,92 +824,59 @@ global mxs
 				)
 			)
 			
-			return (info as string)		
-		),
-		
-		fn GetCodeDataPath inEnvironment:"" =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the global code root data directory
-			
-				\history
-						- EKH 04/17/06: Created
-						- EKH 11/16/06: Added inEnvironment variable - works with latest config setup
-				
-				\sa GetPath
-				
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			return ( this.GetPath #dataRoot inEnvironment:inEnvironment )
+			(info as string)		
 		),
 		
 		fn GetCodePath inEnvironment:"" =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the current code root path directory
+			/*DOC_--------------------------------------------------------------------
+			Returns the current code root path directory
 			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Changed to work with GetPath for the codeRoot key
-				
-				\sa GetPath
+			Kwargs:
+			 	inEnvironment (string)
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			Returns:
+				(string) : directory path
+			
+			--------------------------------------------------------------------_END*/
+			
 			pathconfig.NormalizePath ( this.GetPath #MXS_CODEROOT inEnvironment:inEnvironment )
 		),
 		
 		fn GetCurEnv =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the current active environment ID
+			/*DOC_--------------------------------------------------------------------
+			Returns the current active environment ID
 			
-				\history
-					- EKH 04/17/06: Created
+			Returns:
+				(string) : environment id
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			return ( this._ActiveEnvironment )
-		),
-		
-		fn GetToolPath inEnvironment:"" =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the current code root path directory
+			--------------------------------------------------------------------_END*/
 			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Changed to work with GetPath for the codeRoot key
-				
-				\sa GetPath
-			
-				\return
-					<string>
-			---------------------------------------------------------------------*/
-			
-			local codePath = this.GetCodePath()
-			--codePath = (substituteString (PathConfig.removePathLeaf codePath) "\\" "/")
-			
-			pathConfig.NormalizePath (codePath + "/tools/")
+			this._ActiveEnvironment
 		),
 		
 		fn GetUserDir env:#local =
 		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the path to the user directory. Can be #local or #network
+			
+			Kwargs:
+			 	env (enum: #local | #network)
+			
+			Returns:
+				userDir: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
 			local userDir = undefined
 			
 			case env of
 			(
 				(#network):
 				(
-					userDir = (( this.GetNetRoot() ) + @"" + sysInfo.userName )
-					if not doesFileExist userDir then makeDir userDir
+					userDir = (( this.GetNetRoot() ) + sysInfo.userName )
+					if not DoesFileExist userDir then makeDir userDir
 					userDir
 				)
 				(#local):
@@ -882,74 +889,68 @@ global mxs
 		
 		fn GetLibPath =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the current Lib root path directory
+			/*DOC_--------------------------------------------------------------------
+			Gets the path to the 'Lib' directory under the codeRoot
 			
-				\history
-					-  10/20/2014: Created
-				
-				\sa GetCodePath
+			Returns:
+				(string) : Lib directory path
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			(this.GetCodePath() + "Lib/")
+			--------------------------------------------------------------------_END*/
+			
+			pathConfig.NormalizePath ( this.GetCodePath() + "/Lib/" )
 		),
 		
 		fn GetPyLibPath =
 		(
-			out = ((this.GetPath #maxpython)+@"\lib")
+			/*DOC_--------------------------------------------------------------------
+			Get the path to the lib python modules
+			
+			Returns:
+				If path exists (string) directory path, else undefined
+			
+			--------------------------------------------------------------------_END*/
+			local out = ((this.GetPath #maxpython)+@"\lib")
 			if DoesFileExist out then out else Undefined
 		),
 		
 		fn GetSysEnv =
 		(
-			(dotNetClass "System.Environment")
-		),
-		
-		fn GetEnvTarget =
-		(
-			(dotNetClass "System.EnvironmentVariableTarget")
-		),
-		
-		fn GetUserConfigFile =
-		(
-			--out = (systemTools.getEnvVariable("USERPROFILE") + @"\AppData\Local\Autodesk\3dsMax\2013 - 64bit\ENU\mxsLibConfig.ini")
-			if DoesFileExist ::mxsConfigFile then ::mxsConfigFile else messageBox ("Config file does not exist at\n"+ out) title:"File not found:"
+			/*DOC_--------------------------------------------------------------------
+			Creates a DotNet System.Environment Object
+			
+			Returns:
+				(dotNetClass)
+			
+			--------------------------------------------------------------------_END*/
+			( dotNetClass "System.Environment" )
 		),
 		
 		fn GetNetRoot =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the network root
-					
-				\history
-					-  10/20/2014: Created
-					
-				\sa GetCodePath
-					
-				\return			
-					<string>
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			Returns the network root
 			
-			local out = undefined
+			Returns:
+				(string)
 			
-			if ( this.max_version > 18000 ) then
-			(
-				
-			)
-			else
-			(
-				out = ( GetINISetting ( this.GetUserConfigFile() ) (this.GetCurEnv()) "netRoot" )
-			)
+			--------------------------------------------------------------------_END*/
 			
-			out
+			this.GetPath #NETROOT
 		),
 		
 		fn EnsureArgIsArray arg =
 		(
+			/*DOC_--------------------------------------------------------------------
+			Tests the object type of the arg passed and returns it as an array
+			
+			Args:
+			 	arg (VARIABLE)
+			
+			Returns:
+				(array[arg])
+			
+			--------------------------------------------------------------------_END*/
+			
 			if ( ClassOf arg ) == ObjectSet then
 			(
 				arg = ( arg as array )
@@ -962,548 +963,32 @@ global mxs
 			arg
 		),
 		
-		fn GetScriptHeader scriptFile =
-		(
-			GetStringBlock scriptFile "*__MXSDOC__*" "*__END__*" filterFromStr:True filterToStr:True
-		),
-
-		fn GetScriptHelp scriptFile =
-		(
-			GetStringBlock scriptFile "*__Help__*" "*__END__*" filterFromStr:False filterToStr:True
-		),
-		
-		fn OpenUserConfigFile =
-		(
-			shellLaunch "notepad++.exe" (this.GetUserConfigFile())
-		),
-		
-		fn ImportPythonFile fName =
-		(
-			local libPath = this.GetPyLibPath()
-			if libPath != undefined then
-			(
-				local pyFile = (libPath+"\\"+fName+".py")
-				if DoesFileExist pyFile then
-				(
-					python.executefile (libPath+"\\"+fName+".py")
-				)
-				else
-				(
-					undefined
-				)
-			)
-			else
-			(
-				undefined
-			)
-		),
-		
-		fn GetEnvironment inEnvironment:"" =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the environment instance that matches the inputed ID, if
-					one exists, otherwise returns undefined
-				
-				\param		inEnvironmentID 	<string>
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Environments are no longer single string dictionaries,
-									no longer returns string, returns EnvironmentClass
-			
-				\return				
-					<EnvironmentClass> | undefined
-			---------------------------------------------------------------------*/
-			local out = undefined
-			
-			if ( this.debugLevel > 0 ) then print ("GetEnvironment() inEnvironment: " + (if inEnvironment == "" then "unsupplied" else inEnvironment))
-				
-			local inEnvironmentID = this._normEnv inEnvironment
-				
-			if ( this._environments.HasKey inEnvironmentID ) then
-			(				
-				out = this._environments.GetValue inEnvironmentID
-			)
-			
-			if ( this.debugLevel > 0 ) then print ("GetEnvironment() out: " + out as string)
-			
-			out
-		),
-		
-		fn GetExternalLibrary inLibName =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the external library instance whose name matches the
-					inputed string
-				
-				\param		inLibName		<string>
-			
-				\history
-					- EKH 04/17/06: Created
-					
-				\sa GetExternalLibraryIndex
-			
-				\return				
-					<externalLibraryStruct> | undefined
-			---------------------------------------------------------------------*/
-			
-			local tIndex = this.GetExternalLibraryIndex inLibName
-			local out = undefined
-			if ( tIndex > 0 ) then
-			(
-				out = this._externals[ tIndex ]
-			)
-			out
-		),
-		
-		fn GetExternalLibraryIndex inLibName =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the index of the library struct instance in the _externals
-					list whose name matches the inputed string.  Returns 0 if not
-					found
-				
-				\param		inLibName		<string>
-				
-				\history
-					- EKH 11/16/06: Created
-				
-				\return		
-					<integer>
-			--------------------------------------------------------------------*/
-			local out = 0
-			
-			for tIndex = 1 to this._externals.count do
-			(
-				if this._externals[ tIndex ].name == inLibName then
-				(
-					out = tIndex
-					exit
-				)
-			)
-			
-			out
-		),
-		
-		fn GetLoadedLibraries inIncludeLocals:True inIncludeConstants:True inIncludeExternals:True =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Returns the names of the libraries that are currently loaded
-				
-				\param		inIncludeLocals		<boolean>		Includes the local libraries in the output list
-				\param		inIncludeConstants	<boolean>		Includes the constant libraries in the output list
-				\param		inIncludeExternals	<boolean>		Includes the external libraries in the output list
-			
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<array>[ <string>, .. ]
-			---------------------------------------------------------------------*/
-			local outList = #()
-			
-			if ( inIncludeLocals ) then
-			(
-				join outList this._libraries
-			)
-			if ( inIncludeConstants ) then
-			(
-				join outList this._constantLibraries
-			)
-			if ( inIncludeExternals ) then
-			(
-				join outList ( for tExternal in this._externals collect tExternal.name )
-			)
-				
-			return outList
-		),
-		
-		fn GetPlugPath inEnvironment:"" inAutoGenerate:False =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the max plugin path in the given environment.  If the auto generate
-					variable is set to true, then the plugin folder will automatically be
-					created if it doesnt already exist.
-				
-				\param		inEnvironment		<string>
-				\param		inAutoGenerate		<boolean>
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Added inEnvironment variable to set what environment to get the path from
-			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			local codePlugPath = this.GetPath #maxPlugPath inEnvironment:inEnvironment
-			
-			if ( inAutoGenerate and not DoesFileExist( codePlugPath ) ) then
-			(
-				local tFileArr = filterString codePlugPath "/"
-				local tDir = ""
-				for tPart in tFileArr do
-				(
-					tDir += tPart + "/"
-					if ( not DoesFileExist( tDir ) ) then
-					(
-						makeDir ( tDir )
-					)
-				)
-			)
-			return codePlugPath
-		),
-		
-		fn GetPath inPathID inEnvironment:"" inPathSeparator:"/" =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the path value for the given ID.  If no environment is specified
-					then the current active environment is used, seperating the outpued
-					folders/path using the given string
-				
-				\param		inPathID			<string>
-				\param		inEnvironment		<string>
-				\param		inPathSeparator		<string>
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Added inEnvironment variable to get paths of a different environment
-			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			if ( this.debugLevel > 0 ) then
-			(
-				print ("[mxsLib] " + getSourceFilename())
-				format "GetPath() inPathID: % inEnvironment: %\n" inPathID inEnvironment
-			)
-			
-			local out = undefined
-			
-			local outPath 		= ""
-			local tEnvironment 	= this.GetEnvironment inEnvironment:inEnvironment
-			
-			if ( tEnvironment != undefined ) then
-			(
-				outPath = tEnvironment.GetPath inPathID
-			)
-			
-			if ( outPath == "" ) then
-			(
-				tDefaultEnv = this.GetEnvironment inEnvironment:"default"
-				if ( tDefaultEnv != undefined ) then
-				(
-					outPath = tDefaultEnv.GetPath inPathID
-				)
-			)
-			
-			if ( this.debugLevel > 0 ) then format "\toutPath: %\n" outPath
-			
-			outPath = ( this.RemovePathTemplates outPath inEnvironment:inEnvironment )
-			
-			out = this._normPath outPath inPathSeparator:inPathSeparator
-			out
-		),
-		
-		fn GetPathIDs inEnvironment:"" =
-		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the path IDs available for the given environment, using the current
-					active environment if non is specified
-				
-				\param		inEnvironment		<string>
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Updated to work with the new Environment model
-			
-				\return				
-					<array>[ <string>, .. ]
-			---------------------------------------------------------------------*/
-			local tEnvironment = this.GetEnvironment inEnvironment:inEnvironment
-			local tDefaultEnv = this.GetEnvironment inEnvironment:::_codeEnv -- "default"
-			
-			local outPathIDs = tDefaultEnv.GetPathIDs()
-			
-			if ( tEnvironment != undefined ) then
-			(
-				for tPathID in tEnvironment.GetPathIDs() where ( findItem outPathIDs tPathID == 0 ) do
-				(
-					append outPathIDs tPathID
-				)
-			)
-			
-			return outPathIDs
-		),
-		
-		fn GetEnvironmentIDs =
-		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Gets the loaded environment IDs
-			
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<array>[ <string>, .. ]
-			---------------------------------------------------------------------*/
-			return this._environments.keys()
-		),
-		
-		fn IsLoaded inString =
-		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Checks to see if the given string variable is assigned
-				
-				\param		inString		<string>
-			
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			return ( execute ( ( inString as string ) + " != undefined " ) )
-		),
-		
-		fn IsOffsite =
-		( 
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Checks to see if the current active environment is offline
-			
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			return this._activeEnvironment == "offline"
-		),
-		
-		fn IsPath pathID inEnvironment:"" =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Checks to see if the inputed string is a path ID in the given
-					environment, using the active environment if none is specified
-				
-				\param		pathID			<string>
-				\param		inEnvironment	<string>
-			
-				\history
-					- EKH 11/16/06: Created
-				
-				\sa GetPathIDs
-				
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			return ( findItem ( this.GetPathIDs inEnvironment:inEnvironment ) ( toLower ( pathID as string ) ) != 0 )
-		),
-		
-		fn GetMaxPlugPath = 
-		(
-			local tPlugPath = this.GetPath #pluginsroot
-			
-			if tPlugPath == "" then
-			(
-				tPlugPath = ( (GetDir #maxroot) + "plugins" )
-			)
-				
-			return tPlugPath 	
-		),
-		
-		fn FindLibFile inLibName inRelativePath:unsupplied =
-		(
-			local pathArr = ( FilterString ( this.GetPath #MXS_PATH ) "," )
-			
-			for p in pathArr do
-			(
-				if p[p.count] != "/" then p = ( p + "/" )
-				
-				local fileArr = GetFiles ( p + "*.ms*" )
-				local nameFileArr = for f in fileArr where ( matchPattern ( GetFileNameFile f ) pattern:inLibName ) collect f
-				
-				if nameFileArr.count == 1 then
-				(
-					return nameFileArr[1]
-				)
-				else if nameFileArr.count > 1 then
-				(
-					format "More than one file matching that name was found.\n%\n" nameFileArr
-				)
-			)
-			
-			undefined
-		),
-		
-		fn Load inLibName inAbsPath:unsupplied inRelativePath:unsupplied inLoadAsConstant:False inReload:( keyboard.escPressed ) =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Loads the inputed library ( if the file exists ) from the 
-					current code path library directory, only if that library
-					is not currently loaded or if the Reload flag is true.  If
-					the inputed string is flagged as not being a library file,
-					then the function will load the inputed string file using
-					the current code path as the base.
-				
-				\param	inLibName			<string>
-				\param	inRelativePath		<string>	Default:"Lib/"
-				\param	inOLESignature		<string>	Default:""
-				\param	inLoadAsConstant	<boolean>	Default:False
-				\param	inReload			<boolean>	Default:False
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/28/06: Now uses globalVars for variable definition and returns library variable
-			
-				\return				
-					<variant> LibraryVariable | undefined Failure
-			---------------------------------------------------------------------*/
-			
-			local tLoadAsExternal = ( inRelativePath != unsupplied )
-			local tFileStr = undefined
-			
-			if ( inAbsPath != unsupplied ) and ( DoesFileExist inAbsPath ) then
-			(
-				tFileStr = ( inAbsPath + "\\" + inLibName + ".ms" )
-				if ( not DoesFileExist tFileStr ) then
-				(
-					return ( messageBox ( "File does not exist:\n" + tFileStr ) title:"MXS Lib" )
-				)
-			)
-			else
-			(
-				tFileStr = this.FindLibFile inLibName inRelativePath:inRelativePath
-			)
-			
-			if tFileStr == undefined then
-			(
-				messageBox ( "No module found matching name: " + inLibName )
-				return undefined
-			)
-			
-			if ( DoesFileExist tFileStr ) then
-			(
-				if ( not this.IsLoaded inLibName or inReload ) then
-				(
-					if ( this.printStatus ) then
-					(
-						format "mxsLib Loading Library: %\n" inLibName
-					)
-					
-					execute ( "global " + inLibName + " = undefined" )
-					
-					fileIn tFileStr
-				)
-				
-				if ( tLoadAsExternal ) then
-				(
-					if ( this.GetExternalLibrary inLibName == undefined ) then
-					(
-						if ( this.printStatus ) then
-						(
-							print ( "Adding to Externals: " + inLibName )
-						)
-						
-						local tExternalLib = externalLibraryStruct()
-						
-						tExternalLib.name = inLibName
-						tExternalLib.relativePath = inRelativePath
-						
-						append this._externals tExternalLib
-					)
-				)
-				else if ( inLoadAsConstant ) then
-				(
-					if ( findItem this._constantLibraries inLibName == 0 ) then
-					(
-						if ( this.printStatus ) then
-						(
-							print ( "Adding to Constants Array: " + inLibName )
-						)
-						
-						local tIndex = findItem this._libraries inLibName
-						
-						if ( tIndex != 0 ) then
-						(
-							deleteItem this._libraries tIndex
-						)
-						
-						append this._constantLibraries inLibName
-					)
-				)
-				else
-				(
-					if ( findItem this._constantLibraries inLibName ) == 0 and ( findItem this._libraries inLibName ) == 0 then
-					(
-						if ( this.printStatus ) then
-						(
-							print ( "Adding to Libraries Array: " + inLibName )
-						)
-						
-						append this._libraries inLibName
-					)
-				)
-				
-				if ( this.printStatus ) then
-				(
-					print inLibName
-				)
-				
-				--return ( globalVars.get tLibraryStr )
-				return (format "Using %\n" inLibName)
-			)
-			else
-			(
-				print ( "[mxsLib ERROR] Could not find library file: " + tFileStr )
-				return undefined
-			)
-		),
-		
-		fn Using inLibName inAbsPath:unsupplied inRelativePath:unsupplied inLoadAsConstant:False inReload:( keyboard.escPressed ) =
-		(
-			this.Load inLibName inAbsPath:inAbsPath inRelativePath:inRelativePath inLoadAsConstant:inLoadAsConstant inReload:inReload
-		),
-		
-		fn GetHashtableKeys hash =
-		(
-			/* 
-			Get an array of keys in a DotNet Hashtable
-			 */
-			--spit the posible keys out  
-			DNArray = dotNetObject "System.string[]" hash.keys.count  
-			hash.keys.copyTo DNArray 0  
-			out = for i = 1 to hash.keys.count collect (DNArray.get (i-1))
-			out
-		),
-		
-		fn GetScriptDependencies scriptFile =
+		fn GetScriptDependencies mxsModule =
         (
-            if not ( DoesFileExist scriptFile ) then
+			/*DOC_--------------------------------------------------------------------
+			Get a list of modules being sourced by the supplied module
+			
+			Args:
+			 	mxsModule (string) : file path to an mxs module file
+			
+			Returns:
+				out: (array[string]) : array of string paths to mxs module files
+			
+			--------------------------------------------------------------------_END*/
+			
+            if not ( DoesFileExist mxsModule ) then
             (
-                format "***** GetStringBlock was unable to find the supplied file: % *****\n" scriptFile
+                format "***** GetStringBlock was unable to find the supplied file: % *****\n" mxsModule
                 return ""
             )
             
             local out = #()
-            
-            local strm = ( openFile scriptFile mode:"r" )
+            local strm = ( openFile mxsModule mode:"r" )
             
             while not ( eof strm ) do
             (
                 local l = readLine strm
-                if ( matchPattern l pattern:"*_ilmLibrary.Load*" ) then
+                if ( matchPattern l pattern:"*mxs.using*" ) then
                 (
                     local lineStrArr = ( filterString l "\"" )
                     
@@ -1517,8 +1002,26 @@ global mxs
             out
         ),
         
-        fn GetStringBlock textFile fromStr toStr filterFromStr:True filterToStr:True =
+        fn GetStringBlock textFile fromStr toStr title:"" filterFromStr:True filterToStr:True =
         (
+			/*DOC_--------------------------------------------------------------------
+			Collects a block of text in a file between the fromStr and toStr args
+			
+			Args:
+			 	textFile (string) : filepath to text file
+				fromStr (string) : string pattern to find to begin collecting the block of text from
+				toStr (string) : string pattern to end collecting at
+			
+			Kwargs:
+				title (str) : Optional title head for the string block
+				filterFromStr (boolean) : If true will remove the fromStr text from the string pattern for printing back
+				filterToStr (boolean) : If true will remove the toStr text from the string pattern for printing back
+			
+			Returns:
+				strBlock: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
             if not ( DoesFileExist textFile ) then
             (
                 format "***** GetStringBlock was unable to find the supplied file: % *****\n" textFile
@@ -1555,220 +1058,531 @@ global mxs
                 strBlock = ( SubstituteString strBlock iToStr "" )
             )
             
-            format "======================================\n%\n======================================\n" strBlock
-        ),
-        
-        fn GetScriptHeader scriptFile =
-        (
-            GetStringBlock scriptFile "*__MXSDOC__*" "*__END__*" filterFromStr:True filterToStr:True
-        ),
-        
-        fn GetScriptHelp scriptFile =
-        (
-            GetStringBlock scriptFile "*__Help__*" "*__END__*" filterFromStr:False filterToStr:True
+            format "======================================\n%%\n======================================\n" title strBlock
         ),
 		
-		fn LoadEnvData =
+		fn GetScriptHeader mxsModule =
 		(
-			/* 
-			Work in progress to get envrionment data (paths) from system environment variables
-			 */
+			/*DOC_--------------------------------------------------------------------
+			Returns the block of text between "*__MXSDOC__*" and "*__END__*"
 			
-			local sysEnv = this.GetSysEnv()
-			local varDic = sysEnv.GetEnvironmentVariables()
-			local keyArr = this.GetHashtableKeys varDic
+			Args:
+			 	mxsModule (string) : Path to module script file
 			
-			local mxsVars = for key in keyArr where matchPattern (tolower key) pattern:"mxs_*" collect key
-				
-			if mxsVars.count != 0 then
+			Returns:
+				(string)
+			
+			--------------------------------------------------------------------_END*/
+			
+			this.GetStringBlock mxsModule "__MXSDOC__" "__END__" filterFromStr:True filterToStr:True
+		),
+
+		fn GetScriptHelp mxsModule _fn: =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Returns the block of text between "*__Help__*" and "*__END__*"
+			
+			Args:
+			 	mxsModule (string) : Path to module script file
+			
+			Kwargs:
+				_fn (string) :  Name of the internal method as a string
+			
+			Returns:
+				(string)
+			
+			--------------------------------------------------------------------_END*/
+			
+			if _fn == unsupplied then
 			(
-				
+				this.GetStringBlock mxsModule "*__HELP__" "*__END__" filterFromStr:False filterToStr:True
 			)
 			else
 			(
-				return False
+				if ClassOf _fn == String then
+				(
+					this.GetStringBlock mxsModule ( "*fn " + _fn + "*" ) "**_END**" filterFromStr:False filterToStr:False
+				)
+				else
+				(
+					format "***** _fn must be a String *****\n"
+				)
 			)
 		),
 		
-		fn LoadConfigData =
+		fn ReloadPythonModule moduleVar =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Loads the configuration file for the environments and paths
-					mxsConfigFile is a global variable defined in the mxsStartup
-					library
-				
-				\history
-					- EKH 04/17/06: Created
+			/*DOC_--------------------------------------------------------------------
+			Attempts to reload a Python module that has been aggregated to a MaxScript variable
 			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
+			Args:
+			 	moduleVar (PyWrapperBase) : MaxScript variable holding the Python module
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			local module_str = ( filterString ( moduleVar as string ) "'*'" )[2]
+			local module_name_arr = ( FilterString module_str "." )
+			local module_name = ""
+			
+			try
+			( -- try to reload the module with the fullname
+				python.execute ( "import " + module_str )
+				
+				module_name = module_name_arr[module_name_arr.count]		
+				
+				python.execute ( "reload(" + module_name + ")" )
+				
+				format "***** MXS Reloaded Python Module: % *****\n" module_name
+			)
+			catch
+			(
+				try
+				( -- try to reload the module that is one level up from the fullname
+					module_str = ( module_name_arr[1] + "." )
+
+					for i = 2 to module_name_arr.count - 1 do
+					(
+						module_str += ( module_name_arr[i] + "." )
+					)
+					
+					module_str = TrimRight module_str "."
+					
+					python.execute ( "import " + module_str )		
+					python.execute ( "reload(" + module_str + ")" )
+					
+					format "***** MXS Reloaded Python Module: % *****\n" module_str
+				)
+				catch
+				(
+					format "***** Unable to reload the python module: % *****\n" module_name
+				)
+			)
+		),
+		
+		fn GetEnvironment inEnvironment:"" =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the environment instance that matches the inputed ID, if
+			one exists, otherwise returns undefined
+			
+			Kwargs:
+			 	inEnvironmentID (string)
+			
+			Returns:
+				EnvironmentClass | undefined
+			
+			--------------------------------------------------------------------_END*/
+			
+			local out = undefined
+			
+			if ( this.debugLevel > 0 ) then print ("GetEnvironment() inEnvironment: " + (if inEnvironment == "" then "unsupplied" else inEnvironment))
+				
+			local inEnvironmentID = this._normEnv inEnvironment
+				
+			if ( this._environments.HasKey inEnvironmentID ) then
+			(				
+				out = this._environments.GetValue inEnvironmentID
+			)
+			
+			if ( this.debugLevel > 0 ) then print ("GetEnvironment() out: " + out as string)
+			
+			out
+		),
+		
+		fn GetLoadedLibraries inIncludeLocals:True inIncludeConstants:True =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Returns the names of the libraries that are currently loaded
+			
+			Kwargs:
+			 	inIncludeLocals (boolean) : Includes the local libraries in the output list
+				inIncludeConstants (boolean) : Includes the constant libraries in the output list
+			
+			Returns:
+				(array[string])
+			
+			--------------------------------------------------------------------_END*/
+			
+			local outList = #()
+			
+			if ( inIncludeLocals ) then
+			(
+				join outList this._libraries
+			)
+			if ( inIncludeConstants ) then
+			(
+				join outList this._constantLibraries
+			)
+				
+			outList
+		),
+		
+		fn GetPath inPathID inEnvironment:"" inPathSeparator:"/" =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the path value for the given ID.  If no environment is specified
+			then the current active environment is used, seperating the outputed
+			folders/path using the given string
+	
+			Args:
+			 	inPathID (string)
+			
+			Kwargs:
+				inEnvironment (string)
+				inPathSeparator (string)
+			
+			Returns:
+				(string) : path
+			
+			--------------------------------------------------------------------_END*/
+			
+			if ( this.debugLevel > 0 ) then
+			(
+				print ("[mxsLib] " + getSourceFilename())
+				format "GetPath() inPathID: % inEnvironment: %\n" inPathID inEnvironment
+			)
+			
+			local out = undefined
+			
+			local outPath = ""
+			local tEnvironment = this.GetEnvironment inEnvironment:inEnvironment
+			
+			if ( tEnvironment != undefined ) then
+			(
+				outPath = tEnvironment.GetPath inPathID
+			)
+			
+			if ( this.debugLevel > 0 ) then format "\toutPath: %\n" outPath
+			
+			if out != "" then
+			(
+				outPath = ( this.RemovePathTemplates outPath inEnvironment:inEnvironment )
+			)
+			
+			out = pathConfig.NormalizePath outPath
+			out
+		),
+		
+		fn GetPathIDs inEnvironment:"" =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the path IDs available for the given environment, using the current
+			active environment if non is specified
+			
+			Kwargs:
+			 	inEnvironment (string)
+			
+			Returns:
+				outPathIDs: (array[string])
+			
+			--------------------------------------------------------------------_END*/
+			
+			local tEnvironment = this.GetEnvironment inEnvironment:inEnvironment
+			
+			outPathIDs = for PathID in ( tEnvironment.GetPathIDs() ) collect PathID
+			
+			outPathIDs
+		),
+		
+		fn GetEnvironmentIDs =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Gets the loaded environment IDs
+			
+			Returns:
+				(array[string])
+			
+			--------------------------------------------------------------------_END*/
+			
+			this._environments.keys()
+		),
+		
+		fn IsLoaded inString =
+		( 
+			/*DOC_--------------------------------------------------------------------
+			Checks to see if the given string variable is assigned in the globalVars struct
+			
+			Args:
+			 	inString (string)
+			
+			Returns:
+				(boolean)
+			
+			--------------------------------------------------------------------_END*/
+			
+			try(( globalVars.get inString ) != undefined )catch( False )
+		),
+		
+		fn IsPath pathID inEnvironment:"" =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Checks to see if the inputed string is a path ID in the given
+			environment, using the active environment if none is specified
+			
+			Args:
+			 	pathID (string)
+			
+			Kwargs:
+				inEnvironment (string)
+			
+			Returns:
+				(boolean)			
+			
+			--------------------------------------------------------------------_END*/
+			( findItem ( this.GetPathIDs inEnvironment:inEnvironment ) ( toLower ( pathID as string )) != 0 )
+		),
+		
+		fn GetDateFromTimeString timeString =
+        (
+			/*DOC_--------------------------------------------------------------------
+			Filters the string returned form LocalTime and/or GetFileModDate() for the date
+			
+			Args:
+			 	timeString (strign) : from LocalTime or GetFileModDate <file>
+			
+			Returns:
+				date: (string)
+			
+			--------------------------------------------------------------------_END*/
+			
+            local stringArr = FilterString timeString " "
+			
+            out = ( for item in stringArr where matchPattern item pattern:"*/*" collect item )
+			
+			if out != undefined and out.count != 0 then
+			(
+				out = out[1]
+			)
+			else
+			(
+				out = undefined
+			)
+			
+            out
+        ),
+        
+        fn IsModuleModified modulePath =
+        (
+			/*DOC_--------------------------------------------------------------------
+			Compares the modified date of the input file with the current date
+			
+			Args:
+			 	modulePath (string) : path to mxs module
+			
+			Returns:
+				(boolean) : True if modified today
+			
+			--------------------------------------------------------------------_END*/
+			
+            local today = GetDateFromTimeString localTime
+            local moduleDate = GetDateFromTimeString ( GetFileModDate modulePath )
+            
+            if today == moduleDate then
+            (
+                format "[MXS]: ***** File was modified today: % *****\n" ( GetFileNameFile modulePath )
+                True
+            )
+            else
+            (
+                False
+            )
+        ),
+		
+		fn FindLibFile inLibName =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Loops through each path in MXSPATH and searches for a file matching the inLibName
+			Returns the first file it finds matching the name
+			
+			Args:
+			 	inLibName (string)
+			
+			Returns:
+				(string) | undefined : Full file path to the mxs module or undefined if not found
+			
+			--------------------------------------------------------------------_END*/
+			
+			local pathArr = ( FilterString ( this.GetPath #MXSPATH ) ";" )
+			
+			for p in pathArr do
+			(
+				if p[p.count] != "/" then p = ( p + "/" )
+				
+				local fileArr = GetFiles ( p + "*.ms*" )
+				
+				local nameFileArr = for f in fileArr where ( matchPattern ( GetFileNameFile f ) pattern:inLibName ) collect f
+				
+				if nameFileArr.count == 1 then
+				(
+					return nameFileArr[1]
+				)
+				else if nameFileArr.count > 1 then
+				(
+					format "MXS -!-!- More than one file matching that name was found.\n%\n" nameFileArr
+					return nameFileArr[1]
+				)
+			)
+			
+			undefined
+		),
+		
+		fn Using inLibName inReload:( keyboard.escPressed ) =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Checks if the inputed library name is already loaded. If so, it continues.
+			If the file is already loaded, but the inReload flag is true then it treats the library as if it's not loaded.
+			If the library is not already loaded it searches for the lib in the MXSPATH.
+			Once found it registers the library and performs a FileIn on the module.
+			
+			Args:
+			 	inLibName (string) : Name of module to load
+			
+			Kwargs:
+				inReload (boolean) : If true, force a reload of the module
+			
+			Returns:
+				if no module is found then | undefined
+			
+			--------------------------------------------------------------------_END*/
+			
+			
+			if ( this.IsLoaded inLibName) and not inReload then
+			(
+				return ( format "[%] --- Using: %\n" this.classId inLibName )
+			)
+			
+			local tFileStr = this.FindLibFile inLibName
+			
+			if ( tFileStr == undefined ) then
+			(
+				messageBox ( "No module found matching name: " + inLibName ) tite:this.classID
+				return undefined
+			)
+			
+			if ( DoesFileExist tFileStr ) then
+			(
+				if ( not this.IsLoaded inLibName or inReload or this.IsModuleModified tFileStr ) then
+				(
+					if ( this.printStatus ) then
+					(
+						format "[%] --- Loading Library: %\n" this.classId inLibName
+					)
+					
+					this.ClearGlobal inLibName
+					--execute ( "global " + inLibName + " = undefined" )
+					
+					AppendIfUnique this._libraries inLibName
+					
+					FileIn tFileStr
+				)
+			)
+		),
+		
+		fn AppendPythonPath devPath =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Appends the inputed path to the PYTHONPATH env variable
+			
+			Args:
+			 	devPath (string)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			
+			local pyCmd = stringStream ""
+			
+			format "
+import sys
+tempDevPath = r\"%\"
+	
+if tempDevPath not in sys.path:
+	print 'Appending path'
+	sys.path.insert(0,tempDevPath)
+else:
+	print 'Path already exists'
+			" devPath to:pyCmd
+			
+			python.execute ( pyCmd as string )
+		),
+		
+		fn LoadConfigData envId:"SYS" =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Sets the environment paths from environment variables
+			
+			Kwargs:
+			 	envId (string) : named id of environment ( default "SYS" )
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			local sysenv = this.GetSysEnv()
+			local tEnvironment = EnvironmentClass()
+			
+			tEnvironment.name = envId
 			
 			this._environments.Clear()
+			this._activeEnvironment = envId
 			
-			if ( ::_codeEnv == "SYS" ) then
-			(
-				this._activeEnvironment = ::_codeEnv
-				
-				local tEnvironment = EnvironmentClass()
-				
-				local sysenv = this.GetSysEnv()
-				
-				tEnvironment.SetPath "NETROOT" ( sysenv.GetEnvironmentVariable "NETROOT" )
-				tEnvironment.SetPath "MXS_PATH" ( sysenv.GetEnvironmentVariable "MXS_PATH" )
-				tEnvironment.SetPath "MXS_CODEROOT" ( sysenv.GetEnvironmentVariable "MXS_CODEROOT" )
-				tEnvironment.SetPath "MXS_LIB" ( sysenv.GetEnvironmentVariable "MXS_LIB" )
-				tEnvironment.SetPath "MXS_TOOLS" ( sysenv.GetEnvironmentVariable "MXS_TOOLS" )
-				tEnvironment.SetPath "MXS_STARTUPPATH" ( sysenv.GetEnvironmentVariable "MXS_STARTUPPATH" )
-				tEnvironment.SetPath "MXS_ASSEMBLIES" ( sysenv.GetEnvironmentVariable "MXS_ASSEMBLIES" )
-				tEnvironment.SetPath "PYTHONPATH" ( sysenv.GetEnvironmentVariable "PYTHONPATH" )
-				
-				tEnvironment.name = ::_codeEnv
-				
-				this._environments.SetValue ( toLower( ::_codeEnv ) ) tEnvironment
-				
-				return True
-			)
-			else
-			(
-				throw "Trying to get UserConfigFile"
-				
-				local configFile = this.GetUserConfigFile()
-				
-				if ( DoesFileExist configFile ) then
-				(
-					this._activeEnvironment = getINISetting configFile "GLOBALS" "environment"
-					
-					for tSection in getINISetting configFile do
-					(
-						if ( tSection != "GLOBALS" ) then
-						(
-							local tEnvironment = EnvironmentClass()
-							
-							for tKey in getINISetting configFile tSection do
-							(
-								tEnvironment.SetPath tKey ( getINISetting configFile tSection tKey )
-							)
-							
-							tEnvironment.name = tSection
-							
-							this._environments.SetValue ( toLower( tSection ) ) tEnvironment
-						)
-					)
-					
-					this.SetCodePath this._activeEnvironment
-					
-					return True
-				)
-			)
+			tEnvironment.SetPath "NETROOT" ( sysenv.GetEnvironmentVariable "NETROOT" )
+			tEnvironment.SetPath "MXSPATH" ( sysenv.GetEnvironmentVariable "MXSPATH" )
+			tEnvironment.SetPath "MXS_CODEROOT" ( sysenv.GetEnvironmentVariable "MXS_CODEROOT" )
+			tEnvironment.SetPath "MXS_LIB" ( GetSourceFileName() )
+			tEnvironment.SetPath "MXS_TOOLS" ( sysenv.GetEnvironmentVariable "MXS_TOOLS" )
+			tEnvironment.SetPath "MXS_STARTUPPATH" ( sysenv.GetEnvironmentVariable "MXS_STARTUPPATH" )
+			tEnvironment.SetPath "MXS_ASSEMBLIES" ( sysenv.GetEnvironmentVariable "MXS_ASSEMBLIES" )
+			tEnvironment.SetPath "PYTHONPATH" ( sysenv.GetEnvironmentVariable "PYTHONPATH" )
 			
-			
-			return False
+			this._environments.SetValue ( toLower( envId ) ) tEnvironment
 		),
 		
-		fn SaveConfigData =
+		fn ReloadAll =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Saves the configuration file for the environments and paths
-					mxsConfigFile is a global variable defined in the mxsStartup
-					library
-				
-				\history
-					-GK 01/30/14: Created
+			/*DOC_--------------------------------------------------------------------
+			Takes the current libraries that have been loaded and reloads them
+			using the latest environment
 			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			--this._environments.Clear();
-			if ( DoesFileExist ::mxsConfigFile ) then
+			Args:
+			 	inReloadLibraries (boolean)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			for tLibName in this._libraries do
 			(
-				setINISetting ::mxsConfigFile "GLOBALS" "environment" (this._activeEnvironment)
-				return True
-			)
-			return False
-		),
-		
-		fn LocalCodePathExists =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Checks to see if the local code path exists on this machine
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
-			return ( DoesFileExist ( this.GetPath #codeRoot inEnvironment:"development" ) )
-		),
-		
-		fn ReloadAll inReloadLibraries:True inReloadConstants:True inReloadExternal:True =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Takes the current libraries that have been loaded and reloads them
-					using the latest environment
-				
-				\param		inReloadLibraries			<boolean>
-				\param		inReloadConstants			<boolean>
-				\param		inReloadExternal			<boolean>
-			
-				\history
-					- EKH 04/17/06: Created
-			
-				\return				
-					<void>
-			---------------------------------------------------------------------*/
-			if ( inReloadLibraries ) then
-			(
-				for tLibName in this._libraries do
-				(
-					this.Load tLibName inReload:True
-				)
-			)
-			
-			if ( inReloadConstants ) then
-			(
-				for tLibName in this._constantLibraries do
-				(
-					if ( tLibName != this.classID ) then
-					(
-						this.Load tLibName inReload:True inLoadAsConstant:True
-					)
-				)
-			)
-			
-			if ( inReloadExternal ) then
-			(
-				for tExternal in this._externals do
-				(
-					this.Load tExternal.name inRelativePath:tExternal.relativePath inReload:True
-				)
+				this.Using tLibName inReload:True
 			)
 		),
 		
 		fn RemovePathTemplates inPath inEnvironment:"" inCustomKeys:#() inCustomValues:#() =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Removes templates from the inputed path string
-				
-				\param		inPath			<string>
-				\param		inEnvironment	<string>
-				\param		inCustomKeys	<array>[ <string>, .. ]
-				\param		inCustomValues	<array>[ <string>, .. ]
+			/*------------------------------------------------------------
+			Removes templates from the inputed path string
 			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Added inEnvironment tag to use with the template replacement
-				
-				\sa GetPath
+			Arguments:
+			 	inPath: (string) description
 			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
+			Kwargs:
+				inEnvironment: (string) description
+				inCustomKeys: (array[String]) description
+				inCustomValues: (array[String]) description
+			
+			Returns: 
+			 	outName (String) : modified file path
+			
+			See Also:
+				this.GetPath()
+			------------------------------------------------------------*/
 			
 			local tSplit = filterstring inPath "[]"
 			local outName = ""
@@ -1787,38 +1601,75 @@ global mxs
 				(
 					tPart = ( inCustomValues[ findItem inCustomKeys tPart ] as string )
 				)
+				
 				outName += tPart
 			)
-			return outName
+			
+			outName
 		),
 		
 		fn GetToolList =
 		(
-			local dirArr = GetDirectories ( ( this.GetToolPath() ) + "*" )
+			/*DOC_--------------------------------------------------------------------
+			Using the MXS_TOOLS path this generates a list of tool names from the subdirectories
+			of the multiple paths within the MXS_TOOLS value. A dictionary is also generated associating
+			the toolname with a path to the MaxScript file within each tool directory.
 			
-			this.toollist = for dir in dirArr where ( GetFiles ( dir + "\\*.ms" )).count != 0 collect ( TrimRight ( pathConfig.stripPathToLeaf dir ) "\\" )
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			this.toolList = #() -- clear the tool list
+			this.toolDict = dotNetObject "System.Collections.Hashtable"
+			
+			local out = #()
+			local pathArr = ( FilterString ( this.GetPath #MXS_TOOLS ) ";" )
+			
+			for p in pathArr do
+			(
+				if p[p.count] != "/" then p = ( p + "/" )
+				
+				local dirArr = GetDirectories (( pathConfig.NormalizePath p ) + "*" )
+				
+				for dir in dirArr where ( GetFiles ( dir + "\\*.ms" )).count != 0 do
+				(
+					local toolName = ( TrimRight ( pathConfig.stripPathToLeaf dir ) "\\" )
+					
+					if not toolDict.containsKey toolName then
+					(
+						toolDict.add toolName dir
+						
+						append out toolName
+					)
+				)
+			)
+			
+			this.toolList = out
 		),
 		
 		fn GetTool toolName =
 		(
-			if ( FindItem this.toollist toolName ) != 0 then
+			/*DOC_--------------------------------------------------------------------
+			Gets the path to the MaxScript associated with the toolname
+			
+			Args:
+			 	toolName (string)
+			
+			Returns:
+				( string ) | undefined : path to MaxScript file or undefined
+			
+			--------------------------------------------------------------------_END*/
+			
+			if this.toolDict.containsKey toolName then
 			(
-				local toolDir = for dir in ( GetDirectories ( ( this.GetToolPath() ) + "*" )) where ( MatchPattern ( pathConfig.StripPathToLeaf dir ) pattern:( toolName + "*" )) collect dir
+				local toolDir = this.toolDict.item[toolName]
 				
-				if ( toolDir.count != 0 ) then
-				(
-					toolDir = toolDir[1]
+				local sFile = ( GetFiles (toolDir + "\\*.ms" ))[1]
 					
-					local sFile = ( GetFiles (toolDir + "\\*.ms" ))[1]
-					
-					if DoesFileExist sFile then
-					(
-						return sFile
-					)
-				)
-				else
+				if DoesFileExist sFile then
 				(
-					MessageBox ( "Could not find the directory for the given tool name: " + ( toolName as string ) title:"mxs Error" )
+					return sFile
 				)
 			)
 			else
@@ -1831,9 +1682,20 @@ global mxs
 		
 		fn RunTool toolName =
 		(
-			local sFile = this.getTool toolName
+			/*DOC_--------------------------------------------------------------------
+			Looks for the tool by name. If found this does a FileIn on the MaxScript file.
 			
-			if sFile != undfefined then
+			Args:
+			 	toolName (string)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			local sFile = this.GetTool toolName
+			
+			if sFile != undefined then
 			(
 				FileIn sFile
 			)
@@ -1841,18 +1703,17 @@ global mxs
 		
 		fn SetActiveEnvironment environmentID =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Sets the current active environment to the given location
-				
-				\param		environmentID
+			/*DOC_--------------------------------------------------------------------
+			If an environment exists with the inputed ID then this sets it as the active environment
 			
-				\history
-					- EKH 11/16/06: Created
+			Args:
+			 	environmentID (string)
 			
-				\return				
-					<boolean>
-			---------------------------------------------------------------------*/
+			Returns:
+				(boolean)
+			
+			--------------------------------------------------------------------_END*/
+			
 			local out = false
 			local tNormEnv = this._normEnv environmentID
 			
@@ -1874,73 +1735,23 @@ global mxs
 			out
 		),
 		
-		fn SetCodePath inEnvironment setDefault:false =
-		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					Sets the current active environment to the given value and
-					reloads the libraries to the latest path
-				
-				\param		inEnvironment		<string>
-			
-				\history
-					- EKH 04/17/06: Created
-					- EKH 11/16/06: Added call to SetActiveEnvironment
-			
-				\return				
-					<string>
-			---------------------------------------------------------------------*/
-			local out = undefined
-			
-			if ( this.debugLevel > 0 ) then
-			(
-				print ("[mxsLib] SetCodePath() (" + getSourceFilename() + ")")
-				format "\nSetCodePath() inEnvironment: %\n" inEnvironment
-			)
-			
-			local success = this.SetActiveEnvironment inEnvironment
-
-			if ( success ) then
-			(
-				if ( this.debugLevel > 0 ) then ( format "\n\tsuccess!\n" )
-				if setDefault then this.SaveConfigData()
-				
-				--globalVars.set #toolboxDir ( this.GetCodePath() )
-				--global toolboxDir = this.GetCodePath()
-				local toolboxDir = this.GetCodePath()
-			
-				-- Store the current libraries so they can be reloaded after clearing.
-				local currentLibraries = deepcopy this._libraries
-				this.ClearLibraries()
-				
-				-- Setting this will ensure that ReloadAll will actually reload the libraries that were loaded originally.
-				this._libraries = currentLibraries
-				this.ReloadAll()
-				
-				
-				format "code Path: %" toolboxDir
-				out = toolboxDir
-			)
-			if ( this.debugLevel > 0 ) then format "\nSetCodePath() out: %\n" out
-						
-			out			
-		),
+		-------------------------------------------------------------------------------------------------------------
+		-- 							mxs CALLBACK DEFINITIONS
+		-------------------------------------------------------------------------------------------------------------
 		
-		-------------------------------------------------------------------------------------------------------------
-		-- 									mxs CALLBACK DEFINITIONS
-		-------------------------------------------------------------------------------------------------------------
 		fn BroadcastmxsCallback inCallback_type_name =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					This method provides a way for you to simulate one of the 
-					events and have all the callback scripts for it executed
-				
-				\param		inCallback_type_name		<string>
+			/*DOC_--------------------------------------------------------------------
+			This method provides a way for you to simulate one of the events and have
+			all the callback scripts for it executed
 			
-				\history
-					- DGH 05/05/06: Created
-			---------------------------------------------------------------------*/
+			Args:
+			 	inCallback_type_name (string)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
 			
 			for c in this._callbackArray where (c.type == inCallback_type_name) do
 			(
@@ -1957,13 +1768,16 @@ global mxs
 		
 		fn ShowCallbacks =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					This method lists out the current callback scripts in the 
-					Listener window.
-				\history
-					- DGH 05/05/06: Created
-			---------------------------------------------------------------------*/
+			/*DOC_--------------------------------------------------------------------
+			This method lists out the current callback scripts in the Listener window.
+			
+			Args:
+			 	ARG1 (type)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
 			
 			for c in this._callbackArray do
 			(
@@ -1973,28 +1787,33 @@ global mxs
 		
 		fn RegisterCallback inCallback_type_name inExecuteString id: filename:undefined =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					This method is used to register a new callback script. Requires 
-					as the first argument a name that specifies which type of notify 
-					event this script is associated with 
-					The script is supplied either as a direct String or StringStream 
-					value containing the text of the script to run, or as a 
-					fileName: keyword argument, in which case the named file is 
-					loaded and run whenever the event notification callback occurs. 
-					You can specify either a direct string or a fileName:, but not both
-					The optional id: parameter lets you tag one or a group of callbacks 
-					with a unique name so that you can remove them all as a group 
-					without interfering with other callbacks, perhaps registered by 
-					other scripted tools.
-				
-				\param		inCallback_type_name 	<name>
-				\param		inExecuteString 		<string>
-				\param		id						<anme>
+			/*DOC_--------------------------------------------------------------------
+			This method is used to register a new callback script. Requires 
+			as the first argument a name that specifies which type of notify 
+			event this script is associated with 
+			The script is supplied either as a direct String or StringStream 
+			value containing the text of the script to run, or as a 
+			fileName: keyword argument, in which case the named file is 
+			loaded and run whenever the event notification callback occurs. 
+			You can specify either a direct string or a fileName:, but not both
+			The optional id: parameter lets you tag one or a group of callbacks 
+			with a unique name so that you can remove them all as a group 
+			without interfering with other callbacks, perhaps registered by 
+			other scripted tools.
 			
-				\history
-					- DGH 05/05/06: Created
-			---------------------------------------------------------------------*/		
+			Args:
+			 	inCallback_type_name (name)
+				inExecuteString (string)
+			
+			Kwargs:
+				id (name)
+				filename (string)
+			
+			Returns:
+				(boolean)
+			
+			--------------------------------------------------------------------_END*/
+				
 			if (finditem this._callbackTypes inCallback_type_name == 0) then
 			(
 				local mxsCallbackID = ("mxs" + (inCallback_type_name as string) ) as name
@@ -2005,27 +1824,29 @@ global mxs
 			)
 			
 			append this._callbackArray ( mxsCallback type:inCallback_type_name command:inExecuteString id:id filename:filename )
-			return true
+			
+			true
 		),
 		
 		fn UnRegisterCallback callbackType: id: =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					This method is used to unregister and remove one or more 
-					callback scripts. Specifying just a callback event type name 
-					removes all the callback scripts for that event. Specifying 
-					just an id:<name> removes all callback scripts in all events 
-					with that ID. Specifying both limits the ID-based removal to 
-					the specified event type.
-					Specifying none remove all the mxs callbacks
-				
-				\param		callbackType 	<name>
-				\param		id			 	<name>
+			/*DOC_--------------------------------------------------------------------
+			This method is used to unregister and remove one or more 
+			callback scripts. Specifying just a callback event type name 
+			removes all the callback scripts for that event. Specifying 
+			just an id:<name> removes all callback scripts in all events 
+			with that ID. Specifying both limits the ID-based removal to 
+			the specified event type.
+			Specifying none remove all the mxs callbacks
 			
-				\history
-					- DGH 05/05/06: Created
-			---------------------------------------------------------------------*/
+			Kwargs:
+			 	callbackType (name)
+				id (name)
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
 			
 			-- no callbacks ? , nothing to do here!
 			if (this._callbackArray.count == 0) then
@@ -2084,43 +1905,35 @@ global mxs
 					deleteItem this._callbackIDs i
 				)
 			)
-		),
+		),		
 		
-		
-		/*!--------------------------------------------------------------------
-			\remarks	
-				log functions used to automatically log pipeline events
-		---------------------------------------------------------------------*/			
-		
-		fn DateTime localTimeStr: separatorDate:"/" separatorTime:":" =
+		fn DateTime separatorDate:"/" separatorTime:":" pathFriendly:False =
 		(
-			/*!--------------------------------------------------------------------
-				\remarks	
-					To conform log files to CLF format file we need the date in specific format. This function converts the current time to the 
-					CLF date format file
-					
-					[dd/MMM/yyyy:hh:mm:ss +-hhmm]
-					dd is the day of the month
-					MMM is the month
-					yyy is the year
-					:hh is the hour
-					:mm is the minute
-					:ss is the seconds
-					+-hhmm is the time zone
-				
-				\param		localTimeStr: 			<string>	date&time string to be converted. Defaults to the current date time
-				\JJ - 16/5/2014
+			/*DOC_--------------------------------------------------------------------
+			To conform log files to CLF format file we need the date in specific format.
+			This function converts the current time to the CLF date format file
 			
-				\return				
-					<string>		
-					
-				\history
-					- DGH 02/08/07: Created
-			---------------------------------------------------------------------*/			
+			[dd/MMM/yyyy:hh:mm:ss +-hhmm]
+			dd is the day of the month
+			MMM is the month
+			yyy is the year
+			:hh is the hour
+			:mm is the minute
+			:ss is the seconds
+			+-hhmm is the time zone
 			
-			if localTimeStr == unsupplied then localTimeStr = localtime
+			Kwargs:
+				separatorDate (string)
+				separatorTime (string)
+				pathFriendly (boolean) : If true, returns a string without illegal path characters
 			
-			--Modified to use getlocaltime fn to account for different date formats
+			Returns:
+				(string)
+			
+			--------------------------------------------------------------------_END*/
+
+			local months = #("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+			
 			local infoArray = getLocalTime() 
 			local monthStr = (months[infoArray[2] as integer]) as string
 			local dayStr = infoArray[4] as string
@@ -2133,26 +1946,79 @@ global mxs
 			if dayStr.count < 2 then dayStr = "0" + dayStr 
 			if monthStr.count < 3 then dayStr = "00" + dayStr 
 			if monthStr.count < 2 then dayStr = "0" + dayStr 
+			
+			
 		
 			-- for now timezone is fixed
 			local timezoneStr = "-0800"
 			
 			local dateTimeStr = stringStream ""
-			format "%%%%%%%%%%%%" dayStr separatorDate monthStr separatorDate yearStr separatorTime hourStr separatorTime minutesStr separatorTime secondsStr timezoneStr to:dateTimeStr
+			
+			if not pathFriendly then
+			(
+				format "%%%%%%%%%%%%" dayStr separatorDate monthStr separatorDate yearStr separatorTime hourStr separatorTime minutesStr separatorTime secondsStr timezoneStr to:dateTimeStr
+			)
+			else
+			(
+				local monthStr = infoArray[2] as string -- Path friendly will have an integer val fo the month
+				local pathSeparator = "_"
+				
+				if secondsStr.count < 2 then secondsStr = "0" + secondsStr -- Path friendly will always have double-digit for seconds
+				
+				format "%%%%%%%" yearStr monthStr dayStr pathSeparator hourStr minutesStr secondsStr to:dateTimeStr
+			)
+			
 			dateTimeStr as string
 		),
-
-		fn PrintToLog message host:sysinfo.computername rfc931:"-" username:sysinfo.username date:(this.dateTime()) request:"" status:"" details:"" toFile:undefined = 
+		
+		fn GetModule =
 		(
-			if toFile == undefined then toFile = listener
-			format "% % % [%] \"%\" \"%\" \"%\"\n" host rfc931 username date message status details to:toFile
-		)
+			/*DOC_--------------------------------------------------------------------
+			Get the full path to the current MaxScript file
+			
+			Returns:
+				String
+			--------------------------------------------------------------------_END*/
+			
+			( GetSourceFileName() )
+		),
+		
+		fn Help _fn: =
+		(
+			/*DOC_--------------------------------------------------------------------
+			Get help on the current module or a specific function
+			
+			Kwargs:
+				_fn (string) : Name of the internal method as a string
+			
+			Returns:
+				VOID
+			
+			--------------------------------------------------------------------_END*/
+			
+			::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
+		),
+		
+	private
+		
+		fn _init =
+		(
+			/*DOC_--------------------------------------------------------------------
+			This method is run upon instantiation of the struct
+			
+			Returns:
+				(VOID)
+			
+			--------------------------------------------------------------------_END*/
+			
+			this.LoadConfigData() -- required to build the environment class for searching paths
+			this.GetToolList() -- required to find all available tools
+			this.printStatus = True
+		),
+		
+		__init__ = _init()
 	)
 	
 	::mxs = mxsLibraryStruct()
-	
-	::mxs.LoadConfigData()
-	::mxs.GetToolList()
 )
 
---::mxs.load "ToolListXML"

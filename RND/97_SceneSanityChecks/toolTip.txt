@@ -1,1 +1,0 @@
-An assortment of sanity checks with accompanying fixes.

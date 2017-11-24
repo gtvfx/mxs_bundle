@@ -1,1 +1,0 @@
-if ::TabMenu != undefined then TabMenu.ILM_runTool "ResetToZero" else messageBox "Error running tool" title:"ILM:"

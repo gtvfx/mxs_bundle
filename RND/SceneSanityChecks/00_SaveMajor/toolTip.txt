@@ -1,2 +1,0 @@
-Versions up the current 3dsmax file.
-Assumes ILM naming convention.

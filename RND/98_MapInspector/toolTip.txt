@@ -1,1 +1,0 @@
-Manage all map loaders in your scene

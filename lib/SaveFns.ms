@@ -15,134 +15,206 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				    Gavyn Thompson
-Company:				GTVFX
-Website:				https://github.com/gtvfx
-Email:				    gftvfx@gmail.com
-ScriptVersion:			
-Updated:				
-***************************************************************************************************/
-/*
-__HELP__
-
-Constructor: SaveFns
-Instantiated Global: SaveFns
-
-[METHODS]
-
-
-[DESCRIPTION]
-Class for dealing with common save methods
-
-[USAGE]
-
-
+__MXSDOC__
+Author: Gavyn Thompson
+Company: GTVFX
+Website: https://github.com/gtvfx
+Email: gftvfx@gmail.com
 __END__
-*/
+***************************************************************************************************/
 
+
+::SaveFns = ""
+
+
+mxs.using "Logger"
+mxs.using "DotNetUi"
 
 
 struct SaveFns
 (
+	/*DOC_--------------------------------------------------------------------
+	__HELP__
+	
+	Various methods for common file save logic
+	
+	Members:
+		[FN] CancelShutdown
+		[FN] GetModule
+		[FN] LaunchBackburnerSlave
+		[FN] LaunchDeadlineSlave
+		[FN] SaveAndCloseMax
+		[FN] SaveAndClose_ui
+		[FN] SaveAndRestart
+		[FN] SaveAndShutdown
+		[FN] SaveIncrement
+		[FN] SaveMajorVersion
+		[FN] VerPadding
+		[FN] help
+	
+	__END__
+	--------------------------------------------------------------------_END*/
+	
 public
 
-	fn VerPadding inString: Number: Pad: =
+	fn VerPadding base_number: digit_count:3 =
 	(
-		if (inString != unsupplied) and (Number != unsupplied) and (Pad != unsupplied) do
+		/*DOC_--------------------------------------------------------------------
+		Pads the inputed base_number with zeros up to the inputed digit_count
+		
+		Kwargs:
+		 	base_number (integer)
+			digit_count (integer)
+		
+		Returns:
+			String
+		
+		--------------------------------------------------------------------_END*/
+		
+		if ( base_number != unsupplied ) then
 		(
-			ZeroString = ""
-			for x = 1 to (Pad - (Number as string).count) do (ZeroString = ZeroString + "0")
-			(inString + (ZeroString + (Number as string)))
-		)
-	),
-	
-	fn SaveMajorVersion userInit:false=
-	(
-		local maxPreName = getFileNameFile maxFileName
-		local maxPreNameArr = filterString maxPreName "_"
-		local maxRootName = maxPreNameArr[1]
-        
-		for x = 2 to (maxPreNameArr.count - 2) do
-		(
-			maxRootName = maxRootName + "_" +  maxPreNameArr[x]
-		)
-        
-		if not userInit then
-		(
-			local curVersionNumber = (( filterString maxPreNameArr[maxPreNameArr.count - 1] "v" )[1] as integer )
-			local userInit = maxPreNameArr[maxPreNameArr.count]
-			local newVersionNumber = this.VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
-			local finalMaxFileName = ( maxfilepath + maxRootName + "_" + newVersionNumber + "_" + userInit + ".max" )
+			local base_string = ""
+			for x = 1 to (digit_count - ( base_number as string ).count) do ( base_string = base_string + "0" )
+			( base_string + ( base_number as string ))
 		)
 		else
 		(
-			local curVersionNumber = ((filterString maxPreNameArr[maxPreNameArr.count] "v")[1] as integer)
-			local newVersionNumber = this.VerPadding inString:"v" Number:(curVersionNumber + 1) Pad:3
-			local finalMaxFileName = (maxfilepath + maxRootName + "_" + newVersionNumber + ".max")
-		)
-        
-		if doesFileExist finalMaxFileName then
-		(
-			messageBox "You are not in the most recent file. \n If you need to create a major version from this file do so manually."
-		)
-		else
-		(
-			saveMaxFile finalMaxFileName useNewFile:true
+			::Logger.error "VerPadding function requires a valid base_number passed as keyword" args:#() cls:this
 		)
 	),
 	
-	fn SaveIncrement =
+	fn SaveIncrement filepath: filename: save_to_dir:"_incrementalSave" increment_separator:"_" useNewFile:True =
 	(
-		if maxfilepath == "" then
+		/*DOC_--------------------------------------------------------------------
+		This takes the currently opened file and moves it to the derived directory
+		and renames it with an incremented padding. It then creates a fresh
+		save file at the original location.
+		
+		This logic never overwrites an existing file so there is no risk of data loss
+		if a crash occurs during the save.
+		
+		Kwargs:
+		 	filepath (string): Path to the root directory of the increment directory
+			filename (string): Base name of the increment file without the increment padding
+			save_to_dir (string): directory name of the directory with all the incremented files
+			increment_separator (string): character used to separator the increment number from base name
+			useNewFile (boolean): Matching flag for the MaxScript SaveMaxFile function
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
+		::Logger.info "SaveIncrement filepath:{1} filename:{2} save_to_dir:{3} increment_separator:{4} useNewFile:{5}" \
+							args:#(filepath, filename, save_to_dir, increment_separator, useNewFile) cls:this
+		
+		if ( filepath == unsupplied ) then filepath = maxfilepath
+		if ( filename == unsupplied ) then filename = maxfilename
+		
+		if filepath == "" then
 		(
 			return ( MessageBox "You'll need to save your Max file before you can incrementl" title:"GTVFX: Error" )
 		)
 		
-		makeDir ( maxfilepath + "_incrementalSave" )
+		MakeDir ( filepath + save_to_dir )
 		
-		local maxPreName = getFileNameFile maxFileName
-		local verSaveFiles = (getfiles (maxFilePath + "_incrementalSave" + "\\" + maxPreName + "*.max"))
-		local verSaveFilesArr = 	for v in verSaveFiles collect (getFileNameFile v)
+		local maxPreName = GetFileNameFile filename
+		local verSaveFiles = ( Getfiles ( filepath + save_to_dir + "\\" + maxPreName + increment_separator + "*.max" ))
+		local verSaveFilesArr = for v in verSaveFiles collect ( GetFileNameFile v )
 		local verNum = ( verSaveFilesArr.count + 1 )
 			
-		if verNum < 10 then verNumPadding = "00"
-		if verNum >= 10 and verNum < 100 then verNumPadding = "0"
-		if verNum >= 100 then verNumPadding = ""
+		verNum = this.VerPadding base_number:verNum digit_count:4
 		
-		local verMaxFileName = maxFilePath + "_incrementalSave\\" + maxPreName  + "_" + verNumPadding + (verNum as string) + ".max"
-		local newSaveFile = maxFilePath + maxFileName
+		local verMaxFileName = filepath + save_to_dir + "\\" + maxPreName  + increment_separator + verNum + ".max"
+		local newSaveFile = filepath + filename
+			
+		::Logger.debug "Saveing Increment to: {1}" args:#(verMaxFileName) cls:this
 		
-		renameFile newSaveFile verMaxFileName
-		saveMaxFile newSaveFile useNewFile:true
+		-- move the current file to the increment dir and rename it
+		RenameFile newSaveFile verMaxFileName
+			
+		-- save the new file
+		SaveMaxFile newSaveFile useNewFile:useNewFile
 		
-		format "***** SaveIncrement Successful *****\n"
+		::Logger.info "SaveIncrement Successful" cls:this
 	),
 	
 	fn CancelShutdown =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Sends a dos commnad to cancel the Windows shutdown process
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		dosCommand "shutdown /a"
 	),
 	
 	fn LaunchDeadlineSlave =
 	(
-		if not ( shellLaunch "deadlineSlave.exe" "" ) then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
+		/*DOC_--------------------------------------------------------------------
+		Attempts to launch deadlineSlave.exe
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
+		if not ( shellLaunch "deadlineSlave.exe" "" ) then messageBox "Unable to lauch Deadline Slave." title:"ERROR: Application Launch Error"
 	),
 	
 	fn LaunchBackburnerSlave =
 	(
-		if not ( shellLaunch "Slave.exe" "" ) then messageBox "Unable to lauch Deadline Slave." title:"GTVFX: Application Launch Error"
+		/*DOC_--------------------------------------------------------------------
+		Attempts to launch Slave.exe
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
+		if not ( shellLaunch "Slave.exe" "" ) then messageBox "Unable to lauch Backburner Slave." title:"ERROR: Application Launch Error"
 	),
 	
 	fn SaveAndCloseMax slave_dl:false slave_bb:false=
 	(
+		/*DOC_--------------------------------------------------------------------
+		Runs SaveIncrement with default flags then closes the 3dsmax applicaiton
+		
+		Kwargs:
+		 	slave_dl (boolean) : If true will attempt to launch Deadline slave prior to shutdon
+			slave_bb (boolean) : If true will attempt to launch Backburner slave prior to shutdon
+		
+		Returns:
+			VOID
+		
+		See Also:
+			SaveIncrement
+			LaunchDeadlineSlave
+			LaunchBackburnerSlave
+			
+		
+		--------------------------------------------------------------------_END*/
+		
 		this.SaveIncrement()
-		if slave_dl then launchDeadlineSlave()
-		else if slave_bb then launchBackburnerSlave()
+		if slave_dl then this.LaunchDeadlineSlave()
+		else if slave_bb then this.LaunchBackburnerSlave()
 		quitMax #noPrompt
 	),
 	
 	fn SaveAndRestart =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Runs SaveIncrement with default flags and then starts a 30 second timer to
+		restart the machine and closes the 3dsmax applicaiton.
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		this.SaveIncrement()
 		dosCommand "shutdown -t 30 -f -r -d up:125:1 -c \"Save & Close By GTVFX: 30 Seconds to restart...\""
 		quitMax #noPrompt
@@ -150,6 +222,15 @@ public
 	
 	fn SaveAndShutdown =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Runs SaveIncrement with default flags and then starts a 30 second timer to
+		shutdown the machine and closes the 3dsmax applicaiton.
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		this.SaveIncrement()
 		dosCommand "shutdown -t 30 -f -s -d up:125:1 -c \"Save & Close By GTVFX: 30 Seconds to shutdown...\""
 		quitMax #noPrompt
@@ -157,6 +238,14 @@ public
 	
 	fn SaveAndClose_ui =
 	(
+		/*DOC_--------------------------------------------------------------------
+		GUI to choose from options of logic to perform when while closing the application
+		
+		Returns:
+			ro (MaxScript Dialog)
+		
+		--------------------------------------------------------------------_END*/
+		
 		rollout ro "Save & Close By GTVFX" width:300 
 		(
 			local self
@@ -175,43 +264,81 @@ public
 			fn _init pself =
 			(
 				self = pself
-				self.initDnetBtn dNbtn_execute "Save & Close" 12 colorOffsetInt:15 tooltip:"Execute the selected option."
+				::DotNetUi.initDnetBtn dNbtn_execute "Save & Close" 12 colorOffsetInt:15 tooltip:"Execute the selected option."
 			)
 			
 			on dNbtn_execute mouseClick do
 			(
 				case ddl_option.selected of
 				(
-					("Quit Max"): self.saveAndCloseMax()
-					("Quit Max and Launch Deadline Slave"): self.saveAndCloseMax slave:true
-					("Restart"): self.saveAndRestart()
-					("Shutdown"): self.saveAndShutdown()
+					("Quit Max"): self.SaveAndCloseMax()
+					("Quit Max and Launch Deadline Slave"): self.SaveAndCloseMax slave:true
+					("Restart"): self.SaveAndRestart()
+					("Shutdown"): self.SaveAndShutdown()
 				)
 			)
 			
 			on dNbtn_execute MouseEnter arg do
 			(
-				self.initToolTip dNbtn_execute dNbtn_execute.tag
+				::DotNetUi.initToolTip dNbtn_execute dNbtn_execute.tag
 			)
 			
 			on dNbtn_execute MouseLeave arg do
 			(
-				self.destroyToolTip()
+				::DotNetUi.destroyToolTip()
 			)
 		)
 		
 		createDialog ro
-		ro._init self
+		ro._init this
+		
+		ro
+	),
+	
+	fn GetModule =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get the full path to the current MaxScript file
+	
+		Returns:
+			String
+		--------------------------------------------------------------------_END*/
+	
+		( GetSourceFileName() )
+	),
+	
+	fn Help _fn: =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get help on the current module or a specific function
+	
+		Kwargs:
+			_fn (string) : Name of the internal method as a string
+	
+		Returns:
+			VOID
+	
+		--------------------------------------------------------------------_END*/
+	
+		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
 	),
 	
 private
     
-    fn __init__ =
+    fn _init =
 	(
-		self = this
+		/*DOC_--------------------------------------------------------------------
+		This method is run upon instantiation of the struct
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
+		-- pass
 	),
 	
-	_init = __init__()
+	__init__ = _init()
 )
 
 SaveFns = SaveFns()

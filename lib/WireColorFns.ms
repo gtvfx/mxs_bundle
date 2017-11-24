@@ -41,10 +41,7 @@ __END__
 */
 
 
--- TODO: Merge this module with WireColor.ms
 
-mxs.Load "WpfProgressBar"
-mxs.Load "ilmEventTimer"
 mxs.Load "UserProps"
 mxs.Load "MeshFns"
 mxs.Load "HierarchyFns"

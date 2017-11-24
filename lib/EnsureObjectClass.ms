@@ -18,89 +18,92 @@ along with this program. if not, see <http://www.gnu.org/licenses/>.
 __MXSDOC__
 Author: Gavyn Thompson
 Company: GTVFX
-Website: https://github.com/gtvfx
-Email: gftvfx@gmail.com
+Website: www.gtvfx.com
+Email: gthompson@gtvfx.com
 __END__
 ***************************************************************************************************/
 
 
-::EventTimer = ""
+::EnsureObjectClass = ""
 
 
-struct EventTimer
+mxs.using "Logger"
+
+
+struct EnsureObjectClass
 (
 	/*DOC_--------------------------------------------------------------------
 	__HELP__
 	
-	This is a callable object that can be used to track the time taken
-	between tasks.
+	This is an instanceable object that takes will convert an inputed 3dsmax object
+	to an inputed 3dsmax Object Class. It stores the objects original class and
+	provides a method to restore it.
 	
-	Create an instance of an EventTimer object, then run process, then 
-	call End() on the EventTimer object. You'll get a printed message of
-	the time taken to run the process.
+	Use this struct when running logic that requires a specific object class
 	
 	Members:
-		[Var] caption
-		
-		[FN] End
-		[FN] GetModule
-		[FN] help
-		[FN] start
+		[Var] obj
+		[Var] objClass : Class you want the inputed object to be
+		[Var] targetClass : Original class of the inputed object
 	
-	Example:
-		-- The Start method is called upon instantiation. Best practice is to define the caption parameter at the time of instantiation. 
-		
-		assetPublishTimer = ::EventTimer caption:"Asset Publish"
-		< Logic for asset publish >
-		assetPublishTimer.End()
-		>>> Asset Publish took 32.066s
+		[FN] ConvertToClass
+		[FN] GetModule
+		[FN] Restore
+		[FN] help
 	
 	__END__
 	--------------------------------------------------------------------_END*/
 	
 public
+
+	-- Required Fields
+	obj,
+	targetClass,
 	
-	caption = "Event",
+	--
+	objClass,
 	
 	
-	fn Start =
+	fn ConvertToClass obj cls =
 	(
 		/*DOC_--------------------------------------------------------------------
-		Stores a timestamp value when called
+		Converts the object to the class if it's possible
 		
-		Returns:
-			TimeStamp (integer)
-		
-		--------------------------------------------------------------------_END*/
-		
-		this._eventStart = TimeStamp()
-	),
-	
-	fn End =
-	(
-		/*DOC_--------------------------------------------------------------------
-		Takes a timestamp value and compares it to the timestamp value stored
-		from the Start method. Prints the time delta to the listener in a readable format.
+		Args:
+		 	obj (NODE)
+			cls (3dsmax Object Class)
 		
 		Returns:
 			(VOID)
 		
 		--------------------------------------------------------------------_END*/
 		
-		if ( classOf this._eventStart == integer ) then
+		::Logger.debug "ConvertToClass {1} {2}" args:#(obj, cls) cls:this
+		
+		if ( CanConvertTo obj cls ) then
 		(
-			this._eventEnd = TimeStamp()
-			
-			local dTime = (( this._eventEnd - this._eventStart )/1000.0 )
-			
-			if dTime > 60 then
-			(
-				format "% took: %m\n" caption (dTime/60.0)
-			)
-			else
-			(
-				format "% took: %s\n" caption dTime
-			)
+			::Logger.info "Converting {1} to {2}" args:#(obj, cls) cls:this
+			ConvertTo obj cls
+		)
+		else
+		(
+			::Logger.error "Cannot convert {1} to {2}" args:#(obj, cls) cls:this
+		)
+	),
+	
+	fn Restore =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Convert the inputed object back to its original class
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
+		if this.objClass != ( ClassOf this.obj ) then
+		(
+			this.ConvertToClass this.obj this.objClass
 		)
 	),
 	
@@ -108,7 +111,7 @@ public
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
-		
+	
 		Returns:
 			String
 		--------------------------------------------------------------------_END*/
@@ -120,23 +123,20 @@ public
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get help on the current module or a specific function
-		
+	
 		Kwargs:
 			_fn (string) : Name of the internal method as a string
-		
+	
 		Returns:
 			VOID
-		
+	
 		--------------------------------------------------------------------_END*/
 	
 		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
 	),
-	
+
 private
-	
-	_eventStart,
-	_eventEnd,
-	
+
 	fn _init =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -147,8 +147,23 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-		this.Start()
+		if this.obj == undefined then
+		(
+			return "EnsureObjectClass requires a valid object passed to the <obj> flag"
+		)
+		if this.targetClass == undefined then
+		(
+			return "EnsureObjectClass requires a valid <Max Class> passed to the <targetClass> flag"
+		)
+		
+		this.objClass = ( ClassOf obj )
+		
+		if ( this.objClass != this.targetClass ) then
+		(
+			this.ConvertToClass this.obj this.targetClass
+		)
 	),
-    
+
 	__init__ = _init()
 )
+

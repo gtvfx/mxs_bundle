@@ -15,28 +15,16 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				    Gavyn Thompson
-Company:				GTVFX
-Website:				https://github.com/gtvfx
-Email:				    gftvfx@gmail.com
-ScriptVersion:			
-Updated:				
-[Purpose]
-
-***************************************************************************************************/
-/*
-__HELP__
-
-Constructor: MaterialFns
-Instantiated Global: MaterialFns
-
-Methods:
-
-
-
+__MXSDOC__
+Author: Gavyn Thompson
+Company: GTVFX
+Website: https://github.com/gtvfx
+Email: gftvfx@gmail.com
 __END__
-*/
+***************************************************************************************************/
 
+
+::MaterialFns = ""
 
 
 mxs.Using "MeshFns"
@@ -44,54 +32,118 @@ mxs.Using "MeshFns"
 
 struct MaterialFns
 (
+	/*DOC_--------------------------------------------------------------------
+	__HELP__
+	
+	Collection of methods for working with materials in 3dsmax scenes
+	
+	Members:
+		[FN] CollectUniqueMaterials
+		[FN] CreateNodeViewByFaceID
+		[FN] CreateNodeViewForEachSceneMaterial
+		[FN] CreateViewForMat
+		[FN] CreateViewPerObject
+		[FN] DeleteAllViews
+		[FN] GetModule
+		[FN] PutMatToActiveMeditSlot
+		[FN] PutSceneMatsToMEdit
+		[FN] PutSelMatsToMEdit
+		[FN] ResetMEdit
+		[FN] RestoreMedit
+		[FN] help
+	
+	__END__
+	--------------------------------------------------------------------_END*/
+	
 public
-
-    ro_SaveMatLib,
-    ro_ApplyMatLib,
     
     fn ResetMEdit =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Runs a built-in macro to clear the contents of the material editor
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		macros.run "Medit Tools" "clear_medit_slots"
 	),
     
 	fn RestoreMedit =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Runs a built-in macro to restore the contents of the material editor
+		after they've been cleared.
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		macros.run "Medit Tools" "restore_medit_slots"
 	),
     
-	fn PutMatToActiveMeditSlot obj:( selection[1] ) =
+	fn PutMatToActiveMeditSlot obj  =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Gets the material from the inputed obj and puts in into the activeMeditslot
+		
+		Args:
+		 	obj (NODE)
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		MatEditor.mode = #basic
         
 		if ( obj != undefined ) and ( obj.material != undefined ) then
 		(
-			meditMaterials[activeMeditslot] = selection[1].material
+			meditMaterials[activeMeditslot] = obj.material
 		)
         else
         (
             format "***** PutMatToActiveMeditSlot could not collect a valid material *****\n"
         )
 	),
-    
-    fn CollectMats objArr =
-    (
-        local out = #()
-        
-        for obj in objArr where obj.material != undefined do
-        (
-            appendIfUnique out obj.material
-        )
-        
-        out
-    ),
+	
+	fn CollectUniqueMaterials objArr =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Collects an array of unique materials from the inputed array of objects
+		
+		Args:
+		 	objArr (array[NODE])
+		
+		Returns:
+			(array[material])
+		
+		--------------------------------------------------------------------_END*/
+		
+		MakeUniqueArray ( for obj in objArr where obj.material != undefined collect obj.material )
+	),
     
 	fn PutSelMatsToMEdit objArr:( GetCurrentSelection() ) = 
 	(
+		/*DOC_--------------------------------------------------------------------
+		Collects the unique materials from the inputed object array and puts them
+		to the Material Editor
+		
+		Kwargs:
+		 	objArr (array[Node])
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		if ( objArr.count != 0 ) then
 		(
 			MatEditor.mode = #basic
             
-            local matArr = this.CollectMats objArr
+            local matArr = this.CollectUniqueMaterials objArr
                 
             for i = 1 to matArr.count do
             (
@@ -110,18 +162,28 @@ public
     
 	fn PutSceneMatsToMEdit =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Loops through the materials in the 'sceneMaterials' global and puts them
+		to the Material Editor.
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
 		if sceneMaterials.count != 0 then
 		(
 			MatEditor.mode = #basic
+			
 			for t = 1 to meditMaterials.count do
             (
-                if scenematerials[t] == undefined then
+                if sceneMaterials[t] == undefined then
                 (
                     exit
                 )
                 else
                 (
-                    meditmaterials[t] = scenematerials[t]
+                    meditmaterials[t] = sceneMaterials[t]
                 )
             )
             
@@ -132,251 +194,82 @@ public
             messageBox "No materials found in scene." title:"GTVFX: Error"
         )
 	),
-    
-	fn BlackMaterial =
+
+	fn DeleteAllViews =
 	(
-		local out
-        
-		if ( VrayLightMtl != undefined ) then
-		(
-			out = ( VrayLightMtl name:"Black" color:black )
-		)
-		else
-		(
-			out = ( Standard diffuse:Black selfIllumAmount:100 )
-		)
-        
-		out
-	),
-    
-    mapped fn ApplyMaterial objArr mat =
-    (
-        objArr.material = mat
-    ),
-    
-	fn ApplyBlackMaterial objArr =
-	(
-		this.ApplyMaterial objArr this.BlackMaterial()
-	),
-    
-	fn CreateUtilMtls =
-	(
-		this.ResetMEdit()
-        
-        if ( VRay != undefined ) then
-        (
-            meditMaterials[1] = vrayLightMtl name:"Red" color:Red
-            meditMaterials[2] = vrayLightMtl name:"Green" color:Green
-            meditMaterials[3] = vrayLightMtl name:"Blue" color:Blue
-            meditMaterials[4] = vrayLightMtl name:"Black" color:Black
-            meditMaterials[5] = vrayLightMtl name:"White" color:White
-            meditMaterials[6] = vrayMtl name:"Diffuse" color:(color 58 58 58)
-            meditMaterials[7] = vrayMtl name:"Chrome" color:Black reflection:White
-        )
-        else
-        (
-            meditMaterials[1] = Standard name:"Red" diffuse:Red selfIllumAmount:100
-            meditMaterials[2] = Standard name:"Green" diffuse:Green selfIllumAmount:100
-            meditMaterials[3] = Standard name:"Blue" diffuse:Blue selfIllumAmount:100
-            meditMaterials[4] = Standard name:"Black" diffuse:Black selfIllumAmount:100
-            meditMaterials[5] = Standard name:"White" diffuse:White selfIllumAmount:100
-            meditMaterials[6] = Standard name:"Diffuse" diffuse:(color 58 58 58)
-        )
+		/*DOC_--------------------------------------------------------------------
+		Deletes all the view in the Slate Material Editor
 		
-		setMTLMEditFlags meditMaterials[7] #{2,3}
-		matEditor.open()
-	),
-    
-	fn SaveMatLib_Ui = 
-	(
-		try(destroyDialog this.ro_SaveMatLib)catch()
-        
-		rollout ro_SaveMatLib "Save Material Library" width:350
-		(
-			local maxName = getfileNameFile maxFileName 
-			local matName = ""
-			local finalMatPath = ""	
-			local newDirArr = #() 
-            
-			editText edt_Path "To:" text:"Paste in the directory where you want your MatLib saved."
-			button btn_svMatLib "Save Material Library" width:( ro_SaveMatLib.width - 20 ) height:40 toolTip:"Saves the shader in slot [Active] to the directory in the text field."
-			
-            on edt_Path entered newText do
-			(
-				local newDirArr = GetDirectories newText
-                
-				if newDirArr.count == 1 then
-				(
-					format "***** Directory Accepted. *****\n"
-				)
-				else
-				(
-					MessageBox "Cannot parse the folder path.\nMake sure the folder path is correct and try again."
-					edt_Path.text = ""
-				)
-			)
-            
-			on btn_svMatLib pressed do
-			(
-				if doesFileExist edt_Path.text == true then
-				(
-                    local matName = MeditMaterials[activeMeditslot].name
-                    local finalMatPath = edt_Path.text + "\\" + matName + ".mat"
-                    local newMatLib = MaterialLibrary MeditMaterials[activeMeditslot]
-                    
-					SaveTempMaterialLibrary newMatLib finalMatPath
-				)
-				else
-				(
-					messageBox "Folder does not exist.\nCheck again" title:"GTVFX: Error"
-				)
-			)
-		)
-        
-		createdialog ro_SaveMatLib
-	),
-    
-	fn ApplyMatLibToSelection matLibPath =
-	(
-        if not ( DoesFileExist matLibPath ) then
-        (
-            return ( format "***** ApplyMatLibToSelection could not find the supplied file *****\n" )
-        )
-        
-		if selection.count != 0 then
-		(
-			loadMaterialLibrary matLibPath
-			local appMat = currentMaterialLibrary[1]
-			for each in ( GetCurrentSelection() ) do each.material = appMat
-            
-			format "***** Material Library Applied *****\n"
-		)
-		else
-		(
-			messageBox "Select the objects you want the material applied to."
-		)
-	),
-    
-	fn ApplyMatLib_Ui =
-	(
-		try(destroyDialog this.ro_ApplyMatLib)catch()
-        
-		rollout ro_ApplyMatLib "Apply Material Library" width:350
-		(
-			local self
-			local libPath = undefined
-            
-			editText edt_Path "To:" text:"Paste in the directory where you want your MatLib saved."
-			button btn_loadMatLib "Apply Material Library" width:( ro_ApplyMatLib.width - 20 ) height:40 toolTip:"Applies the first material in the supplied matLib to your selection."
-			
-            fn _init pself =
-			(
-				self = pself
-			)
-            
-			on edt_Path entered newText do
-			(
-				if ( DoesFileExist newText ) and ( GetFileNameType newText ) == ".mat" then
-				(
-					libPath = newText
-					format "**** Material Library Accepted ****\n"
-				)
-				else
-				(
-					MessageBox "Cannot parse the file path.\nMake sure to past the full path to the file."
-					edt_Path.text = ""
-					libPath = undefined
-				)
-			)
-            
-			on btn_loadMatLib pressed do
-			(
-				if libPath != undefined then
-				(
-					self.ApplyMatLibToSelection libPath
-				)
-				else
-				(
-					messageBox "Supply a material library file to proceed."
-				)
-			)
-		)
-        
-		createdialog ro_ApplyMatLib
-		ro_ApplyMatLib._init this
-	),
-    
-    fn SME_GetSmeFile dirNames:#(#plugcfg, #plugcfg_ln) =
-	(
-		local fileArr = #()
-        
-		for dir in dirNames do
-		(
-			fileArr += ( GetFiles ( ( GetDir dir ) + "\\*" ) )
-		)
-        
-		local ini = ( for file in fileArr where ( matchPattern ( fileNameFromPath file ) pattern:"SME.ini" ) collect file )[1]
-        
-		ini
-	),
-    
-	fn SME_DisableRendering =
-	(
-		local smeIni = this.SME_GetSmeFile()
-		if smeIni != undefined and (doesFileExist smeIni) then
-		(
-			setIniSetting smeIni "Common" "EnableRendering" "0"
-		)
-		else
-		(
-			messageBox "Unable to edit SME.ini\nCould not find the file." title:"GTVFX: Error"
-		)
-	),
-    
-	fn SME_DeleteAllViews_FN =
-	(
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		MatEditor.mode = #advanced
 		local numViews = trackViewNodes[#sme].numsubs
 		for i = 1 to numViews do sme.DeleteView 1 false
 	),
     
-	fn SME_CreateViewForMat mat =
+	fn CreateViewForMat mat =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Create a view in the Slate Material Editor for the inputed material
+		
+		Args:
+		 	mat (Material)
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		if ( sme.GetViewByName mat.name ) == 0 then
 		(
             MatEditor.mode = #advanced
             MatEditor.Open()
             
-			sme.CreateView mat.name
-			local newView = sme.GetView ( sme.GetViewByName mat.name )
+			local viewIndex = sme.CreateView mat.name
+			local newView = sme.GetView viewIndex
+			
 			newView.CreateNode mat [0,0]
-			True
 		)
 		else
-		(		
+		(
+			-- If a view with the name already exists then the user can choose to delete it and create a new one.
+			
             if queryBox ("Node view..." + mat.name + "...already exists.\nDo you want to replace it?") then
             (
                 sme.DeleteView ( sme.GetViewByName mat.name ) false
                 
-                this.SME_CreateViewForMat mat
+                this.CreateViewForMat mat
             )
 		)
 	),
     
-	fn SME_CreatenodeViewForObjs objArr =
+	fn CreateViewPerObject objArr =
 	(
-		local arr = #()
+		/*DOC_--------------------------------------------------------------------
+		Collects all unique materials from the inputed object array and creates
+		a node view for each in the Slate Material Editor.
+		
+		Args:
+		 	objArr (array[Node])
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
         
-		if ( selection.count != 0 ) then
+		if ( objArr.count != 0 ) then
 		(
 			MatEditor.mode = #advanced
 			MatEditor.Open()
             
-			local matArr = This.CollectMats objArr
+			local matArr = This.CollectUniqueMaterials objArr
             
 			for mat in matArr do
 			(
-				this.SME_createViewForMat mat
+				this.CreateViewForMat mat
 			)
 		)
 		else
@@ -385,33 +278,44 @@ public
 		)
 	),
     
-	fn SME_CreateNodeViewByFaceID obj:( Selection[1] )=
+	fn CreateNodeViewByFaceID obj =
 	(
+		/*DOC_--------------------------------------------------------------------
+		This takes a single object as an input, loops through all the faces of the
+		object and collect an array of unigue FaceMatIDs. Then creates a node
+		view in the SlateMaterialEditor for each FaceMatID with the matching
+		subMaterial from the inputed objects MultiMaterial.
+		
+		The material of the inputed obj must be a MultiMaterial
+		
+		This is usefule for working with objects with particularly complex materials
+		
+		Args:
+		 	obj (Node)
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		if obj == undefined then
 		(
-			messageBox "SME_CreateNodeViewByFaceID expects an obj to be passed.\nBy default this is the first object in Selection."
+			messageBox "CreateNodeViewByFaceID expects an obj to be passed.\nBy default this is the first object in Selection."
 		)
 		else
 		(
-            if obj == Selection[1] then
-            (
-                format "***** SME_CreateNodeViewByFaceID only works on a single object *****\n"
-            )
-            
-			MatEditor.mode = #advanced
-			MatEditor.Open()
-            
 			local masterMat = obj.material
             
 			if ( ClassOf masterMat ) == multiMaterial then
 			(
+				MatEditor.mode = #advanced
+				MatEditor.Open()
+				
                 local faceIdArr = ::MeshFns.GetUniqueMatIds obj
                 
                 for id in faceIdArr do
                 (
-                    local iMat = obj.material.materialList[id]
-                    
-                    this.SME_CreateViewForMat iMat
+                    this.CreateViewForMat obj.material.materialList[id]
                 )
 			)
 			else
@@ -421,17 +325,25 @@ public
 		)
 	),
     
-	fn SME_CreateNodeViewForEachSceneMaterial =
+	fn CreateNodeViewForEachSceneMaterial =
 	(
+		/*DOC_--------------------------------------------------------------------
+		Creates a separate node view in the Slate Material Editor for each
+		material in the sceneMaterials global
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
 		if sceneMaterials.count != 0 then
 		(
 			MatEditor.mode = #advanced
-			--this.SME_deleteAllViews()
 			MatEditor.Open()
             
 			for mat in sceneMaterials do
 			(
-				this.SME_CreateViewForMat mat
+				this.CreateViewForMat mat
 			)
 		)
 		else
@@ -441,19 +353,45 @@ public
 	),
     
     fn GetModule =
-    (
-        ( GetSourceFilename() )
-    ),
-
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( this.GetModule() )
-    ),
-
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get the full path to the current MaxScript file
+		
+		Returns:
+			String
+		--------------------------------------------------------------------_END*/
+	
+		( GetSourceFileName() )
+	),
+	
+	fn Help _fn: =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get help on the current module or a specific function
+		
+		Kwargs:
+			_fn (string) : Name of the internal method as a string
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
+		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
+	),
+	
 private
     
     fn _init =
     (
+		/*DOC_--------------------------------------------------------------------
+		This method is run upon instantiation of the struct
+		
+		Returns:
+			(VOID)
+		
+		--------------------------------------------------------------------_END*/
+		
         -- Pass
     ),
 

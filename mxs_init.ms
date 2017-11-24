@@ -1,20 +1,24 @@
+/*--------------------------------------------------------------------
+This is just a simple initialization script that gets the path to
+the main startup file from the environment, which handles
+the main startup logic, and it simply does a FileIn on this file.
+--------------------------------------------------------------------*/
+
 (
-	local sysenv = (dotNetClass "System.Environment")
-	local startupLib = ( sysenv.GetEnvironmentVariable "MXS_STARTUPPATH" )
+	local SysEnv = ( dotNetClass "System.Environment" )
+	local startupLib = SysEnv.GetEnvironmentVariable "MXS_STARTUPPATH"
 	
-	if ( startupLib != undefined ) then
+	if ( startupLib != undefined ) and ( DoesFileExist startupLib ) then
 	(
-		if ( DoesFileExist startupLib ) then
-		(
-			FileIn startupLib
-		)
-		else
-		(
-			MessageBox "File does not exist at path stored in environment variable MXS_STARTUPPATH" title:"MXS Lib Error:"
-		)
+		format "***** startupLib: % *****\n"  startupLib
+		FileIn startupLib
 	)
 	else
 	(
-		MessageBox "Environment Variable MXS_STARTUPPATH is undefined" title:"MXS Lib Error:"
+		format "***** Startup Routine Cannot Find the Startup Lib *****\n"
 	)
+
+	format "***** MXS Startup Complete *****\n"
 )
+
+

@@ -1,1 +1,0 @@
-Launch an application that will help you quickly add tools to your tab.

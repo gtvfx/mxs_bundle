@@ -1,1 +1,0 @@
-Trims the animation end time to your current frame
