@@ -15,15 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program. if not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************************************/
 /***************************************************************************************************
-Author:				    Gavyn Thompson
-Company:				GTVFX
-Website:				https://github.com/gtvfx
-Email:				    gftvfx@gmail.com
-ScriptVersion:			
-Updated:				
-[Purpose]
-
+__MXSDOC__
+Author: Gavyn Thompson
+E-mail: gftvfx@gmail.com
+Company: GTVFX
+__END__
 ***************************************************************************************************/
+
 /*
 __HELP__
 
@@ -36,25 +34,64 @@ Methods:
         - Provide an array of objects to create a MultiMaterial for
         - if a string is passed to mtlName then the new MultiMaterial will have this name otherwise it will be named "CombinedMaterial"
 
-Example:
-    CombineMaterials.Run ( GetCurrentSelection() ) mtlName:"New_MulitMat"
+
 
 __END__
 */
 
+::CombineMaterials = ""
 
-mxs.Using "MxsCommonFns"
-mxs.Using "DetachElementsByMatID" -- _detachByMatId
+
+mxs.Using "Logger"
+mxs.Using "CommonFns"
+mxs.Using "DetachElementsByMatID"
 
 
 struct CombineMaterials
 (
+	/*DOC_--------------------------------------------------------------------
+	__HELP__
+	
+	The main purpose of this Struct is to take in an array of objects and
+	logically collect all of the materials applied to those objects and combine
+	them into a single MultiMaterial.
+	
+	Members:
+		[FN] BuildMultiMat
+		[FN] CollectUniqueMaterials
+		[FN] ExplodeMultiMat
+		[FN] FilterObjArr
+		[FN] FindMatIndexInMultMat
+		[FN] GetModule
+		[FN] GetSubMatById
+		[FN] QsortNodeAphlabetical
+		[FN] help
+		[FN] run
+		
+	Example:
+		CombineMaterials.Run ( GetCurrentSelection() ) mtlName:"New_MulitMat"
+	
+	__END__
+	--------------------------------------------------------------------_END*/
+	
 public
-    
-    debug = False,
     
     fn QsortNodeAphlabetical v1 v2 =
     (
+		/*DOC_--------------------------------------------------------------------
+		This function is meant to be passed to the Qsort function.
+		Sorts items alphabetically
+		
+		Args:
+		 	v1 (string)
+			v2 (string)
+		
+		Returns:
+			integer
+		
+		--------------------------------------------------------------------_END*/
+		
+		
         local v = v1.name
         local vv = v2.name
         case of
@@ -67,12 +104,40 @@ public
     
     fn FilterObjArr objArr =
     (
-        local out = for obj in objArr where ( CanConvertTo obj Editable_Poly ) collect obj
-        out
+		/*DOC_--------------------------------------------------------------------
+		Filters the inputed object array and returns only objects that are
+		able to be converted to Editable_Poly
+		
+		Args:
+		 	objArr (array[Node])
+		
+		Returns:
+			array[Node]
+		
+		--------------------------------------------------------------------_END*/
+		
+        for obj in objArr where ( CanConvertTo obj Editable_Poly ) collect obj
     ),
     
     fn ExplodeMultiMat mat arr:#() =
     (
+		/*DOC_--------------------------------------------------------------------
+		Loops through a MultiMaterial and collects each individual materail
+		into an array
+		
+		Recursive method
+		
+		Args:
+		 	mat (Material)
+		
+		Kwargs:
+			arr (array[material]) : used for recursion
+		
+		Returns:
+			array[Material]
+		
+		--------------------------------------------------------------------_END*/
+		
         if ( ClassOf mat ) == MultiMaterial then
         (
             for each in mat.materialList do
@@ -88,8 +153,23 @@ public
         arr
     ),
     
-    fn CollectUniqueMaterials objArr arr:#() =
+    fn CollectUniqueMaterials objArr =
     (
+		/*DOC_--------------------------------------------------------------------
+		Loops through each object in the inputed array and collects a flat level
+		array of unique materials by collecting each objects' material or by 
+		recursing through the objects' multimaterial
+		
+		Args:
+		 	objArr (array[Node])
+		
+		Returns:
+			array[Material]
+		
+		--------------------------------------------------------------------_END*/
+		
+		local arr = #()
+		
         for obj in objArr where ( obj.material != undefined ) do
         (
             this.ExplodeMultiMat obj.material arr:arr
@@ -99,9 +179,20 @@ public
     ),
     
     fn GetSubMatById multiMat id =
-    ( -- Returns the material
+    (
+		/*DOC_--------------------------------------------------------------------
+		Takes an MultiMaterial and returns the material at the inputed id
+		
+		Args:
+		 	multiMat (MultiMaterial)
+			id (integer)
+		
+		Returns:
+			Material
+		
+		--------------------------------------------------------------------_END*/
+		
         local index = ( FindItem multiMat.materialIDList id )
-        
         local out = undefined
         
         if index != 0 then
@@ -153,12 +244,12 @@ public
 
         for obj in objArr do
         (
-            if this.debug then format "***** Converting To Poly *****\n"
-            --
-            ::MxsCommonFns.ConvertBaseObject obj type:#poly
+			::Logger.debug "Converting To Poly" args:#() cls:this
             
-            if this.debug then format "***** Disabling Modifiers *****\n"
-            --
+            ::CommonFns.ConvertBaseObject obj type:#poly
+            
+			::Logger.debug "Disabling Modifiers" args:#() cls:this
+            
             local mdsArr = #()
             if obj.modifiers.count != 0 then
             (
@@ -171,10 +262,10 @@ public
                 )
             )
             
-            if this.debug then format "***** Building remapArr *****\n"
+			::Logger.debug "Building remapArr" args:#() cls:this
             --
             local remapArr = #()
-            local idArr = ::_detachByMatId.CollectUniqueFaceIds obj
+            local idArr = ::DetachElementsByMatID.CollectUniqueFaceIds obj
             local curMat = obj.material
             
             for id in idArr do
@@ -186,33 +277,34 @@ public
                 
                 local newId = this.FindMatIndexInMultMat newMat curSubMat
                 
-                local faceArr = ::_detachByMatId.CollectFacesById obj id
+                local faceArr = ::DetachElementsByMatID.CollectFacesById obj id
                 
                 append remapArr #(newId, faceArr)
             )
             
-            if this.debug then format "***** Apply remapping *****\n"
+			::Logger.debug "Apply remapping" args:#() cls:this
+				
             -- Apply the remapping of the id's
             for each in remapArr do
             (
-                if this.debug then format "***** each: % *****\n" each
-                --
+				::Logger.debug "each: {1}" args:#(each) cls:this
+                
                 polyop.SetFaceMatId obj each[2] each[1]
             )
             
-            if this.debug then format "***** Apply new Material *****\n"
-            --
+			::Logger.debug "Apply new Material" args:#() cls:this
+            
             obj.material = newMat
             
-            if this.debug then format "***** Enable modifiers *****\n"
-            --
+			::Logger.debug "Enable modifier" args:#() cls:this
+            
             for m = 1 to mdsArr.count do
             (
                 -- Set the enabled state of the modifier to the stored state
                 obj.modifiers[m].enabled = mdsArr[m]
             )
             
-            ::MxsCommonFns.ConvertBaseObject obj type:#mesh
+            ::CommonFns.ConvertBaseObject obj type:#mesh
         )
         
         ::mxs.BlockUi False
@@ -221,14 +313,32 @@ public
     ),
     
     fn GetModule =
-    (
-        ( GetSourceFileName() )
-    ),
-
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetSourceFilename() )
-    ),
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get the full path to the current MaxScript file
+		
+		Returns:
+			String
+		--------------------------------------------------------------------_END*/
+		
+		( GetSourceFileName() )
+	),
+	
+	fn Help _fn: =
+	(
+		/*DOC_--------------------------------------------------------------------
+		Get help on the current module or a specific function
+		
+		Kwargs:
+			_fn (string) : Name of the internal method as a string
+		
+		Returns:
+			VOID
+		
+		--------------------------------------------------------------------_END*/
+		
+		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
+	),
 
 private
 
