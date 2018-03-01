@@ -82,24 +82,24 @@ struct DotNetUi
 public
 	
 	dnTooltip,
-    ----------------------------
+	----------------------------
 	clrWindow = ( ( colorMan.getColor #window )*255 ),
 	clrText = ( ( colorMan.getColor #text )*255 ),
 	clrBackground = ( ( colorMan.getColor #background )*255 ),
-    
-    clrWindow_dnet,
-    clrText_dnet,
-    clrBackground_dnet,
-    ----------------------------
+	
+	clrWindow_dnet,
+	clrText_dnet,
+	clrBackground_dnet,
+	----------------------------
 	clr_skyblue = ( dotnetClass "System.Drawing.Color" ).SkyBlue,
 	
-    fn NormalizeRGB val =
+	fn NormalizeRGB val =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Ensures that val is an integer between 0 and 255
 		
 		Args:
-		 	val (int)
+			val (int)
 		
 		Returns:
 			val (int)
@@ -109,39 +109,39 @@ public
 		if val < 0 then val = 0 else if val > 255 then val = 255
 		val
 	),
-    
-    fn RgbToDnetColor rgbColor =
-    (
+	
+	fn RgbToDnetColor rgbColor =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Converts the inputed rgbColor value into a dotNetClass "System.Drawing.Color"
 		
 		Args:
-		 	rgbColor (color | Point3)
+			rgbColor (color | Point3)
 		
 		Returns:
 			(dotNetClass "System.Drawing.Color")
 		
 		--------------------------------------------------------------------_END*/
 		
-        try
-        (
-            rgbColor = rgbColor as color
-        )
-        catch
-        (
-            return ( format "***** Undable to convert % to color *****\n" )
-        )
-        
-        (dotNetClass "System.Drawing.Color").fromARGB ( this.NormalizeRGB rgbColor.a ) ( this.NormalizeRGB rgbColor.r ) ( this.NormalizeRGB rgbColor.g) ( this.NormalizeRGB rgbColor.b )
-    ),
-    
-    fn OffsetDnetColorValue dnetColor offsetVal =
-    (
+		try
+		(
+			rgbColor = rgbColor as color
+		)
+		catch
+		(
+			return ( format "***** Undable to convert % to color *****\n" )
+		)
+		
+		(dotNetClass "System.Drawing.Color").fromARGB ( this.NormalizeRGB rgbColor.a ) ( this.NormalizeRGB rgbColor.r ) ( this.NormalizeRGB rgbColor.g) ( this.NormalizeRGB rgbColor.b )
+	),
+	
+	fn OffsetDnetColorValue dnetColor offsetVal =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Uniformly offsets the inputed dnetColor value by the offsetVal
 		
 		Args:
-		 	dnetColor (dotnetClass "System.Drawing.Color")
+			dnetColor (dotnetClass "System.Drawing.Color")
 			offsetVal (integer)
 		
 		Returns:
@@ -149,10 +149,10 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local p3 = [dnetColor.r, dnetColor.g, dnetColor.b]
-        
-        this.RgbToDnetColor ( p3 + offsetVal )
-    ),
+		local p3 = [dnetColor.r, dnetColor.g, dnetColor.b]
+		
+		this.RgbToDnetColor ( p3 + offsetVal )
+	),
 	
 	fn InitToolTip dNetObj caption =
 	(
@@ -160,7 +160,7 @@ public
 		Creates an instance of a DotNet ToolTip on the inputed dNetObj.
 		
 		Args:
-		 	dNetObj (dotnetobject) : Object to create the tooltip for
+			dNetObj (dotnetobject) : Object to create the tooltip for
 			caption (string) : Tooltip text
 		
 		Returns:
@@ -168,14 +168,14 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        try( this.dnTooltip.Dispose() )catch()
-        		
-        this.dnToolTip = dotnetobject "ToolTip"
-        this.dnToolTip.AutoPopDelay = 5000
-        this.dnToolTip.InitialDelay = 300
-        this.dnToolTip.ReshowDelay = 300
-        this.dnToolTip.ShowAlways = true
-        this.dnToolTip.IsBalloon = true
+		try( this.dnTooltip.Dispose() )catch()
+				
+		this.dnToolTip = dotnetobject "ToolTip"
+		this.dnToolTip.AutoPopDelay = 5000
+		this.dnToolTip.InitialDelay = 300
+		this.dnToolTip.ReshowDelay = 300
+		this.dnToolTip.ShowAlways = true
+		this.dnToolTip.IsBalloon = true
 		
 		this.dnToolTip.SetToolTip dNetObj caption
 	),
@@ -204,7 +204,7 @@ public
 		Sets standard options on DotNet Widgets
 		
 		Args:
-		 	dNobj (dotNetObject)
+			dNobj (dotNetObject)
 			caption (string)
 			fontSize (integer)
 		
@@ -218,11 +218,11 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if foreColor != unsupplied and ( ClassOf foreColor ) == Color then
-        (
-            foreColor = this.RgbToDnetColor foreColor
-        )
-        
+		if foreColor != unsupplied and ( ClassOf foreColor ) == Color then
+		(
+			foreColor = this.RgbToDnetColor foreColor
+		)
+		
 		local fStyle = case fontStyle of
 		(
 			(#bold):
@@ -242,7 +242,7 @@ public
 		dNobj.text = caption
 		if foreColor == unsupplied then dNobj.forecolor = this.clrText_dnet else dNobj.forecolor = foreColor
 		dNobj.backColor = ( this.OffsetDnetColorValue this.clrBackground_dnet colorOffsetInt )
-        dNobj.Font = ( dotNetObject "System.Drawing.Font" "Tahoma" fontSize fStyle )
+		dNobj.Font = ( dotNetObject "System.Drawing.Font" "Tahoma" fontSize fStyle )
 		dNobj.update()
 	),
 	
@@ -252,7 +252,7 @@ public
 		Change the color of the text in a DotNet TextBox
 		
 		Args:
-		 	txtBox (dotnetobject)
+			txtBox (dotnetobject)
 			newcolor (color)
 		
 		Returns:
@@ -260,11 +260,11 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if ( ClassOf newcolor ) == Color then
-        (
-            newcolor = this.RgbToDnetColor newcolor
-        )
-        
+		if ( ClassOf newcolor ) == Color then
+		(
+			newcolor = this.RgbToDnetColor newcolor
+		)
+		
 		txtBox.forecolor = newcolor
 	),
 	
@@ -274,7 +274,7 @@ public
 		Sets the color pallette for a DotNet DataGridView
 		
 		Args:
-		 	dgv (dotnetobject)
+			dgv (dotnetobject)
 			fontSize (integer)
 		
 		Kwargs:
@@ -289,16 +289,16 @@ public
 		(
 			_foreColor = this.RgbToDnetColor _foreColor
 		)
-        else if _foreColor == unsupplied then
+		else if _foreColor == unsupplied then
 		(
 			_foreColor = this.clrText_dnet
 		)
-        
-        try( dgv.forecolor = _foreColor )catch()
-        try( dgv.BackgroundColor = this.clrWindow_dnet )catch()
+		
+		try( dgv.forecolor = _foreColor )catch()
+		try( dgv.BackgroundColor = this.clrWindow_dnet )catch()
 		try( dgv.DefaultCellStyle.BackColor = this.clrWindow_dnet )catch()
 		try( dgv.AlternatingRowsDefaultCellStyle.BackColor = ( this.OffsetDnetColorValue this.clrWindow_dnet -15 ) )catch()
-        try( dgv.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ( (dotNetClass "System.Drawing.FontStyle" ).bold ) )catch()
+		try( dgv.Font = dotNetObject "System.Drawing.Font" "Calibri" fontSize ( (dotNetClass "System.Drawing.FontStyle" ).bold ) )catch()
 	),
 	
 	fn InitTabs dNtab tabArr =
@@ -307,7 +307,7 @@ public
 		Sets default settings for a DotNet Tab View
 		
 		Args:
-		 	dNtab (dotNetObject)
+			dNtab (dotNetObject)
 			tabArr (array[string])
 		
 		Returns:
@@ -320,7 +320,7 @@ public
 		for tab in tabArr do
 		(
 			local tP = dotNetObject "System.Windows.Forms.TabPage"
-            tP.name = tab
+			tP.name = tab
 			this.SetDotNetWidget tP tab 11 colorOffsetInt:10
 			dNtab.controls.add tP
 		)
@@ -333,7 +333,7 @@ public
 		Sets default settings for a DotNet Radio button
 		
 		Args:
-		 	dNrdo (dotNetObject)
+			dNrdo (dotNetObject)
 			caption (string)
 			fontsize (integer)
 		
@@ -357,7 +357,7 @@ public
 		(
 			dNrdo.appearance = dNrdo.appearance.normal
 		)
-        
+		
 		this.SetDotNetWidget dNrdo caption fontSize
 		dNrdo.tag = tooltip
 		dNrdo.Update()
@@ -369,7 +369,7 @@ public
 		Sets default options for a DotNet Button
 		
 		Args:
-		 	dNbtn (dotNetObject)
+			dNbtn (dotNetObject)
 			caption (string)
 			fontSize (integer)
 		
@@ -389,7 +389,7 @@ public
 			#popup:(dNbtn.flatStyle = dNbtn.flatStyle.popup)
 			#system:(dNbtn.flatStyle = dNbtn.flatStyle.system)
 		)
-        
+		
 		this.SetDotNetWidget dNbtn caption fontSize colorOffsetInt:colorOffsetInt
 		dNbtn.tag = tooltip
 		dNbtn.Update()
@@ -401,7 +401,7 @@ public
 		Sets default values for DotNet Textbox
 		
 		Args:
-		 	tbx (dotNetObject)
+			tbx (dotNetObject)
 			caption (string)
 			fontSize (integer)
 		
@@ -432,7 +432,7 @@ public
 		Sets default values for a DotNet Label
 		
 		Args:
-		 	lbl (dotNetObject)
+			lbl (dotNetObject)
 			caption (string)
 			fontsize (integer)
 		
@@ -454,7 +454,7 @@ public
 		Changes the text color in the inputed DateGridView Cell
 		
 		Args:
-		 	dgvCell (dotNetObject)
+			dgvCell (dotNetObject)
 			_color (color)
 		
 		Returns:
@@ -462,11 +462,11 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if ( ClassOf _color ) == Color or ( ClassOf _color ) == Point3 then
-        (
-            _color = this.RgbToDnetColor _color
-        )
-        
+		if ( ClassOf _color ) == Color or ( ClassOf _color ) == Point3 then
+		(
+			_color = this.RgbToDnetColor _color
+		)
+		
 		local newStyle = dotNetObject "System.Windows.Forms.DataGridViewCellStyle"
 		newStyle.foreColor = _color
 		dgvCell.Style = newStyle
@@ -478,7 +478,7 @@ public
 		Adds items to a DataGridView Cell option box ( ComboBox )
 		
 		Args:
-		 	dgvCell (dotNetObject)
+			dgvCell (dotNetObject)
 			dataArr (array[string])
 		
 		Kwargs:
@@ -490,23 +490,23 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		dgvCell.items.clear()
-        
+		
 		for i in dataArr do dgvCell.items.add i
-            
+			
 		dgvCell.value = dataArr[1]
-        
+		
 		if setItem != unsupplied then
 		(
-            if ( ClassOf setItem != Array ) then setItem = #( setItem )
-            
-            for item in setItem do
-            (
-                if ( findItem dataArr item ) != 0 then
-                (
-                    dgvCell.value = item
-                    exit
-                )
-            )
+			if ( ClassOf setItem != Array ) then setItem = #( setItem )
+			
+			for item in setItem do
+			(
+				if ( findItem dataArr item ) != 0 then
+				(
+					dgvCell.value = item
+					exit
+				)
+			)
 		)
 	),
 	
@@ -516,7 +516,7 @@ public
 		Hide or unhide all rows in a DataGridView
 		
 		Args:
-		 	dgv (dotNetObject)
+			dgv (dotNetObject)
 		
 		Kwargs:
 			visible (boolean)
@@ -540,7 +540,7 @@ public
 		If it's not a match, the row is hidden.
 		
 		Args:
-		 	dgv (dotNetObject)
+			dgv (dotNetObject)
 			filterTxt (string)
 		
 		Kwargs:
@@ -573,14 +573,14 @@ public
 			)
 		)
 	),
-    
-    fn ResizeImage DotNetBitmap width: height: =
-    (
+	
+	fn ResizeImage DotNetBitmap width: height: =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Resizes a DotNet Bitmap object
 		
 		Args:
-		 	DotNetBitmap (dotNetObject)
+			DotNetBitmap (dotNetObject)
 		
 		Kwargs:
 			width (integer)
@@ -591,33 +591,33 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if width == unsupplied or height == unsupplied then
-        (
-            throw "ResizeImage requires valid integer values for the 'width' and 'height' parameters."
-        )
-        
-        local outImg = ( dotnetobject "System.Drawing.Bitmap" width height )
-        local graphic = ( dotnetclass "System.Drawing.Graphics" ).fromImage outImg
-        
-        graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
-        graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
-        graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic	
-        
-        local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
-        graphic.DrawImage DotNetBitmap rect
-        
-        local out = Copy outImg
-        
-        outImg.Dispose()
-        graphic.Dispose()
-        DotNetBitmap.Dispose()
-        GC quiet:True
-        
-        out
-    ),
-    
-    fn DisplayImage filePath =
-    (
+		if width == unsupplied or height == unsupplied then
+		(
+			throw "ResizeImage requires valid integer values for the 'width' and 'height' parameters."
+		)
+		
+		local outImg = ( dotnetobject "System.Drawing.Bitmap" width height )
+		local graphic = ( dotnetclass "System.Drawing.Graphics" ).fromImage outImg
+		
+		graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
+		graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
+		graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic	
+		
+		local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
+		graphic.DrawImage DotNetBitmap rect
+		
+		local out = Copy outImg
+		
+		outImg.Dispose()
+		graphic.Dispose()
+		DotNetBitmap.Dispose()
+		GC quiet:True
+		
+		out
+	),
+	
+	fn DisplayImage filePath =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Creates a DotNet Bitmap object form the inputed filePath and sets it to the
 		ClipBoard image. It then displays the ClipBoardBitmap.
@@ -625,43 +625,43 @@ public
 		This is a workaround for displaying an image
 		
 		Args:
-		 	filePath (string)
+			filePath (string)
 		
 		Returns:
 			(VOID)
 		
 		--------------------------------------------------------------------_END*/
 		
-        local image = ( dotNetClass "System.Drawing.Bitmap" ).fromFile filePath
-        
-        --local pformat = image.PixelFormat
-        local width = image.Width
-        local height = image.Height
-        
-        local dest = dotnetobject "System.Drawing.Bitmap" width height --pformat
-        local graphic = (dotnetclass "System.Drawing.Graphics").fromImage dest
-        
-        graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
-        graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
-        graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic
-        
-        local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
-        graphic.DrawImage image rect
-        
-        local clipboard = dotnetclass "Clipboard"
-        clipboard.SetImage dest
-        
-        image.Dispose()
-        dest.Dispose()
-        graphic.Dispose()
-        
-        local cBitmap = GetclipboardBitmap()
-        
-        if cBitmap != undefined then
-        (
-            Display cBitmap
-        )
-    ),
+		local image = ( dotNetClass "System.Drawing.Bitmap" ).fromFile filePath
+		
+		--local pformat = image.PixelFormat
+		local width = image.Width
+		local height = image.Height
+		
+		local dest = dotnetobject "System.Drawing.Bitmap" width height --pformat
+		local graphic = (dotnetclass "System.Drawing.Graphics").fromImage dest
+		
+		graphic.CompositingQuality = graphic.CompositingQuality.HighQuality
+		graphic.SmoothingMode = graphic.SmoothingMode.HighQuality
+		graphic.InterpolationMode = graphic.InterpolationMode.HighQualityBicubic
+		
+		local rect = dotnetobject "System.Drawing.Rectangle" 0 0 width height
+		graphic.DrawImage image rect
+		
+		local clipboard = dotnetclass "Clipboard"
+		clipboard.SetImage dest
+		
+		image.Dispose()
+		dest.Dispose()
+		graphic.Dispose()
+		
+		local cBitmap = GetclipboardBitmap()
+		
+		if cBitmap != undefined then
+		(
+			Display cBitmap
+		)
+	),
 	
 	fn InitDgv dgv fontsize colAr multiSelct:True _forecolor: AllowUserToAddRows:False =
 	(
@@ -669,7 +669,7 @@ public
 		Initialize a DataGridView with the data from the inputed colAr
 		
 		Args:
-		 	dgv (dotNetObject)
+			dgv (dotNetObject)
 			fontsize (integer)
 			colAr (array[data])
 		
@@ -685,9 +685,9 @@ public
 		#(#Icon,"OPT:",True,#center,optIcon)
 		
 		--------------------------------------------------------------------_END*/
-        
+		
 		dgv.Columns.Clear()
-        dgv.ShowCellToolTips = False
+		dgv.ShowCellToolTips = False
 		dgv.MultiSelect = multiSelct
 		dgv.AllowUserToAddRows = AllowUserToAddRows
 		dgv.AutoSize = True
@@ -703,7 +703,7 @@ public
 		for col in colAr do
 		(
 			local dnNewColumn
-            
+			
 			case col[1] of
 			(
 				(#Text):dnNewColumn = dotNetObject "System.Windows.Forms.DataGridViewTextBoxColumn"
@@ -714,8 +714,8 @@ public
 					-- Need to pass an image
 					if  col[5] != undefined and (DoesFileExist col[5]) then
 					(
-                        local sourceImg = (dotNetClass "System.Drawing.Bitmap").fromFile col[5]
-                        
+						local sourceImg = (dotNetClass "System.Drawing.Bitmap").fromFile col[5]
+						
 						dnNewColumn.image = ( this.ResizeImage sourceImg width:48 height:48 )
 					)
 				)
@@ -753,7 +753,7 @@ public
 		Initialize a DotNet TreeView
 		
 		Args:
-		 	trv (dotNetObject)
+			trv (dotNetObject)
 		
 		Kwargs:
 			fontsize (integer)
@@ -788,32 +788,32 @@ public
 		
 		trv.update()
 	),
-    
-    fn GetComboBoxItems dgvCell =
-    (
+	
+	fn GetComboBoxItems dgvCell =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Collect the item values within the DataGridView Cell comboBox
 		
 		Args:
-		 	dgvCell (dotNetObject)
+			dgvCell (dotNetObject)
 		
 		Returns:
 			(VOID)
 		
 		--------------------------------------------------------------------_END*/
 		
-        local out = #()
+		local out = #()
 		
-        if ( isProperty dgvCell #items ) then
-        (
-            for i = 0 to ( dgvCell.items.count-1 ) do
-            (
-                append out dgvCell.items.item[i]
-            )
-        )
+		if ( isProperty dgvCell #items ) then
+		(
+			for i = 0 to ( dgvCell.items.count-1 ) do
+			(
+				append out dgvCell.items.item[i]
+			)
+		)
 		
-        out
-    ),
+		out
+	),
 	
 	fn GetColIndex dgv _name =
 	(
@@ -823,7 +823,7 @@ public
 		Requires the name property of the column to be set during dgv_init
 		
 		Args:
-		 	dgv (dotNetObject)
+			dgv (dotNetObject)
 			_name (string)
 		
 		Returns:
@@ -834,16 +834,16 @@ public
 		-- Putting into a TryCatch to ensure that it returns a logical value instead of crashing
 		try(dgv.columns.item[_name].index)catch(undefined)
 	),
-    
-    fn GetTabIndex tab _name =
-    (
+	
+	fn GetTabIndex tab _name =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Gets the index of the tab page that matches the inputed _name
 		
 		Requires the name property of the tab to be set during InitTabs
 		
 		Args:
-		 	tab (dotNetObject)
+			tab (dotNetObject)
 			_name (string)
 		
 		Returns:
@@ -851,9 +851,9 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Putting into a TryCatch to ensure that it returns a logical value instead of crashing
-        try(tab.tabPages.item[_name].TabIndex)catch(undefined)
-    ),
+		-- Putting into a TryCatch to ensure that it returns a logical value instead of crashing
+		try(tab.tabPages.item[_name].TabIndex)catch(undefined)
+	),
 		
 	fn GetUiControlName uiControl = 
 	(
@@ -861,7 +861,7 @@ public
 		Filter the string of a UI Control object for its explicit name
 		
 		Args:
-		 	uiControl (uiControlObject)
+			uiControl (uiControlObject)
 		
 		Returns:
 			uiName: (string)
@@ -890,7 +890,7 @@ public
 		the inputed name
 		
 		Args:
-		 	ui (MaxScript Rollout)
+			ui (MaxScript Rollout)
 			controlName (string)
 		
 		Returns:
@@ -919,7 +919,7 @@ public
 		This is used to facilitate the UI resizing logic
 		
 		Args:
-		 	ui (MaxScript Rollout)
+			ui (MaxScript Rollout)
 		
 		Returns:
 			(dotNet HashTable)
@@ -944,14 +944,14 @@ public
 		
 		dic
 	),
-    
-    fn DicFromDataGrid dgv keyCellIndex:0 valueCellIndex:1 =
-    (
+	
+	fn DicFromDataGrid dgv keyCellIndex:0 valueCellIndex:1 =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Generates a simple dictionary from values in the inputed DataGridView
 		
 		Args:
-		 	dgv (dotNetObject)
+			dgv (dotNetObject)
 		
 		Kwargs:
 			keyCellIndex (integer)
@@ -962,20 +962,20 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local dic = dotNetObject "System.Collections.Hashtable"
-        
-        for i = 0 to dgv.rows.count-1 do
-        (
-            if ( dgv.rows.item[i].cells.item[keyCellIndex].value != undefined ) and ( dgv.rows.item[i].cells.item[valueCellIndex].value != undefined ) then
-            (
-                dic.add dgv.rows.item[i].cells.item[keyCellIndex].value dgv.rows.item[i].cells.item[valueCellIndex].value
-            )
-        )
-        
-        dic
-    ),
-    
-    fn GetModule =
+		local dic = dotNetObject "System.Collections.Hashtable"
+		
+		for i = 0 to dgv.rows.count-1 do
+		(
+			if ( dgv.rows.item[i].cells.item[keyCellIndex].value != undefined ) and ( dgv.rows.item[i].cells.item[valueCellIndex].value != undefined ) then
+			(
+				dic.add dgv.rows.item[i].cells.item[keyCellIndex].value dgv.rows.item[i].cells.item[valueCellIndex].value
+			)
+		)
+		
+		dic
+	),
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -1015,9 +1015,9 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        this.clrWindow_dnet = this.RgbToDnetColor this.clrWindow 
-        this.clrText_dnet = this.RgbToDnetColor this.clrText
-        this.clrBackGround_dnet = this.RgbToDnetColor this.clrBackGround
+		this.clrWindow_dnet = this.RgbToDnetColor this.clrWindow 
+		this.clrText_dnet = this.RgbToDnetColor this.clrText
+		this.clrBackGround_dnet = this.RgbToDnetColor this.clrBackGround
 	),
 
 	init = __init__()

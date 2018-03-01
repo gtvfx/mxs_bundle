@@ -362,8 +362,8 @@ struct UtilFns
 	),
 
 private
-    
-    fn __init__ =
+	
+	fn __init__ =
 	(
 		self = this
 	),

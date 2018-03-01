@@ -50,13 +50,13 @@ struct HashTables
 	
 public
 	
-    fn PrintDnetDict dict toStr: =
+	fn PrintDnetDict dict toStr: =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Print out the Key/Value pairs of a DotNet Hashtable
 		
 		Args:
-		 	dict (DotNet HashTable)
+			dict (DotNet HashTable)
 		
 		Kwargs:
 			toStr (StringStream) : Optional StringStream object to format to
@@ -66,43 +66,43 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local denum = dict.GetEnumerator()
-        
-        while ( denum.MoveNext() ) do
-        (
-            local iKey = denum.Current
-            
-            case toStr of
-            (
-                (unsupplied):format "% = %\n" iKey.Key iKey.Value
-                default:format "% = %\n\r" iKey.Key iKey.Value to:toStr
-            )
-        )
+		local denum = dict.GetEnumerator()
+		
+		while ( denum.MoveNext() ) do
+		(
+			local iKey = denum.Current
+			
+			case toStr of
+			(
+				(unsupplied):format "% = %\n" iKey.Key iKey.Value
+				default:format "% = %\n\r" iKey.Key iKey.Value to:toStr
+			)
+		)
 	),
-    
+	
 	fn GetDictKeys dict =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Collect the keys of a hash table. Returns an array of string values.
 		
 		Args:
-		 	dict (DotNet HashTable)
+			dict (DotNet HashTable)
 		
 		Returns:
 			(array[string])
 		
 		--------------------------------------------------------------------_END*/
 		
-        local denum = dict.GetEnumerator()
-        local out = #()
-        
-        while ( denum.MoveNext() ) do
-        (
-            local iKey = denum.Current
-            
-            append out iKey.Key
-        )
-        
+		local denum = dict.GetEnumerator()
+		local out = #()
+		
+		while ( denum.MoveNext() ) do
+		(
+			local iKey = denum.Current
+			
+			append out iKey.Key
+		)
+		
 		out
 	),
 
@@ -112,7 +112,7 @@ public
 		Collect the values of a hash table. Returns an array of string values.
 		
 		Args:
-		 	dict (DotNet HashTable)
+			dict (DotNet HashTable)
 		
 		Returns:
 			(array[string])
@@ -120,15 +120,15 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		local denum = dict.GetEnumerator()
-        local out = #()
-        
-        while ( denum.MoveNext() ) do
-        (
-            local iKey = denum.Current
-            
-            append out iKey.Value
-        )
-        
+		local out = #()
+		
+		while ( denum.MoveNext() ) do
+		(
+			local iKey = denum.Current
+			
+			append out iKey.Value
+		)
+		
 		out
 	),
 
@@ -138,7 +138,7 @@ public
 		Reverse lookup to find the key matching the inputed value
 		
 		Args:
-		 	dict (DotNet HashTable)
+			dict (DotNet HashTable)
 			val (valid HashTable value)
 		
 		Returns:
@@ -146,17 +146,17 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local denum = dict.GetEnumerator()
-        
-        while ( denum.MoveNext() ) do
-        (
-            local iKey = denum.Current
-            
-            if iKey.Value == val then
-            (
-                return iKey.Key
-            )
-        )
+		local denum = dict.GetEnumerator()
+		
+		while ( denum.MoveNext() ) do
+		(
+			local iKey = denum.Current
+			
+			if iKey.Value == val then
+			(
+				return iKey.Key
+			)
+		)
 
 		undefined
 	),
@@ -167,7 +167,7 @@ public
 		Makes a dictionary from the inputed keys and vals arrays.
 		
 		Kwargs:
-		 	keys (array[string])
+			keys (array[string])
 			vals (array[valid data type])
 		
 		Returns:
@@ -200,7 +200,7 @@ public
 		DotNet array and that works just fine. Becuase reasons...
 		
 		Args:
-		 	arr (MaxScript Array)
+			arr (MaxScript Array)
 		
 		Returns:
 			(DotNetArray)
@@ -255,7 +255,7 @@ public
 		Convert large DotNet arrays back into MaxScript arrays
 		
 		Args:
-		 	dotNetArr (DotNetArray)
+			dotNetArr (DotNetArray)
 		
 		Returns:
 			(MaxScript array)
@@ -274,8 +274,8 @@ public
 		
 		mxsArr
 	),
-    
-    fn GetModule =
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -302,11 +302,11 @@ public
 	
 		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
 	),
-    
+	
 private
 	
 	fn _init =
-    (
+	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
 		
@@ -315,10 +315,10 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Pass
-    ),
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 HashTables = HashTables()

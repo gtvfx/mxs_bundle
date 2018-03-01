@@ -91,15 +91,15 @@ struct CreateTopNull
 		pCtrl
 	),
 	
-    fn GetModule =
-    (
-        ( GetSourceFileName() )
-    ),
-    
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetSourceFileName() )
-    ),
+	fn GetModule =
+	(
+		( GetSourceFileName() )
+	),
+	
+	fn Help =
+	(
+		::mxs.GetScriptHelp ( GetSourceFileName() )
+	),
 	
 	private fn _init =
 	(

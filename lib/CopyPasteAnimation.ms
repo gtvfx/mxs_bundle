@@ -45,7 +45,7 @@ __END__
 struct CopyPasteAnimation
 (
 public
-    
+	
 	fn CopyAnimation obj =
 	(
 		local out = #()
@@ -88,20 +88,20 @@ public
 		
 		this.AppendKeys from_obj_anim to_obj_anim
 	),
-    
-    fn GetModule =
-    (
-        ( GetSourceFileName() )
-    ),
-    
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetSourceFileName() )
-    ),
+	
+	fn GetModule =
+	(
+		( GetSourceFileName() )
+	),
+	
+	fn Help =
+	(
+		::mxs.GetScriptHelp ( GetSourceFileName() )
+	),
 	
 private 
-    
-    fn _init =
+	
+	fn _init =
 	(
 		
 	),

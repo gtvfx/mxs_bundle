@@ -57,7 +57,7 @@ struct DetachElementsByMatID
 		[FN] ui
 	
 	Args:
-	 	ro (MaxScript Rollout)
+		ro (MaxScript Rollout)
 		debug (boolean)
 		showUi (boolean)
 	
@@ -65,10 +65,10 @@ struct DetachElementsByMatID
 	--------------------------------------------------------------------_END*/
 	
 public
-    
-    ro,
+	
+	ro,
 	debug = False,
-    showUi = False,
+	showUi = False,
 	
 	fn CollectUniqueFaceIds obj =
 	(
@@ -77,7 +77,7 @@ public
 		an array of all unique IDs.
 		
 		Args:
-		 	obj (Editable_Poly)
+			obj (Editable_Poly)
 		
 		Returns:
 			(array[integer])
@@ -85,12 +85,12 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		local out = #()
-        
+		
 		for i = 1 to ( polyop.getnumfaces obj ) do
 		(
 			appendIfUnique out ( polyop.getFaceMatID obj i )
 		)
-        
+		
 		out
 	),
 
@@ -101,7 +101,7 @@ public
 		an array of face indices that match the inputed mat id
 		
 		Args:
-		 	obj (Editable_Poly)
+			obj (Editable_Poly)
 			id (integer)
 		
 		Returns:
@@ -110,12 +110,12 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		local out = #{}
-        
+		
 		for i = 1 to ( polyop.getnumfaces obj ) do
 		(
 			if polyop.getFaceMatID obj i == id then append out i
 		)
-        
+		
 		out
 	),
 	
@@ -127,7 +127,7 @@ public
 		only has a float material as a result.
 		
 		Args:
-		 	obj (NODE)
+			obj (NODE)
 			id (integer)
 		
 		Returns:
@@ -163,7 +163,7 @@ public
 		Converts all objects to Editable_Mesh
 		
 		Args:
-		 	obj (NODE)
+			obj (NODE)
 		
 		Kwargs:
 			parseMaterial (boolean)
@@ -236,7 +236,7 @@ public
 		Removes all instancing (Makes all objects unique)
 		
 		Args:
-		 	objArr (array[NODE])
+			objArr (array[NODE])
 		
 		Returns:
 			(boolean)
@@ -254,7 +254,7 @@ public
 		Converts to Editable_Poly
 		
 		Args:
-		 	obj (NODE)
+			obj (NODE)
 		
 		Returns:
 			(boolean)
@@ -281,15 +281,15 @@ public
 			False
 		)
 	),
-    
-    fn Batch objArr parseMaterial:True =
-    (
+	
+	fn Batch objArr parseMaterial:True =
+	(
 		/*DOC_--------------------------------------------------------------------
 		This takes an array of objects, validates them and passes them through
 		the DetachElementById method.
 		
 		Args:
-		 	objArr (array[NODE])
+			objArr (array[NODE])
 		
 		Kwargs:
 			parseMaterial (boolean)
@@ -301,31 +301,31 @@ public
 		
 		local out = #()
 		
-        objArr = for obj in objArr where ( this.ValidateObj obj ) collect obj
-        
-        if objArr.count == 0 then return ( format "Nothing to analyze\n" )
-        
+		objArr = for obj in objArr where ( this.ValidateObj obj ) collect obj
+		
+		if objArr.count == 0 then return ( format "Nothing to analyze\n" )
+		
 		::Logger.debug "Passed objArr: {1}" args:#(objArr) cls:this
-        
-        ::mxs.BlockUi True
-        
+		
+		::mxs.BlockUi True
+		
 		::Logger.info "Killing Instances" args:#() cls:this
-        this.KillInstances objArr
-        
-        for obj in objArr do
-        (
-            local objElements = this.DetachElementById obj parseMaterial:parseMaterial
+		this.KillInstances objArr
+		
+		for obj in objArr do
+		(
+			local objElements = this.DetachElementById obj parseMaterial:parseMaterial
 			join out objElements
-            GC()
-        )
-        
-        ::mxs.BlockUi False
+			GC()
+		)
+		
+		::mxs.BlockUi False
 		
 		out
-    ),
+	),
 	
 	fn Ui =
-    (
+	(
 		/*DOC_--------------------------------------------------------------------
 		Generates a simple UI for running the logic
 		
@@ -334,57 +334,57 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        rollout ro "Detach Elements by MatId:" width:400
+		rollout ro "Detach Elements by MatId:" width:400
 		(
 			local self
-            
-            group "Objects:"
-            (
-                checkBox chk_selection ":Selection" checked:True tooltip:"Only analyze the objects in your current selection" across:2
-                checkBox chk_scene ":Full Scene" checked:False tooltip:"Aanalyze all objects in your scene"
-            )
-            
-            group "Options:"
-            (
-                checkBox chk_parse ":Separate Multimat" checked:True tooltip:"Separate the multimaterial into its separate materials"
-            )
-            
-            dotNetControl dNbtn_collect "Button" height:40
+			
+			group "Objects:"
+			(
+				checkBox chk_selection ":Selection" checked:True tooltip:"Only analyze the objects in your current selection" across:2
+				checkBox chk_scene ":Full Scene" checked:False tooltip:"Aanalyze all objects in your scene"
+			)
+			
+			group "Options:"
+			(
+				checkBox chk_parse ":Separate Multimat" checked:True tooltip:"Separate the multimaterial into its separate materials"
+			)
+			
+			dotNetControl dNbtn_collect "Button" height:40
 			
 			fn _init pself =
 			(
 				self = pself
-                
-                ::DotNetUi.InitDnetBtn dNbtn_collect "Detach Elements" 12 style:#popup colorOffsetInt:10 tooltip:""
+				
+				::DotNetUi.InitDnetBtn dNbtn_collect "Detach Elements" 12 style:#popup colorOffsetInt:10 tooltip:""
 			)
-            
-            on chk_selection changed state do
-            (
-                chk_scene.state = not state
-            )
-            
-            on chk_scene changed state do
-            (
-                chk_selection.state = not state
-            )
+			
+			on chk_selection changed state do
+			(
+				chk_scene.state = not state
+			)
+			
+			on chk_scene changed state do
+			(
+				chk_selection.state = not state
+			)
 			
 			on dNbtn_collect mouseClick args do
 			(
-                local objArr = case chk_selection.state of
-                (
-                    ( True ): ( GetCurrentSelection() )
-                    default: ( objects as array )
-                )
-                
-                self.Batch objArr parseMaterial:chk_parse.state
+				local objArr = case chk_selection.state of
+				(
+					( True ): ( GetCurrentSelection() )
+					default: ( objects as array )
+				)
+				
+				self.Batch objArr parseMaterial:chk_parse.state
 			)
 		)
-        
+		
 		createDialog ro
 		ro._init this
-    ),
-    
-    fn Run =
+	),
+	
+	fn Run =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Simple method so that you can always just call the <object>.Run() method
@@ -397,8 +397,8 @@ public
 		
 		this.Ui()
 	),
-    
-    fn GetModule =
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -425,10 +425,10 @@ public
 	
 		::mxs.GetScriptHelp ( GetSourceFileName() ) _fn:_fn
 	),
-    
+	
 private
-    
-    fn _init =
+	
+	fn _init =
 	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
@@ -439,11 +439,11 @@ private
 		--------------------------------------------------------------------_END*/
 		
 		if this.showUi then
-        (
-            this.Run()
-        )
+		(
+			this.Run()
+		)
 	),
-    
+	
 	__init__ = _init()
 )
 

@@ -42,7 +42,7 @@ struct HierarchyFns
 (
 public
 
-    mapped fn SetParent_mapped objArr obj _replace:False =
+	mapped fn SetParent_mapped objArr obj _replace:False =
 	(
 		/* 
 		Set the parent of each object in objArr to obj
@@ -112,15 +112,15 @@ public
 		/* 
 		recurses upstream through a node's hierarchy collecting all nodes above obj
 		 */
-        
-        -- A boolean that will exit the recurse if set to true
+		
+		-- A boolean that will exit the recurse if set to true
 		local skipCase = False
-        
+		
 		if obj.parent != undefined then
 		(
 			if finditem arr obj.parent == 0 then
 			(
-                if ( skipNamePattern != unsupplied ) and ( classOf skipNamePattern == String ) then
+				if ( skipNamePattern != unsupplied ) and ( classOf skipNamePattern == String ) then
 				(
 					exitCase = ( matchPattern obj.parent.name pattern:skipNamePattern )
 				)
@@ -134,7 +134,7 @@ public
 				(
 					exitCase = ( (SuperClassOf obj.parent) == skipSuperClass )
 				)
-                
+				
 				if not skipCase then
 				(
 					append arr obj.parent
@@ -149,7 +149,7 @@ public
 	(
 		/* 
 		recurses downstream through a node's hierarchy collecting all nodes below obj
-                */
+				*/
 		
 		-- A boolean that will exit the recurse if set to true
 		local skipCase = False
@@ -172,7 +172,7 @@ public
 				(
 					skipCase = ((SuperClassOf c) == skipSuperClass)
 				)
-                
+				
 				if not skipCase then
 				(
 					append arr c
@@ -180,7 +180,7 @@ public
 				)
 			)
 		)
-        
+		
 		arr
 	),
 	
@@ -201,21 +201,21 @@ public
 		- Concotenates a path to the object through it's hierarch
 		- Used for the Alembic export and Material collection
 		 */
-        
+		
 		if IsValidNode obj then
 		(
 			local str = stringstream ""
 			local worldRoot = "/root/world/geo/"
-            
+			
 			format "%" worldRoot to:str
-            
+			
 			local parentArr = #()
 			this.GetParentsRecursive obj arr:parentArr
-            
+			
 			for i = parentArr.count to 1 by -1 do format "%/" parentArr[i].name to:str
-                
+				
 			format "%" obj.name to:str
-            
+			
 			str as string
 		)
 		else
@@ -223,25 +223,25 @@ public
 			undefined
 		)
 	),
-    
-    fn GetModule =
-    (
-        ( GetSourceFileName() )
-    ),
+	
+	fn GetModule =
+	(
+		( GetSourceFileName() )
+	),
 
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetSourceFileName() )
-    ),
+	fn Help =
+	(
+		::mxs.GetScriptHelp ( GetSourceFileName() )
+	),
 
 private
-    
-    fn _init =
-    (
-        -- Pass
-    ),
+	
+	fn _init =
+	(
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 HierarchyFns = HierarchyFns()

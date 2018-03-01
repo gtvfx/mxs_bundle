@@ -42,10 +42,10 @@ __END__
 
 struct CopyPaste
 (
-    localDir = ( ( GetDir #temp )+ @"\copypaste\" ),
-    networkDir,
-    
-    fn Copy fileName objArr:unsupplied location:this.localDir =
+	localDir = ( ( GetDir #temp )+ @"\copypaste\" ),
+	networkDir,
+	
+	fn Copy fileName objArr:unsupplied location:this.localDir =
 	(
 		if objArr == unsupplied then
 		(
@@ -57,53 +57,53 @@ struct CopyPaste
 			location = location + "\\"
 		)
 		
-        makeDir location
-        
-        if objArr.count > 0 then
-        (
-            SaveNodes objArr ( location + fileName + ".max" )
-        )
-        else
-        (
-            messagebox "Nothing selected......" title:"GTVFX: Error"
-        )
+		makeDir location
+		
+		if objArr.count > 0 then
+		(
+			SaveNodes objArr ( location + fileName + ".max" )
+		)
+		else
+		(
+			messagebox "Nothing selected......" title:"GTVFX: Error"
+		)
 	),
-    
-    fn Paste filename location:this.localDir =
-    (
+	
+	fn Paste filename location:this.localDir =
+	(
 		if location[location.count] != "\\" then
 		(
 			location = location + "\\"
 		)
 		
-        local file = ( location + fileName + ".max" )
-        
-        if ( DoesFileExist file ) then
-        (
-            mergeMaxFile file #select
-        )
-        else
-        (
-            messagebox "Could not find a file to paste..." title:"GTVFX: Error"
-        )
-    ),
-    
-    fn GetModule =
-    (
-        ( GetSourceFilename() )
-    ),
+		local file = ( location + fileName + ".max" )
+		
+		if ( DoesFileExist file ) then
+		(
+			mergeMaxFile file #select
+		)
+		else
+		(
+			messagebox "Could not find a file to paste..." title:"GTVFX: Error"
+		)
+	),
+	
+	fn GetModule =
+	(
+		( GetSourceFilename() )
+	),
 
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( this.GetModule() )
-    ),
+	fn Help =
+	(
+		::mxs.GetScriptHelp ( this.GetModule() )
+	),
 
-    private fn _init =
-    (
-        -- Pass
-    ),
+	private fn _init =
+	(
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 CopyPaste = CopyPaste()

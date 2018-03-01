@@ -49,7 +49,7 @@ struct FileFns
 	
 public
 	
-    fn TransferFiles _fromDir: _toDir: fileArr:#all deleteAfter:False =
+	fn TransferFiles _fromDir: _toDir: fileArr:#all deleteAfter:False =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Copies files from _fromDir to the _toDir
@@ -58,7 +58,7 @@ public
 		leave the fileArr flag set to the default of #all.
 		
 		Kwargs:
-		 	_fromDir (string) : Directory to find the files to copy
+			_fromDir (string) : Directory to find the files to copy
 			_toDir (string) : Destination directory for copied files
 			fileArr (#all | array[string]) : List of specific file from the directory or #all
 			deleteAfter (boolean) : If true, deletes the files from the _fromDir after they've been copied
@@ -163,13 +163,13 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		if DoesFileExist (GetFilenamePath rendOutputFilename) then 
-        (
-            ShellLaunch "explorer" (GetFilenamePath rendOutputFilename)
-        )
-        else
-        (
-            messageBox "Unable to access render path directory." title:"Error:"
-        )
+		(
+			ShellLaunch "explorer" (GetFilenamePath rendOutputFilename)
+		)
+		else
+		(
+			messageBox "Unable to access render path directory." title:"Error:"
+		)
 	),
 	
 	fn OpenTempDir =
@@ -191,7 +191,7 @@ public
 		Returns the most recent file from the inputed filePath
 		
 		Args:
-		 	filePath (string) : Directory to get files from
+			filePath (string) : Directory to get files from
 		
 		Kwargs:
 			ext (string) : optional file extension flag. Only files matching this extension will be tested and returned
@@ -222,11 +222,11 @@ public
 				)
 			)
 		)
-        
+		
 		assumedLatestFile
 	),
-    
-    fn GetModule =
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -257,7 +257,7 @@ public
 private
 	
 	fn _init =
-    (
+	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
 		
@@ -266,10 +266,10 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Pass
-    ),
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 FileFns = FileFns()

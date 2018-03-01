@@ -30,27 +30,27 @@ Instantiated Global: VertToVolumeAnalyzer
 
 [METHODS]
 
-    CalculateVolumeVertexCount <obj>
-        - Calculates the volume of the nodeLocalBoundingBox
-        - returns a tuple containing the volume and the vertex count of the object
-    
-    GetVertToVolumeRatio <obj> multiplier:<10>
-        - returns the quotient of ( vertexCount/( volume * multiplier) )
+	CalculateVolumeVertexCount <obj>
+		- Calculates the volume of the nodeLocalBoundingBox
+		- returns a tuple containing the volume and the vertex count of the object
+	
+	GetVertToVolumeRatio <obj> multiplier:<10>
+		- returns the quotient of ( vertexCount/( volume * multiplier) )
 
-    AnalyzeObjects <objArr>
-        - Gets the ratio for each object in objArr
-        - Stores an array of tuples to the cacheArr parameter of the class
-        - tuples contains the object and ratio
-    
-    GetObjsByRatio <ratio>
-        - Queries the array of tuples in the cacheArr parameter
-        - returns the objects with ratios that are greater than or equal to the supplied ratio
-    
-    Ui
-        - Constructs and launches the UI
-    
-    Run
-        - Executes the UI method
+	AnalyzeObjects <objArr>
+		- Gets the ratio for each object in objArr
+		- Stores an array of tuples to the cacheArr parameter of the class
+		- tuples contains the object and ratio
+	
+	GetObjsByRatio <ratio>
+		- Queries the array of tuples in the cacheArr parameter
+		- returns the objects with ratios that are greater than or equal to the supplied ratio
+	
+	Ui
+		- Constructs and launches the UI
+	
+	Run
+		- Executes the UI method
 
 
 [DESCRIPTION]
@@ -74,7 +74,7 @@ __END__
 __HELP__
 
 
-    
+	
 __END__
 */
 
@@ -97,80 +97,80 @@ struct VertToVolumeAnalyzer
 public
 
 	ro,
-    showUi = False,
+	showUi = False,
 	cacheArr = #(),
-    
-    fn CalculateVolumeVertexCount obj =
-    (
-        with undo off 
-        (
-            if ( isProperty obj #mesh ) and ( isProperty obj.mesh #numverts ) then
-            (
-                local vertCount = obj.mesh.numVerts
-                
-                local bBox = nodeLocalBoundingBox obj
-                
-                local dif = ( bBox[2] - bBox[1] )
-                
-                local volume = abs( dif.x*dif.y*dif.z )
-                
-                #( volume, vertCount )
-            )
-            else
-            (
-                --format "***** % Does not have a Mesh property *****\n" obj
-                undefined
-            )
-        )
-    ),
-    
+	
+	fn CalculateVolumeVertexCount obj =
+	(
+		with undo off 
+		(
+			if ( isProperty obj #mesh ) and ( isProperty obj.mesh #numverts ) then
+			(
+				local vertCount = obj.mesh.numVerts
+				
+				local bBox = nodeLocalBoundingBox obj
+				
+				local dif = ( bBox[2] - bBox[1] )
+				
+				local volume = abs( dif.x*dif.y*dif.z )
+				
+				#( volume, vertCount )
+			)
+			else
+			(
+				--format "***** % Does not have a Mesh property *****\n" obj
+				undefined
+			)
+		)
+	),
+	
 	fn GetVertToVolumeRatio obj multiplier:10 =
 	(
 		local data = this.CalculateVolumeVertexCount obj
-        
-        local ratio = 0
-        
+		
+		local ratio = 0
+		
 		if data != undefined then
 		(
 			local volume = data[1]
 			local vertexCount = data[2]
-            
+			
 			ratio = vertexCount/( volume * multiplier)
 		)
-        
-        ratio
+		
+		ratio
 	),
 	
 	fn AnalyzeObjects objArr =
 	(
-        ::mxs.BlockUi True
-        
+		::mxs.BlockUi True
+		
 		this.cacheArr = #()
-        
+		
 		local _progBar = ::progress_bar.Run title:"Calculating Vertex to Volume Ratio:" maximum:objArr.count
-        
+		
 		--local arr = #()	
-        
+		
 		for obj in objArr while not Keyboard.EscPressed do
 		(
-            _progBar.update_label ( "Calculating Ratio For: " + obj.name )
-            
+			_progBar.update_label ( "Calculating Ratio For: " + obj.name )
+			
 			local ratio = ( this.GetVertToVolumeRatio obj )
-            
+			
 			append this.cacheArr #( obj, ratio )
-            
-            _progBar.step()
+			
+			_progBar.step()
 		)
-        
-        _progBar.close()
-        
-        ::mxs.BlockUi False
+		
+		_progBar.close()
+		
+		::mxs.BlockUi False
 	),
 	
 	fn GetObjsByRatio ratio =
 	(
-        local out = #()
-        
+		local out = #()
+		
 		if this.cacheArr.count != 0 then
 		(
 			out = for i in this.cacheArr where not ( isDeleted i[1] ) and i[2] >= ratio collect i[1]
@@ -179,7 +179,7 @@ public
 		(
 			format "***** No Cached Objects *****\n"
 		)
-        
+		
 		out
 	),
 	
@@ -188,97 +188,97 @@ public
 		rollout ro "Vertex To Volume Ratio" width:400
 		(
 			local self
-            local sliderMax = 2000
-            
-            slider sld_index "Tolerence:" range:[0,sliderMax,500] type:#float ticks:10 orient:#horizontal offset:[5,0]
-            
-            label lbl_count "Dense Objects: ?" align:#left across:2
-            spinner spn_scale "Slider Scale:" range:[0,999,1] type:#float fieldWidth:40 tooltip:"Use this to adjust the precision of the slider"
-            
-            group "Objects:"
-            (
-                checkBox chk_selection ":Selection" checked:False tooltip:"Only analyze the objects in your current selection" across:2
-                checkBox chk_scene ":Full Scene" checked:True tooltip:"Aanalyze all objects in your scene"
-            )
-            
-            dotNetControl dNbtn_collect "Button" height:40
+			local sliderMax = 2000
+			
+			slider sld_index "Tolerence:" range:[0,sliderMax,500] type:#float ticks:10 orient:#horizontal offset:[5,0]
+			
+			label lbl_count "Dense Objects: ?" align:#left across:2
+			spinner spn_scale "Slider Scale:" range:[0,999,1] type:#float fieldWidth:40 tooltip:"Use this to adjust the precision of the slider"
+			
+			group "Objects:"
+			(
+				checkBox chk_selection ":Selection" checked:False tooltip:"Only analyze the objects in your current selection" across:2
+				checkBox chk_scene ":Full Scene" checked:True tooltip:"Aanalyze all objects in your scene"
+			)
+			
+			dotNetControl dNbtn_collect "Button" height:40
 			
 			fn _init pself =
 			(
 				self = pself
-                
-                self.cacheArr = #()
-                
-                ::DotNetUi.InitDnetBtn dNbtn_collect "Analyze Objects" 12 style:#popup colorOffsetInt:10 tooltip:""
+				
+				self.cacheArr = #()
+				
+				::DotNetUi.InitDnetBtn dNbtn_collect "Analyze Objects" 12 style:#popup colorOffsetInt:10 tooltip:""
 			)
-            
-            on chk_selection changed state do
-            (
-                chk_scene.state = not state
-            )
-            
-            on chk_scene changed state do
-            (
-                chk_selection.state = not state
-            )
+			
+			on chk_selection changed state do
+			(
+				chk_scene.state = not state
+			)
+			
+			on chk_scene changed state do
+			(
+				chk_selection.state = not state
+			)
 			
 			on dNbtn_collect mouseClick args do
 			(
-                local objArr = case chk_selection.state of
-                (
-                    ( True ): ( GetCurrentSelection() )
-                    default: ( objects as array )
-                )
-                
-                if objArr.count == 0 then return ( format "Nothing to analyze\n" )
-                
+				local objArr = case chk_selection.state of
+				(
+					( True ): ( GetCurrentSelection() )
+					default: ( objects as array )
+				)
+				
+				if objArr.count == 0 then return ( format "Nothing to analyze\n" )
+				
 				self.AnalyzeObjects objArr
-                
-                select ( self.GetObjsByRatio sld_index.value )
-                lbl_count.text = ( "Dense Objects: " + ( selection.count as string ) )
+				
+				select ( self.GetObjsByRatio sld_index.value )
+				lbl_count.text = ( "Dense Objects: " + ( selection.count as string ) )
 			)
-            
-            on sld_index changed val do
+			
+			on sld_index changed val do
 			(
 				select (self.GetObjsByRatio val)
-                lbl_count.text = ( "Dense Objects: " + ( selection.count as string ) )
+				lbl_count.text = ( "Dense Objects: " + ( selection.count as string ) )
 			)
-            
-            on spn_scale changed val do
+			
+			on spn_scale changed val do
 			(
 				sld_index.range = [0, ( sliderMax * spn_scale.value ) , sld_index.value]
 			)
 		)
-        
+		
 		createDialog ro
 		ro._init this
 	),
-    
-    fn Run =
+	
+	fn Run =
 	(
 		this.Ui()
 	),
-    
-    fn GetModule =
-    (
-        ( GetThisScriptFileName() )
-    ),
-    
-    fn Help =
-    (
-        ::mxs.GetScriptHelp ( GetThisScriptFileName() )
-    ),
-    
+	
+	fn GetModule =
+	(
+		( GetThisScriptFileName() )
+	),
+	
+	fn Help =
+	(
+		::mxs.GetScriptHelp ( GetThisScriptFileName() )
+	),
+	
 private
-    
-    fn _init =
+	
+	fn _init =
 	(
 		if this.showUi then
-        (
-            this.Run()
-        )
+		(
+			this.Run()
+		)
 	),
-    
+	
 	__init__ = _init()
 )
 

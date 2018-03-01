@@ -70,7 +70,7 @@ public
 		Converts the object to the class if it's possible
 		
 		Args:
-		 	obj (NODE)
+			obj (NODE)
 			cls (3dsmax Object Class)
 		
 		Returns:

@@ -426,8 +426,8 @@ CLASS USAGE:
 	),
 	
 private
-    
-    fn __init__ =
+	
+	fn __init__ =
 	(
 		-- Pass
 	),

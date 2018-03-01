@@ -30,9 +30,9 @@ Instantiated Global: CombineMaterials
 
 
 Methods:
-    Run <objArr> mtlName:""
-        - Provide an array of objects to create a MultiMaterial for
-        - if a string is passed to mtlName then the new MultiMaterial will have this name otherwise it will be named "CombinedMaterial"
+	Run <objArr> mtlName:""
+		- Provide an array of objects to create a MultiMaterial for
+		- if a string is passed to mtlName then the new MultiMaterial will have this name otherwise it will be named "CombinedMaterial"
 
 
 
@@ -75,15 +75,15 @@ struct CombineMaterials
 	--------------------------------------------------------------------_END*/
 	
 public
-    
-    fn QsortNodeAphlabetical v1 v2 =
-    (
+	
+	fn QsortNodeAphlabetical v1 v2 =
+	(
 		/*DOC_--------------------------------------------------------------------
 		This function is meant to be passed to the Qsort function.
 		Sorts items alphabetically
 		
 		Args:
-		 	v1 (string)
+			v1 (string)
 			v2 (string)
 		
 		Returns:
@@ -92,35 +92,35 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		
-        local v = v1.name
-        local vv = v2.name
-        case of
-        (
-            (v < vv): -1
-            (v > vv): 1
-            default: 0
-        )
-    ),
-    
-    fn FilterObjArr objArr =
-    (
+		local v = v1.name
+		local vv = v2.name
+		case of
+		(
+			(v < vv): -1
+			(v > vv): 1
+			default: 0
+		)
+	),
+	
+	fn FilterObjArr objArr =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Filters the inputed object array and returns only objects that are
 		able to be converted to Editable_Poly
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			array[Node]
 		
 		--------------------------------------------------------------------_END*/
 		
-        for obj in objArr where ( CanConvertTo obj Editable_Poly ) collect obj
-    ),
-    
-    fn ExplodeMultiMat mat arr:#() =
-    (
+		for obj in objArr where ( CanConvertTo obj Editable_Poly ) collect obj
+	),
+	
+	fn ExplodeMultiMat mat arr:#() =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Loops through a MultiMaterial and collects each individual materail
 		into an array
@@ -128,7 +128,7 @@ public
 		Recursive method
 		
 		Args:
-		 	mat (Material)
+			mat (Material)
 		
 		Kwargs:
 			arr (array[material]) : used for recursion
@@ -138,30 +138,30 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if ( ClassOf mat ) == MultiMaterial then
-        (
-            for each in mat.materialList do
-            (
-                this.ExplodeMultiMat each arr:arr
-            )
-        )
-        else 
-        (
-            if mat != undefined then appendIfUnique arr mat
-        )
-        
-        arr
-    ),
-    
-    fn CollectUniqueMaterials objArr =
-    (
+		if ( ClassOf mat ) == MultiMaterial then
+		(
+			for each in mat.materialList do
+			(
+				this.ExplodeMultiMat each arr:arr
+			)
+		)
+		else 
+		(
+			if mat != undefined then appendIfUnique arr mat
+		)
+		
+		arr
+	),
+	
+	fn CollectUniqueMaterials objArr =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Loops through each object in the inputed array and collects a flat level
 		array of unique materials by collecting each objects' material or by 
 		recursing through the objects' multimaterial
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			array[Material]
@@ -170,21 +170,21 @@ public
 		
 		local arr = #()
 		
-        for obj in objArr where ( obj.material != undefined ) do
-        (
-            this.ExplodeMultiMat obj.material arr:arr
-        )
-        
-        arr
-    ),
-    
-    fn GetSubMatById multiMat id =
-    (
+		for obj in objArr where ( obj.material != undefined ) do
+		(
+			this.ExplodeMultiMat obj.material arr:arr
+		)
+		
+		arr
+	),
+	
+	fn GetSubMatById multiMat id =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Takes an MultiMaterial and returns the material at the inputed id
 		
 		Args:
-		 	multiMat (MultiMaterial)
+			multiMat (MultiMaterial)
 			id (integer)
 		
 		Returns:
@@ -192,127 +192,127 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local index = ( FindItem multiMat.materialIDList id )
-        local out = undefined
-        
-        if index != 0 then
-        (
-            out = multiMat.materialList[index]
-        )
-        
-        out
-    ),
+		local index = ( FindItem multiMat.materialIDList id )
+		local out = undefined
+		
+		if index != 0 then
+		(
+			out = multiMat.materialList[index]
+		)
+		
+		out
+	),
 
-    fn FindMatIndexInMultMat multiMat mat =
-    ( -- Returns the index of the mat
-        local index = ( FindItem multiMat.materialList mat )
-        
-        local out = undefined 
-        
-        if index != 0 then
-        (
-           out = index
-        )
-        
-        out
-    ),
-    
-    -- Build a new MulitMaterial with newly assigned ID's
-    fn BuildMultiMat matArr mtlName:"" =
-    (
-        -- sort the material array alphabetically, because it's nice to look at ;)
-        qsort matArr this.QsortNodeAphlabetical
-        
-        local out = MultiMaterial name:( if mtlName == "" then "CombineMaterial" else mtlName )
-        
-        out.count = matArr.count
-        out.materialList = matArr
-        
-        out
-    ),
-    
-    fn Run objArr mtlName:"" = 
-    (
-        --SetCommandPanelTaskMode #create
-        ::mxs.BlockUi True
-        
-        objArr = this.FilterObjArr objArr
-        
-        local matArr = this.CollectUniqueMaterials objArr
+	fn FindMatIndexInMultMat multiMat mat =
+	( -- Returns the index of the mat
+		local index = ( FindItem multiMat.materialList mat )
+		
+		local out = undefined 
+		
+		if index != 0 then
+		(
+		   out = index
+		)
+		
+		out
+	),
+	
+	-- Build a new MulitMaterial with newly assigned ID's
+	fn BuildMultiMat matArr mtlName:"" =
+	(
+		-- sort the material array alphabetically, because it's nice to look at ;)
+		qsort matArr this.QsortNodeAphlabetical
+		
+		local out = MultiMaterial name:( if mtlName == "" then "CombineMaterial" else mtlName )
+		
+		out.count = matArr.count
+		out.materialList = matArr
+		
+		out
+	),
+	
+	fn Run objArr mtlName:"" = 
+	(
+		--SetCommandPanelTaskMode #create
+		::mxs.BlockUi True
+		
+		objArr = this.FilterObjArr objArr
+		
+		local matArr = this.CollectUniqueMaterials objArr
 
-        local newMat = this.BuildMultiMat matArr mtlName:mtlName
+		local newMat = this.BuildMultiMat matArr mtlName:mtlName
 
-        for obj in objArr do
-        (
+		for obj in objArr do
+		(
 			::Logger.debug "Converting To Poly" args:#() cls:this
-            
-            ::CommonFns.ConvertBaseObject obj type:#poly
-            
+			
+			::CommonFns.ConvertBaseObject obj type:#poly
+			
 			::Logger.debug "Disabling Modifiers" args:#() cls:this
-            
-            local mdsArr = #()
-            if obj.modifiers.count != 0 then
-            (
-                for m = 1 to obj.modifiers.count do 
-                (
-                    -- Store the enabled state of the modifier
-                    mdsArr[m] = obj.modifiers[m].enabled
-                    -- Disable the modifier
-                    obj.modifiers[m].enabled = False
-                )
-            )
-            
+			
+			local mdsArr = #()
+			if obj.modifiers.count != 0 then
+			(
+				for m = 1 to obj.modifiers.count do 
+				(
+					-- Store the enabled state of the modifier
+					mdsArr[m] = obj.modifiers[m].enabled
+					-- Disable the modifier
+					obj.modifiers[m].enabled = False
+				)
+			)
+			
 			::Logger.debug "Building remapArr" args:#() cls:this
-            --
-            local remapArr = #()
-            local idArr = ::DetachElementsByMatID.CollectUniqueFaceIds obj
-            local curMat = obj.material
-            
-            for id in idArr do
-            (
-                -- Need to collect and store the mesh faces that correspond with the new id
-                -- If it's done in-line with getting the newId, there's a potential to overlap the id assignment
-                
-                local curSubMat = if ( ClassOf curMat ) == MultiMaterial then ( GetSubMatById curMat id ) else curMat
-                
-                local newId = this.FindMatIndexInMultMat newMat curSubMat
-                
-                local faceArr = ::DetachElementsByMatID.CollectFacesById obj id
-                
-                append remapArr #(newId, faceArr)
-            )
-            
+			--
+			local remapArr = #()
+			local idArr = ::DetachElementsByMatID.CollectUniqueFaceIds obj
+			local curMat = obj.material
+			
+			for id in idArr do
+			(
+				-- Need to collect and store the mesh faces that correspond with the new id
+				-- If it's done in-line with getting the newId, there's a potential to overlap the id assignment
+				
+				local curSubMat = if ( ClassOf curMat ) == MultiMaterial then ( GetSubMatById curMat id ) else curMat
+				
+				local newId = this.FindMatIndexInMultMat newMat curSubMat
+				
+				local faceArr = ::DetachElementsByMatID.CollectFacesById obj id
+				
+				append remapArr #(newId, faceArr)
+			)
+			
 			::Logger.debug "Apply remapping" args:#() cls:this
 				
-            -- Apply the remapping of the id's
-            for each in remapArr do
-            (
+			-- Apply the remapping of the id's
+			for each in remapArr do
+			(
 				::Logger.debug "each: {1}" args:#(each) cls:this
-                
-                polyop.SetFaceMatId obj each[2] each[1]
-            )
-            
+				
+				polyop.SetFaceMatId obj each[2] each[1]
+			)
+			
 			::Logger.debug "Apply new Material" args:#() cls:this
-            
-            obj.material = newMat
-            
+			
+			obj.material = newMat
+			
 			::Logger.debug "Enable modifier" args:#() cls:this
-            
-            for m = 1 to mdsArr.count do
-            (
-                -- Set the enabled state of the modifier to the stored state
-                obj.modifiers[m].enabled = mdsArr[m]
-            )
-            
-            ::CommonFns.ConvertBaseObject obj type:#mesh
-        )
-        
-        ::mxs.BlockUi False
-        
-        newMat
-    ),
-    
-    fn GetModule =
+			
+			for m = 1 to mdsArr.count do
+			(
+				-- Set the enabled state of the modifier to the stored state
+				obj.modifiers[m].enabled = mdsArr[m]
+			)
+			
+			::CommonFns.ConvertBaseObject obj type:#mesh
+		)
+		
+		::mxs.BlockUi False
+		
+		newMat
+	),
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -342,12 +342,12 @@ public
 
 private
 
-    fn _init =
-    (
-        -- Pass
-    ),
+	fn _init =
+	(
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 CombineMaterials = CombineMaterials()

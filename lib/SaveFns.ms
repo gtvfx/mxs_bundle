@@ -63,7 +63,7 @@ public
 		Pads the inputed base_number with zeros up to the inputed digit_count
 		
 		Kwargs:
-		 	base_number (integer)
+			base_number (integer)
 			digit_count (integer)
 		
 		Returns:
@@ -94,7 +94,7 @@ public
 		if a crash occurs during the save.
 		
 		Kwargs:
-		 	filepath (string): Path to the root directory of the increment directory
+			filepath (string): Path to the root directory of the increment directory
 			filename (string): Base name of the increment file without the increment padding
 			save_to_dir (string): directory name of the directory with all the incremented files
 			increment_separator (string): character used to separator the increment number from base name
@@ -184,7 +184,7 @@ public
 		Runs SaveIncrement with default flags then closes the 3dsmax applicaiton
 		
 		Kwargs:
-		 	slave_dl (boolean) : If true will attempt to launch Deadline slave prior to shutdon
+			slave_dl (boolean) : If true will attempt to launch Deadline slave prior to shutdon
 			slave_bb (boolean) : If true will attempt to launch Backburner slave prior to shutdon
 		
 		Returns:
@@ -324,8 +324,8 @@ public
 	),
 	
 private
-    
-    fn _init =
+	
+	fn _init =
 	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct

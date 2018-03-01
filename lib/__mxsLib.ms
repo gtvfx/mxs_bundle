@@ -116,8 +116,8 @@ global mxs
 		/*DOC_--------------------------------------------------------------------
 		Simple Dictionary type class for storing data in the mxsLib
 		
-		Args:
-		 	m_keys (array[string])
+		Parameters:
+			m_keys (array[string])
 			m_values (array[*])
 			count (integer)
 		
@@ -208,7 +208,7 @@ global mxs
 		Stores environment paths
 		
 		Args:
-		 	name (string)
+			name (string)
 			paths (SimpleDict)
 		
 		--------------------------------------------------------------------_END*/
@@ -223,7 +223,7 @@ global mxs
 			string if none is found
 			
 			Args:
-			 	pathID (string)
+				pathID (string)
 			
 			Returns:
 				path: (string)
@@ -246,7 +246,7 @@ global mxs
 			Returns the paths keys - path IDs for this environment
 			
 			Args:
-			 	ARG1 (type)
+				ARG1 (type)
 			
 			Returns:
 				(array[string])
@@ -262,7 +262,7 @@ global mxs
 			Sets the path ID's path value ( all path ID's are converted to lower case strings )
 			
 			Args:
-			 	pathID (string)
+				pathID (string)
 				path (string)
 			
 			Returns:
@@ -327,7 +327,7 @@ global mxs
 			new environments and turns the ID to lowercase
 			
 			Args:
-			 	environmentID (string)
+				environmentID (string)
 			
 			Returns:
 				outEnvironmentID: (string)
@@ -357,7 +357,7 @@ global mxs
 			stacks calls to disable common ui elements
 			
 			Args:
-			 	state (boolean)
+				state (boolean)
 			
 			Kwargs:
 				flags (name | array[name])
@@ -367,8 +367,8 @@ global mxs
 			
 			--------------------------------------------------------------------_END*/
 			
-	 		flags = if flags == unsupplied then #(#all) else flags
-	 		if classof flags != Array then flags = #(flags)	
+			flags = if flags == unsupplied then #(#all) else flags
+			if classof flags != Array then flags = #(flags)	
 			
 			if ( state ) then
 			(
@@ -499,7 +499,7 @@ global mxs
 			Clears the global value using the globalVars struct
 			
 			Args:
-			 	inString (string)
+				inString (string)
 			
 			Returns:
 				(VOID)
@@ -517,7 +517,7 @@ global mxs
 			Also removes the library ID from the library list
 			
 			Args:
-			 	inLibName (string)
+				inLibName (string)
 			
 			Returns:
 				(Boolean)
@@ -577,7 +577,7 @@ global mxs
 			Displays info about the library specified
 			
 			Args:
-			 	inLibName (string)
+				inLibName (string)
 			
 			Kwargs:
 				inPrintTo (<windostream> | <filestream> | <stringstream>)
@@ -685,7 +685,7 @@ global mxs
 			Displays info about the item specified
 			
 			Args:
-			 	inItem (<object> | <property> | <struct>) : Item to debug
+				inItem (<object> | <property> | <struct>) : Item to debug
 			
 			Kwargs:
 				inIncludeHead (boolean) : Includes info about the item name
@@ -833,7 +833,7 @@ global mxs
 			Returns the current code root path directory
 			
 			Kwargs:
-			 	inEnvironment (string)
+				inEnvironment (string)
 			
 			Returns:
 				(string) : directory path
@@ -862,7 +862,7 @@ global mxs
 			Gets the path to the user directory. Can be #local or #network
 			
 			Kwargs:
-			 	env (enum: #local | #network)
+				env (enum: #local | #network)
 			
 			Returns:
 				userDir: (string)
@@ -944,7 +944,7 @@ global mxs
 			Tests the object type of the arg passed and returns it as an array
 			
 			Args:
-			 	arg (VARIABLE)
+				arg (VARIABLE)
 			
 			Returns:
 				(array[arg])
@@ -964,51 +964,51 @@ global mxs
 		),
 		
 		fn GetScriptDependencies mxsModule =
-        (
+		(
 			/*DOC_--------------------------------------------------------------------
 			Get a list of modules being sourced by the supplied module
 			
 			Args:
-			 	mxsModule (string) : file path to an mxs module file
+				mxsModule (string) : file path to an mxs module file
 			
 			Returns:
 				out: (array[string]) : array of string paths to mxs module files
 			
 			--------------------------------------------------------------------_END*/
 			
-            if not ( DoesFileExist mxsModule ) then
-            (
-                format "***** GetStringBlock was unable to find the supplied file: % *****\n" mxsModule
-                return ""
-            )
-            
-            local out = #()
-            local strm = ( openFile mxsModule mode:"r" )
-            
-            while not ( eof strm ) do
-            (
-                local l = readLine strm
-                if ( matchPattern l pattern:"*mxs.using*" ) then
-                (
-                    local lineStrArr = ( filterString l "\"" )
-                    
-                    if lineStrArr != undefined and lineStrArr.count > 1 then
-                    (
-                        appendIfUnique out lineStrArr[2]
-                    )
-                )
-            )
-            
-            out
-        ),
-        
-        fn GetStringBlock textFile fromStr toStr title:"" filterFromStr:True filterToStr:True =
-        (
+			if not ( DoesFileExist mxsModule ) then
+			(
+				format "***** GetStringBlock was unable to find the supplied file: % *****\n" mxsModule
+				return ""
+			)
+			
+			local out = #()
+			local strm = ( openFile mxsModule mode:"r" )
+			
+			while not ( eof strm ) do
+			(
+				local l = readLine strm
+				if ( matchPattern l pattern:"*mxs.using*" ) then
+				(
+					local lineStrArr = ( filterString l "\"" )
+					
+					if lineStrArr != undefined and lineStrArr.count > 1 then
+					(
+						appendIfUnique out lineStrArr[2]
+					)
+				)
+			)
+			
+			out
+		),
+		
+		fn GetStringBlock textFile fromStr toStr title:"" filterFromStr:True filterToStr:True =
+		(
 			/*DOC_--------------------------------------------------------------------
 			Collects a block of text in a file between the fromStr and toStr args
 			
 			Args:
-			 	textFile (string) : filepath to text file
+				textFile (string) : filepath to text file
 				fromStr (string) : string pattern to find to begin collecting the block of text from
 				toStr (string) : string pattern to end collecting at
 			
@@ -1022,44 +1022,44 @@ global mxs
 			
 			--------------------------------------------------------------------_END*/
 			
-            if not ( DoesFileExist textFile ) then
-            (
-                format "***** GetStringBlock was unable to find the supplied file: % *****\n" textFile
-                return ""
-            )
-                
-            local strBlock = stringStream ""
-            local strm = ( openFile textFile mode:"r" )
-            local begin = False
-            
-            while not ( eof strm ) do
-            (
-                local l = readLine strm
-                if ( matchPattern l pattern:fromStr ) then begin = True
-                if begin then
-                (
-                    format (l + "\n") to:strBlock
-                    if matchPattern l pattern:toStr then exit
-                )
-            )
-            
-            close strm
-            strBlock = ( strBlock as string )
-            
-            if filterFromStr then
-            (
-                local iFromStr = SubStituteString fromStr "*" ""
-                strBlock = ( SubstituteString strBlock iFromStr "" )
-            )
-            
-            if filterToStr then
-            (
-                local iToStr = SubStituteString toStr "*" ""
-                strBlock = ( SubstituteString strBlock iToStr "" )
-            )
-            
-            format "======================================\n%%\n======================================\n" title strBlock
-        ),
+			if not ( DoesFileExist textFile ) then
+			(
+				format "***** GetStringBlock was unable to find the supplied file: % *****\n" textFile
+				return ""
+			)
+				
+			local strBlock = stringStream ""
+			local strm = ( openFile textFile mode:"r" )
+			local begin = False
+			
+			while not ( eof strm ) do
+			(
+				local l = readLine strm
+				if ( matchPattern l pattern:fromStr ) then begin = True
+				if begin then
+				(
+					format (l + "\n") to:strBlock
+					if matchPattern l pattern:toStr then exit
+				)
+			)
+			
+			close strm
+			strBlock = ( strBlock as string )
+			
+			if filterFromStr then
+			(
+				local iFromStr = SubStituteString fromStr "*" ""
+				strBlock = ( SubstituteString strBlock iFromStr "" )
+			)
+			
+			if filterToStr then
+			(
+				local iToStr = SubStituteString toStr "*" ""
+				strBlock = ( SubstituteString strBlock iToStr "" )
+			)
+			
+			format "======================================\n%%\n======================================\n" title strBlock
+		),
 		
 		fn GetScriptHeader mxsModule =
 		(
@@ -1067,7 +1067,7 @@ global mxs
 			Returns the block of text between "*__MXSDOC__*" and "*__END__*"
 			
 			Args:
-			 	mxsModule (string) : Path to module script file
+				mxsModule (string) : Path to module script file
 			
 			Returns:
 				(string)
@@ -1083,7 +1083,7 @@ global mxs
 			Returns the block of text between "*__Help__*" and "*__END__*"
 			
 			Args:
-			 	mxsModule (string) : Path to module script file
+				mxsModule (string) : Path to module script file
 			
 			Kwargs:
 				_fn (string) :  Name of the internal method as a string
@@ -1116,7 +1116,7 @@ global mxs
 			Attempts to reload a Python module that has been aggregated to a MaxScript variable
 			
 			Args:
-			 	moduleVar (PyWrapperBase) : MaxScript variable holding the Python module
+				moduleVar (PyWrapperBase) : MaxScript variable holding the Python module
 			
 			Returns:
 				(VOID)
@@ -1169,7 +1169,7 @@ global mxs
 			one exists, otherwise returns undefined
 			
 			Kwargs:
-			 	inEnvironmentID (string)
+				inEnvironmentID (string)
 			
 			Returns:
 				EnvironmentClass | undefined
@@ -1198,7 +1198,7 @@ global mxs
 			Returns the names of the libraries that are currently loaded
 			
 			Kwargs:
-			 	inIncludeLocals (boolean) : Includes the local libraries in the output list
+				inIncludeLocals (boolean) : Includes the local libraries in the output list
 				inIncludeConstants (boolean) : Includes the constant libraries in the output list
 			
 			Returns:
@@ -1228,7 +1228,7 @@ global mxs
 			folders/path using the given string
 	
 			Args:
-			 	inPathID (string)
+				inPathID (string)
 			
 			Kwargs:
 				inEnvironment (string)
@@ -1273,7 +1273,7 @@ global mxs
 			active environment if non is specified
 			
 			Kwargs:
-			 	inEnvironment (string)
+				inEnvironment (string)
 			
 			Returns:
 				outPathIDs: (array[string])
@@ -1306,7 +1306,7 @@ global mxs
 			Checks to see if the given string variable is assigned in the globalVars struct
 			
 			Args:
-			 	inString (string)
+				inString (string)
 			
 			Returns:
 				(boolean)
@@ -1323,7 +1323,7 @@ global mxs
 			environment, using the active environment if none is specified
 			
 			Args:
-			 	pathID (string)
+				pathID (string)
 			
 			Kwargs:
 				inEnvironment (string)
@@ -1336,21 +1336,21 @@ global mxs
 		),
 		
 		fn GetDateFromTimeString timeString =
-        (
+		(
 			/*DOC_--------------------------------------------------------------------
 			Filters the string returned form LocalTime and/or GetFileModDate() for the date
 			
 			Args:
-			 	timeString (strign) : from LocalTime or GetFileModDate <file>
+				timeString (strign) : from LocalTime or GetFileModDate <file>
 			
 			Returns:
 				date: (string)
 			
 			--------------------------------------------------------------------_END*/
 			
-            local stringArr = FilterString timeString " "
+			local stringArr = FilterString timeString " "
 			
-            out = ( for item in stringArr where matchPattern item pattern:"*/*" collect item )
+			out = ( for item in stringArr where matchPattern item pattern:"*/*" collect item )
 			
 			if out != undefined and out.count != 0 then
 			(
@@ -1361,35 +1361,35 @@ global mxs
 				out = undefined
 			)
 			
-            out
-        ),
-        
-        fn IsModuleModified modulePath =
-        (
+			out
+		),
+		
+		fn IsModuleModified modulePath =
+		(
 			/*DOC_--------------------------------------------------------------------
 			Compares the modified date of the input file with the current date
 			
 			Args:
-			 	modulePath (string) : path to mxs module
+				modulePath (string) : path to mxs module
 			
 			Returns:
 				(boolean) : True if modified today
 			
 			--------------------------------------------------------------------_END*/
 			
-            local today = GetDateFromTimeString localTime
-            local moduleDate = GetDateFromTimeString ( GetFileModDate modulePath )
-            
-            if today == moduleDate then
-            (
-                format "[MXS]: ***** File was modified today: % *****\n" ( GetFileNameFile modulePath )
-                True
-            )
-            else
-            (
-                False
-            )
-        ),
+			local today = GetDateFromTimeString localTime
+			local moduleDate = GetDateFromTimeString ( GetFileModDate modulePath )
+			
+			if today == moduleDate then
+			(
+				format "[MXS]: ***** File was modified today: % *****\n" ( GetFileNameFile modulePath )
+				True
+			)
+			else
+			(
+				False
+			)
+		),
 		
 		fn FindLibFile inLibName =
 		(
@@ -1398,7 +1398,7 @@ global mxs
 			Returns the first file it finds matching the name
 			
 			Args:
-			 	inLibName (string)
+				inLibName (string)
 			
 			Returns:
 				(string) | undefined : Full file path to the mxs module or undefined if not found
@@ -1438,7 +1438,7 @@ global mxs
 			Once found it registers the library and performs a FileIn on the module.
 			
 			Args:
-			 	inLibName (string) : Name of module to load
+				inLibName (string) : Name of module to load
 			
 			Kwargs:
 				inReload (boolean) : If true, force a reload of the module
@@ -1487,7 +1487,7 @@ global mxs
 			Appends the inputed path to the PYTHONPATH env variable
 			
 			Args:
-			 	devPath (string)
+				devPath (string)
 			
 			Returns:
 				(VOID)
@@ -1517,7 +1517,7 @@ else:
 			Sets the environment paths from environment variables
 			
 			Kwargs:
-			 	envId (string) : named id of environment ( default "SYS" )
+				envId (string) : named id of environment ( default "SYS" )
 			
 			Returns:
 				(VOID)
@@ -1551,7 +1551,7 @@ else:
 			using the latest environment
 			
 			Args:
-			 	inReloadLibraries (boolean)
+				inReloadLibraries (boolean)
 			
 			Returns:
 				(VOID)
@@ -1570,7 +1570,7 @@ else:
 			Removes templates from the inputed path string
 			
 			Arguments:
-			 	inPath: (string) description
+				inPath: (string) description
 			
 			Kwargs:
 				inEnvironment: (string) description
@@ -1578,7 +1578,7 @@ else:
 				inCustomValues: (array[String]) description
 			
 			Returns: 
-			 	outName (String) : modified file path
+				outName (String) : modified file path
 			
 			See Also:
 				this.GetPath()
@@ -1654,7 +1654,7 @@ else:
 			Gets the path to the MaxScript associated with the toolname
 			
 			Args:
-			 	toolName (string)
+				toolName (string)
 			
 			Returns:
 				( string ) | undefined : path to MaxScript file or undefined
@@ -1686,7 +1686,7 @@ else:
 			Looks for the tool by name. If found this does a FileIn on the MaxScript file.
 			
 			Args:
-			 	toolName (string)
+				toolName (string)
 			
 			Returns:
 				(VOID)
@@ -1707,7 +1707,7 @@ else:
 			If an environment exists with the inputed ID then this sets it as the active environment
 			
 			Args:
-			 	environmentID (string)
+				environmentID (string)
 			
 			Returns:
 				(boolean)
@@ -1746,7 +1746,7 @@ else:
 			all the callback scripts for it executed
 			
 			Args:
-			 	inCallback_type_name (string)
+				inCallback_type_name (string)
 			
 			Returns:
 				(VOID)
@@ -1772,7 +1772,7 @@ else:
 			This method lists out the current callback scripts in the Listener window.
 			
 			Args:
-			 	ARG1 (type)
+				ARG1 (type)
 			
 			Returns:
 				(VOID)
@@ -1802,7 +1802,7 @@ else:
 			other scripted tools.
 			
 			Args:
-			 	inCallback_type_name (name)
+				inCallback_type_name (name)
 				inExecuteString (string)
 			
 			Kwargs:
@@ -1840,7 +1840,7 @@ else:
 			Specifying none remove all the mxs callbacks
 			
 			Kwargs:
-			 	callbackType (name)
+				callbackType (name)
 				id (name)
 			
 			Returns:

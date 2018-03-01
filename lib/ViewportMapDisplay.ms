@@ -57,7 +57,7 @@ public
 		Collects an array of materials classes directly from Material.Classes
 		
 		Kwargs:
-		 	refactor (boolean) : If true will collect the array again
+			refactor (boolean) : If true will collect the array again
 		
 		Returns:
 			array[Material Class]
@@ -73,12 +73,12 @@ public
 	),
 	
 	fn ToggleSubMapDisplay mat_or_map state:False sourceMat:undefined =
-    (
+	(
 		/*DOC_--------------------------------------------------------------------
 		Recursive method set the display of all the maps within a shader tree
 		
 		Args:
-		 	mat_or_map (Material or Texmap) : root of the tree to recurse down
+			mat_or_map (Material or Texmap) : root of the tree to recurse down
 		
 		Kwargs:
 			state (boolean)
@@ -94,19 +94,19 @@ public
 			sourceMat = mat_or_map
 		)
 		
-        local numSubTexmaps = ( GetNumSubTexmaps mat_or_map )
-        
-        for i = 1 to numSubTexmaps do
-        (
-            local tMap = ( GetSubTexmap mat_or_map i )
-            
-            if tMap != undefined then
-            (
+		local numSubTexmaps = ( GetNumSubTexmaps mat_or_map )
+		
+		for i = 1 to numSubTexmaps do
+		(
+			local tMap = ( GetSubTexmap mat_or_map i )
+			
+			if tMap != undefined then
+			(
 				this.ToggleSubMapDisplay tMap state:state sourceMat:sourceMat
-                ShowTextureMap sourceMat tMap state
-            )
-        )
-    ),
+				ShowTextureMap sourceMat tMap state
+			)
+		)
+	),
 
 	mapped fn SetViewPortDisplay_mapped mArr state:False =
 	(
@@ -118,7 +118,7 @@ public
 		tree of the material or map that will disable the viewport display of the entire tree.
 		
 		Args:
-		 	mArr (array[Material or Map])
+			mArr (array[Material or Map])
 		
 		Kwargs:
 			state (boolean)
@@ -146,7 +146,7 @@ public
 		sets their showInViewport property to the inputed state
 		
 		Kwargs:
-		 	state (boolean)
+			state (boolean)
 		
 		Returns:
 			VOID
@@ -209,7 +209,7 @@ public
 		Get hellp on the current module or a specific function
 		
 		Kwargs:
-		 	_fn (string) : Name of the internal method as a string
+			_fn (string) : Name of the internal method as a string
 		
 		Returns:
 			VOID

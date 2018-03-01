@@ -157,7 +157,7 @@ public
 		PointHelper name will be "boundingPoint_" + propName + "_###"
 		
 		Args:
-		 	coord (Point3)
+			coord (Point3)
 		
 		Kwargs:
 			propName (string)
@@ -211,7 +211,7 @@ public
 		coords and recalculate all of the properties of this struct in nodeLocal space
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			VOID
@@ -323,7 +323,7 @@ public
 		#minPoint and #maxPoint props of this struct
 		
 		Args:
-		 	obj ( Node | Object Array | ObjectSet )
+			obj ( Node | Object Array | ObjectSet )
 		
 		Returns:
 			VOID

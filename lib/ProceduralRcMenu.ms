@@ -104,11 +104,11 @@ public
 		
 		format rcTxt items events to:st
 		
-        if this.debug then
-        (
-            format "===== PopUp Menu =====\n"
-            format "%" ( st as string )
-        )
+		if this.debug then
+		(
+			format "===== PopUp Menu =====\n"
+			format "%" ( st as string )
+		)
 		
 		local m = execute ( st as string )
 		popUpMenu m pos:mouse.screenPos

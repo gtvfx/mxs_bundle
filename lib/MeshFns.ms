@@ -75,31 +75,31 @@ struct MeshFns
 	
 public
 
-    fn IsValidMesh obj =
-    (
+	fn IsValidMesh obj =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Checks the properties we need to perform mesh operations on
 		the inputed obj
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			Boolean
 		
 		--------------------------------------------------------------------_END*/
 		
-        if ( IsValidNode obj ) and ( isProperty obj #mesh ) and ( isProperty obj.mesh #numfaces ) then
-        (
-            True
-        )
-        else
-        (
-            False
-        )
-    ),
-    
-    mapped fn ZeroOutMatrix_mapped objArr =
+		if ( IsValidNode obj ) and ( isProperty obj #mesh ) and ( isProperty obj.mesh #numfaces ) then
+		(
+			True
+		)
+		else
+		(
+			False
+		)
+	),
+	
+	mapped fn ZeroOutMatrix_mapped objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Sets the transform of each object to an Identity Matrix
@@ -108,7 +108,7 @@ public
 		Mapped function
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -121,50 +121,50 @@ public
 		objArr.transform = matrix3 1
 	),
 
-    fn GetUniqueMatIds objArr =
-    (
+	fn GetUniqueMatIds objArr =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Loops through all the faces of each object in the inputed object array
 		and returns an array of unique faceMatIds.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			array[Integer]
 		
 		--------------------------------------------------------------------_END*/
 		
-        objArr = ::mxs.EnsureArgIsArray objArr
-        
-        local out = #()
-        
-        for obj in objArr do
-        (
-            if ( this.IsValidMesh obj ) then
-            (
-                for i = 1 to obj.mesh.numfaces do
-                (
-                    appendIfUnique out ( GetFaceMatID obj.mesh i )
-                )
-            )
-            else
-            (
-                format "***** % is not a valid mesh *****\n" obj
-            )
-        )
-        
-        ( sort out )
-    ),
-    
-    fn ShowObjMatIDs objArr =
+		objArr = ::mxs.EnsureArgIsArray objArr
+		
+		local out = #()
+		
+		for obj in objArr do
+		(
+			if ( this.IsValidMesh obj ) then
+			(
+				for i = 1 to obj.mesh.numfaces do
+				(
+					appendIfUnique out ( GetFaceMatID obj.mesh i )
+				)
+			)
+			else
+			(
+				format "***** % is not a valid mesh *****\n" obj
+			)
+		)
+		
+		( sort out )
+	),
+	
+	fn ShowObjMatIDs objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Displays a messageBox with all of the unique faceMatIDs from the
 		inputed object array
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -174,28 +174,28 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local idArr = this.GetUniqueMatIds objArr
-        
-        local str = StringStream ""
-        
-        if idArr.count != 0 then
-        (
-            format "MatIds in collection:\n" to:str
-            
-            for id in idArr do
-            (
-                format "%...\n" id to:str
-            )
-        )
-        else
-        (
-            format "No MatIds in collection:\n" to:str
-        )
-        
-        messageBox ( str as string ) title:"GTVFX:"
+		local idArr = this.GetUniqueMatIds objArr
+		
+		local str = StringStream ""
+		
+		if idArr.count != 0 then
+		(
+			format "MatIds in collection:\n" to:str
+			
+			for id in idArr do
+			(
+				format "%...\n" id to:str
+			)
+		)
+		else
+		(
+			format "No MatIds in collection:\n" to:str
+		)
+		
+		messageBox ( str as string ) title:"GTVFX:"
 	),
 
-    fn CheckIfModifiersPresent objArr = 
+	fn CheckIfModifiersPresent objArr = 
 	(
 		/*DOC_--------------------------------------------------------------------
 		Loops through all objects in the inputed object array and queries the
@@ -203,7 +203,7 @@ public
 		object is printed to the listener and the method returns True.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			Boolean
@@ -211,20 +211,20 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		local out = False
-        
+		
 		for obj in objArr do 
-        (
-            if obj.modifiers.count > 0 then
-            (
-                format "***** % has modifiers *****\n" obj.name
-                out = True
-                exit
-            )
-        )
-       
+		(
+			if obj.modifiers.count > 0 then
+			(
+				format "***** % has modifiers *****\n" obj.name
+				out = True
+				exit
+			)
+		)
+	   
 		out
 	),
-    
+	
 	mapped fn FastResetXform objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -233,7 +233,7 @@ public
 		Mapped function
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -243,7 +243,7 @@ public
 		resetXform objArr
 		collapseStack objArr
 	),
-    
+	
 	mapped fn FastCenterPivot objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -252,7 +252,7 @@ public
 		Mapped function
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -261,8 +261,8 @@ public
 		
 		CenterPivot objArr
 	),
-    
-    mapped fn ResetXformWithRotation objArr =
+	
+	mapped fn ResetXformWithRotation objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Stores the rotation and position values of each object, then zeros the object out
@@ -272,7 +272,7 @@ public
 		Mapped function
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -284,28 +284,28 @@ public
 		
 		local saveRotation = objArr.rotation.controller.value
 		local savePosition = objArr.position.controller.value
-        
+		
 		objArr.rotation.controller.value = (quat 0 0 0 0)
 		objArr.position.controller.value = [0,0,0]
-        
+		
 		this.FastResetXform objArr
-        
+		
 		objArr.scale.controller.value = [1,1,1] -- hard code the value after the resetXform to eliminate rounding/precision errors
-        
+		
 		objArr.rotation.controller.value = saveRotation
 		objArr.position.controller.value = savePosition
 	),
-    
+	
 	fn ResetMesh objArr collapseMods:False =
 	( 
-        /*DOC_--------------------------------------------------------------------
+		/*DOC_--------------------------------------------------------------------
 		This completely rebuilds a mesh. This is a huge hack to workaround the
 		fact that meshes inevitably become corrupted form time to time. This
 		is a very important step in handing off geometry from modeling on down
 		the pipe.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Kwargs:
 			collapseMods (boolean) : If true will collapse any modifiers rather than try to preserve them
@@ -314,58 +314,58 @@ public
 			objArr (array[Node])
 		
 		--------------------------------------------------------------------_END*/
-        
-        ::mxs.BlockUi True
+		
+		::mxs.BlockUi True
 		
 		objArr = ::mxs.EnsureArgIsArray objArr
-        
+		
 		-- We need to ensure that all of the inputed objects are unique to each other
 		InstanceMgr.MakeObjectsUnique objArr #individual
-        
+		
 		for obj in objArr do
 		(
-            local mds = #()
+			local mds = #()
 			
 			if obj.modifiers.count != 0 then
 			(
-                if not collapseMods then
-                (
-                    for m = 1 to obj.modifiers.count do 
-                    (
-                        if obj.modifiers[m].enabled then
-                        (
-                            mds[m] = True
-                            obj.modifiers[m].enabled = false
-                        )
-                        else
+				if not collapseMods then
+				(
+					for m = 1 to obj.modifiers.count do 
+					(
+						if obj.modifiers[m].enabled then
+						(
+							mds[m] = True
+							obj.modifiers[m].enabled = false
+						)
+						else
 						(
 							mds[m] = False
 						)
-                    )
-                )
-                else
-                (
-                   CollapseStack obj 
-                )
+					)
+				)
+				else
+				(
+				   CollapseStack obj 
+				)
 			)
-            
+			
 			--- make a clean shape...
 			local bx = box()
-            
+			
 			objInst = instance obj
-            
+			
 			convertToPoly bx
-            
+			
 			bx.transform = obj.transform
 			bx.scale.controller = ScaleXYZ() -- Much more accurate than Bezier_Scale
 			bx.scale.controller.value = [1,1,1] -- Hard set to 1 to circumvent rounding errors
-            
+			
 			polyOp.attach bx objInst -- Attach the box and the objInst to recreate all of the polys of the objInst
 			polyOp.deleteVerts bx #{1..8} -- Delete the faces making up the bx shape
-            
+			
 			--- fix the tranform
 			local conType = classof obj.scale.controller -- store the controller class
-            
+			
 			obj.scale.controller = ScaleXYZ() -- Ensure that we are using ScaleXYZ for precision
 			obj.transform = bx.transform -- Get the new transform from the clean object
 			
@@ -378,28 +378,28 @@ public
 			
 			-- Change out the baseobject with the baseobject of the clean shape
 			obj.baseObject = copy bx.baseObject
-            
+			
 			-- Re-enable the modifiers
-            if mds.count != 0 then
-            (
-                for m = 1 to mds.count do
-                (
-                    if mds[m] then obj.modifiers[m].enabled = True
-                )
-            )
+			if mds.count != 0 then
+			(
+				for m = 1 to mds.count do
+				(
+					if mds[m] then obj.modifiers[m].enabled = True
+				)
+			)
 			
 			-- Delete the clean object
 			delete bx
-            
+			
 			-- Clean up the garbage
 			GC()
 		)
-        
-        ::mxs.BlockUi False
+		
+		::mxs.BlockUi False
 		
 		objArr
 	),
-    
+	
 	fn ReplaceWithInstance objArr sourceObj:( pickObject prompt:"**** Pick Source Object ****\n" ) type:1 =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -417,7 +417,7 @@ public
 		Material will not be transferred from the sourceObj. This just instances the shape.
 		
 		Args:
-		 	objArr (array[Node]) : Objects to replace
+			objArr (array[Node]) : Objects to replace
 		
 		Kwargs:
 			sourceObj (Node) : Source node to instance
@@ -434,8 +434,8 @@ public
 		(
 			format "***** sourceObj: % *****\n" sourceObj
 			
-            objArr = ::mxs.EnsureArgIsArray objArr
-            
+			objArr = ::mxs.EnsureArgIsArray objArr
+			
 			undo label:"GTVFX: Replace With Instance" on
 			(
 				-- If the sourceObj is in the inputed objArr we need to remove it
@@ -443,18 +443,18 @@ public
 				(
 					deleteItem objArr srcIndex
 				)
-                
+				
 				case type of
 				(
 					1:
 					(
-                        local arr = #() -- This is the array of objects we will return from this method
-                        
-                        arr = join arr sourceObj
-                        
+						local arr = #() -- This is the array of objects we will return from this method
+						
+						arr = join arr sourceObj
+						
 						-- Get the layer from the sourceObj. We'll all each new instance to this layer.
 						local iLayer = LayerManager.getLayerFromName sourceObj.layer.name
-                        
+						
 						for obj in objArr do
 						(
 							-- create an instance of the sourceObj with it's wirecolor and gbufferChannel, but the transform of the obj
@@ -469,7 +469,7 @@ public
 							-- add the objInst to the arr that we'll return
 							append arr objInst
 						)
-                        
+						
 						-- Delete the original objects
 						delete objArr
 						
@@ -489,7 +489,7 @@ public
 			)
 		)
 	),
-    
+	
 	fn ReplaceWithReference objArr sourceObj:( pickObject prompt:"**** Pick Source Object ****\n" ) =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -497,7 +497,7 @@ public
 		baseObject of the sourceObj.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Kwargs:
 			sourceObj (Node)
@@ -511,7 +511,7 @@ public
 		
 		objArr = ::mxs.EnsureArgIsArray objArr
 		
-        if objArr.count != 0 and ( IsValidNode sourceObj ) then
+		if objArr.count != 0 and ( IsValidNode sourceObj ) then
 		(
 			undo label:"GTVFX: Replace With Instance" on
 			(  
@@ -520,17 +520,17 @@ public
 				(
 					deleteItem objArr srcIndex
 				)
-                
-                for obj in objArr do
-                (
-                    referenceReplace obj sourceObj
-                )
-            )
+				
+				for obj in objArr do
+				(
+					referenceReplace obj sourceObj
+				)
+			)
 			
 			objArr
-        )
+		)
 	),
-    
+	
 	mapped fn ConvertToMesh_mapped objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -539,7 +539,7 @@ public
 		Mapped function
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -548,14 +548,14 @@ public
 		
 		ConvertToMesh objArr
 	),
-    
+	
 	fn ConvertToMeshWithModifierStack objArr:( GetCurrentSelection() ) = 
 	(
 		/*DOC_--------------------------------------------------------------------
 		Converts the baseObject of each object to an Editable_Mesh
 		
 		Kwargs:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			objArr (array[Node])
@@ -563,12 +563,12 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		::mxs.BlockUi True
-        
-        objArr = ::mxs.EnsureArgIsArray objArr
-        
+		
+		objArr = ::mxs.EnsureArgIsArray objArr
+		
 		-- Filter the inputed object array for valid object types that can be converted
 		objArr = for obj in objArr where ( superclassof obj.baseobject == geometryClass ) and ( isGroupMember obj == false ) and ( CanConvertTo obj Editable_Mesh ) collect obj
-            
+			
 		for obj in objArr do
 		(
 			-- Add a Mesh_Select modifier just above the baseObject
@@ -580,11 +580,11 @@ public
 			GC()
 		)
 		
-        ::mxs.BlockUi False
-        
+		::mxs.BlockUi False
+		
 		objArr
 	),
-    
+	
 	fn AddSmoothModWithStack objArr autoSmooth:True collapseToMod:True = 
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -594,7 +594,7 @@ public
 		modifier to bake the smoothing into the mesh.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Kwargs:
 			autoSmooth (boolean) : translate to the autoSmooth flag on the Smooth Modifier
@@ -605,26 +605,26 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        ::mxs.BlockUi True
-        
-        objArr = ::mxs.EnsureArgIsArray objArr
-        
+		::mxs.BlockUi True
+		
+		objArr = ::mxs.EnsureArgIsArray objArr
+		
 		-- Filter the inputed object array for valid object types that can be converted
 		objArr = for obj in objArr where ( superclassof obj.baseobject == geometryClass ) and ( isGroupMember obj == false ) collect obj
-            
+			
 		for obj in objArr do
 		(
 			addmodifier obj ( Smooth autoSmooth:autoSmooth ) before:obj.modifiers.count
 			if collapseToMod then maxOps.CollapseNodeTo obj obj.modifiers.count off
 		)
-        
+		
 		::mxs.BlockUi False
-        
+		
 		objArr
 	),
-    
-    fn EnsureClassOfObj obj targetClass =
-    (
+	
+	fn EnsureClassOfObj obj targetClass =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Attempts to ensure that the class of the baseobject of the inputed obj
 		matches the inputed targetClass. If the classes don't match this will
@@ -632,7 +632,7 @@ public
 		return undefined
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 			targetClass ( MaxClass )
 		
 		Returns:
@@ -640,23 +640,23 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        if ( ClassOf Obj.baseObject ) != targetClass then
+		if ( ClassOf Obj.baseObject ) != targetClass then
 		(
-            if ( CanConvertTo obj targetClass ) then
-            (
-                ConvertTo obj targetClass
-            )
-            else
-            (
-                format "***** EnsureClassOfObj cannot convert % to % *****\n" obj targetClass
-                obj = undefined
-            )
+			if ( CanConvertTo obj targetClass ) then
+			(
+				ConvertTo obj targetClass
+			)
+			else
+			(
+				format "***** EnsureClassOfObj cannot convert % to % *****\n" obj targetClass
+				obj = undefined
+			)
 		)
-        
-        obj
-    ),
-    
-    fn EnsureEditMesh obj =
+		
+		obj
+	),
+	
+	fn EnsureEditMesh obj =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Wrapper around EnsureClassOfObj
@@ -664,51 +664,51 @@ public
 		Enusres the baseObject of the inputed obj is an Editable_Mesh
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			obj | undefined
 		
 		--------------------------------------------------------------------_END*/
 		
-        obj = this.EnsureClassOfObj obj Editable_Mesh
+		obj = this.EnsureClassOfObj obj Editable_Mesh
 	),
-    
-    fn EnsureEditPoly obj =
-    (
+	
+	fn EnsureEditPoly obj =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Wrapper around EnsureClassOfObj
 		
 		Enusres the baseObject of the inputed obj is an Editable_Poly
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			obj | undefined
 		
 		--------------------------------------------------------------------_END*/
 		
-        obj = this.EnsureClassOfObj obj Editable_Poly
-    ),
-    
-    fn EnsureEditSpline obj =
-    (
+		obj = this.EnsureClassOfObj obj Editable_Poly
+	),
+	
+	fn EnsureEditSpline obj =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Wrapper around EnsureClassOfObj
 		
 		Enusres the baseObject of the inputed obj is an Edit_Spline
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			obj | undefined
 		
 		--------------------------------------------------------------------_END*/
 		
-        obj = this.EnsureClassOfObj obj Edit_Spline
-    ),
+		obj = this.EnsureClassOfObj obj Edit_Spline
+	),
 	
 	fn WeldVerts obj threshold:.01 =
 	(
@@ -716,7 +716,7 @@ public
 		Weld all of the verts of the object using the inputed threshold
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Kwargs:
 			threshold (float)
@@ -755,7 +755,7 @@ public
 		Once the process has started you can cancel it by holding the Esc key
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Kwargs:
 			garbageCollect (boolean)
@@ -780,10 +780,10 @@ public
 			(
 				::mxs.BlockUi True
 				
-                InstanceMgr.MakeObjectsUnique objArr #individual
-                
-                local atachTime = ::EventTimer caption:"AttachObjs"
-                
+				InstanceMgr.MakeObjectsUnique objArr #individual
+				
+				local atachTime = ::EventTimer caption:"AttachObjs"
+				
 				while objArr.count > 1 do
 				(	
 					for i = objArr.count to 2 by -2 do 
@@ -796,13 +796,13 @@ public
 						attach ( this.EnsureEditMesh objArr[i] ) ( this.EnsureEditMesh objArr[i-1] )
 						
 						deleteItem objArr (i-1)
-                        
+						
 						if garbageCollect then GC()
 					)
 				)
-                
-                atachTime.End()
-                
+				
+				atachTime.End()
+				
 				::mxs.BlockUi False
 			)
 		)
@@ -820,7 +820,7 @@ public
 		if _weldVerts is set to True then welds the verts on those obejcts
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Kwargs:
 			_weldVerts (boolean)
@@ -864,7 +864,7 @@ public
 		
 		out
 	),
-    
+	
 	fn DetachMeshElements sourceObj =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -872,27 +872,27 @@ public
 		as a new node with a unique name derived from the sourceObj name
 		
 		Args:
-		 	sourceObj (Node)
+			sourceObj (Node)
 		
 		Returns:
 			objArr (array[Node])
 		
 		--------------------------------------------------------------------_END*/
 		
-        if not ( this.IsValidMesh sourceObj ) then
+		if not ( this.IsValidMesh sourceObj ) then
 		(
 			return ( format "***** % is not a valid mesh *****\n" sourceObj )
 		)
-        
+		
 		::mxs.BlockUi True
-        
-        sourceObj = this.EnsureEditPoly sourceObj
-        
+		
+		sourceObj = this.EnsureEditPoly sourceObj
+		
 		local faceCount = sourceObj.getnumfaces()
 		local faceTest = ((sourceObj.getnumfaces()) != 0)
 		
 		local out = #()
-        
+		
 		with undo label:"GTVFX: DetachMeshElements" on
 		(
 			for i = 1 to faceCount while FaceTest do
@@ -901,43 +901,43 @@ public
 				(
 					exit
 				)
-                
+				
 				local newName = ( uniquename sourceObj.name )
-                
+				
 				-- select the first face of the poly
 				sourceObj.EditablePoly.SetSelection #Face #{1}
 				
 				-- from the face, get the element
 				sourceObj.selectElement()
-                
+				
 				-- get the faces of the selected element
 				local targetElement = polyop.GetFaceSelection sourceObj
-                
+				
 				-- detach the faces of the element as a new node
 				polyop.detachFaces sourceObj targetElement asNode:true name:newName
-                
+				
 				-- Get the new node
 				local newObj = GetNodeByName newName
-                
+				
 				-- Clean the new node
-                this.ResetMesh newObj collapseMods:True
+				this.ResetMesh newObj collapseMods:True
 				
 				-- add the newObj to the array that we'll return
 				append out newObj
-                
+				
 				-- test that the source still has faces to detach
 				faceTest = ((sourceObj.getnumfaces()) != 0)
 			)
-            
+			
 			-- At this stage the source object shouldn't have any faces so we can delete it
 			Delete sourceObj
 		)
-        
-        ::mxs.BlockUi False
+		
+		::mxs.BlockUi False
 		
 		out
 	),
-    
+	
 	fn DetachSplineElements sourceObj =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -945,17 +945,17 @@ public
 		as a new node with a unique name derived from the sourceObj name
 		
 		Args:
-		 	sourceObj (Node)
+			sourceObj (Node)
 		
 		Returns:
 			objArr (array[Node])
 		
 		--------------------------------------------------------------------_END*/
 		
-        ::mxs.BlockUi True
-        
+		::mxs.BlockUi True
+		
 		local splineCount = numsplines sourceObj 	
-        
+		
 		with undo label:"GTVFX: DetachSplineElements" on
 		(
 			for i = 1 to splineCount do
@@ -964,7 +964,7 @@ public
 				(
 					exit
 				)
-                
+				
 				-- Splines don't have a DetachElement method so we copy the hole object and then delete extaneous segments
 				local tempMaster = copy sourceObj
 				
@@ -973,18 +973,18 @@ public
 				
 				-- Incrementally set the FirstSpline so that we can programatically go through and delete all other elements
 				setFirstSpline tempMaster i
-                
+				
 				-- Delete all segments other than the FirstSpline
 				for x = splineCount to 2 by -1 do DeleteSpline tempMaster x
 			)
-            
+			
 			-- This should be an empty node at this point, so delete it
 			Delete sourceObj
 		)
 		
-        ::mxs.BlockUi False
+		::mxs.BlockUi False
 	),
-    
+	
 	fn DetachElements objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -992,7 +992,7 @@ public
 		of the object. Kicks off different logic for Geometry and Shapes.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
@@ -1003,8 +1003,8 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        objArr = ::mxs.EnsureArgIsArray objArr
-        
+		objArr = ::mxs.EnsureArgIsArray objArr
+		
 		if objArr.count != 0 then
 		(
 			for obj in objArr do with redraw off
@@ -1020,11 +1020,11 @@ public
 			CompleteRedraw()
 		)
 		else
-        (
-            messageBox "No Valid Objects Selected!" title:"ERROR: :("
-        )
+		(
+			messageBox "No Valid Objects Selected!" title:"ERROR: :("
+		)
 	),
-    
+	
 	fn QuadrifySelection objArr = 
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -1034,33 +1034,33 @@ public
 		The 'Quadrify' macro does a pretty good job of removing triangulated faces
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
 		
 		--------------------------------------------------------------------_END*/
 		
-        ::mxs.BlockUi True
-        
-        objArr = ::mxs.EnsureArgIsArray objArr
+		::mxs.BlockUi True
+		
+		objArr = ::mxs.EnsureArgIsArray objArr
 		
 		for obj in objArr do
 		(
-            obj = this.EnsureEditPoly obj
-            if obj != undefined then
-            (
-                select obj
-                macros.run "PolyTools" "Quadrify"
-            )
+			obj = this.EnsureEditPoly obj
+			if obj != undefined then
+			(
+				select obj
+				macros.run "PolyTools" "Quadrify"
+			)
 		)
 		
 		select objArr
-        
-        ::mxs.BlockUi False
+		
+		::mxs.BlockUi False
 	),
-    
-    fn GetModule =
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -1089,9 +1089,9 @@ public
 	),
 
 private
-    
-    fn _init =
-    (
+	
+	fn _init =
+	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
 		
@@ -1100,10 +1100,10 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Pass
-    ),
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 

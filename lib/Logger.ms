@@ -83,7 +83,7 @@ public
 		it out to a text file at the inputed filepath.
 		
 		Args:
-		 	filepath (string) : Path to text file to write the log to
+			filepath (string) : Path to text file to write the log to
 		
 		Returns:
 			(VOID)
@@ -146,7 +146,7 @@ public
 		the inputed filepath.
 		
 		Args:
-		 	filepath (string) : Path to text file to write the log to
+			filepath (string) : Path to text file to write the log to
 		
 		Returns:
 			(VOID)
@@ -197,7 +197,7 @@ public
 		Collects files in the inputed dir that are older than the inputed threshold_days
 		
 		Args:
-		 	dir (string) : Directory to collect files from
+			dir (string) : Directory to collect files from
 		
 		Kwargs:
 			threshold_days (integer) : age of files in days
@@ -243,7 +243,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		threshold_days and deletes them.
 		
 		Kwargs:
-		 	threshold_days (integer) : age of files in days (type)
+			threshold_days (integer) : age of files in days (type)
 		
 		Returns:
 			(VOID)
@@ -292,7 +292,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Sets the Log Level to the inputed lvl
 		
 		Args:
-		 	lvl (integer | name) : Takes either an integer value or named value
+			lvl (integer | name) : Takes either an integer value or named value
 		
 		Returns:
 			vals: (array[#name, integer]) : vals array index[1] = #name, index[2] = integer
@@ -318,7 +318,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		the user know that verbosity will be set to the maximum allowable value.
 		
 		Args:
-		 	v (integer)
+			v (integer)
 		
 		Returns:
 			(VOID)
@@ -342,7 +342,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Checks of the inputed lvl is enabled for output.
 		
 		Args:
-		 	lvl (integer | name) : Takes either an integer value or named value
+			lvl (integer | name) : Takes either an integer value or named value
 		
 		Returns:
 			(Boolean)
@@ -410,7 +410,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Prints out the inputed msg if the log level is set to #debug with matching verbosity level
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array['string])
@@ -456,7 +456,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Prints out the inputed msg if the log level is set to #info or higher
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array['string])
@@ -498,7 +498,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Prints out the inputed msg as an error ( red text in listener window )
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array['string])
@@ -543,7 +543,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Prints out the inputed msg as an error ( red text in listener window )
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array['string])
@@ -583,7 +583,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Throws a LOGGER::CRITICAL error
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array['string])
@@ -628,7 +628,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 		Prints out the inputed msg if the log level is set to the inputed lvl or higher
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			statement (string) : default "LOG"
@@ -682,7 +682,7 @@ MaxPlus.Core.EvalMAXScript('PYTHON_RETURN = {0}'.format(arr))
 			- Example: tstStr = Logger.format "This {1} a {2} to {3} if {4} works" args:#("is", "test", "see", "this")
 		
 		Args:
-		 	msg (string)
+			msg (string)
 		
 		Kwargs:
 			args (array[string])
@@ -743,7 +743,7 @@ private
 		Concatenates a string of the key/value pairs in the inputed dict
 		
 		Args:
-		 	dict (DotNet Hashtable)
+			dict (DotNet Hashtable)
 		
 		Returns:
 			(string)
@@ -767,7 +767,7 @@ private
 		Generates an error message based on the type of inputed lvl
 		
 		Args:
-		 	lvl (integer | name) : Takes either an integer value or named value
+			lvl (integer | name) : Takes either an integer value or named value
 		
 		Returns:
 			(VOID)
@@ -791,7 +791,7 @@ private
 		returns an array of the enum values of the inputed lvl
 		
 		Args:
-		 	lvl (integer | name) : Takes either an integer value or named value
+			lvl (integer | name) : Takes either an integer value or named value
 		
 		Returns:
 			vals: (array[#name, integer]) : vals array index[1] = #name, index[2] = integer
@@ -833,7 +833,7 @@ private
 		Splits the string of the inputed struct object and returns the object name
 		
 		Args:
-		 	cls (struct)
+			cls (struct)
 		
 		Returns:
 			(string)

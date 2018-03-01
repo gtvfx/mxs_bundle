@@ -34,8 +34,8 @@ Methods:
 	FromFile <path to file>
 
 Example:
-    minmax = GetBitmapMinMaxPixels.FromFile <Path to image file>
-    
+	minmax = GetBitmapMinMaxPixels.FromFile <Path to image file>
+	
 __END__
 */
 

@@ -56,8 +56,8 @@ struct MaterialFns
 	--------------------------------------------------------------------_END*/
 	
 public
-    
-    fn ResetMEdit =
+	
+	fn ResetMEdit =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Runs a built-in macro to clear the contents of the material editor
@@ -69,7 +69,7 @@ public
 		
 		macros.run "Medit Tools" "clear_medit_slots"
 	),
-    
+	
 	fn RestoreMedit =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -83,14 +83,14 @@ public
 		
 		macros.run "Medit Tools" "restore_medit_slots"
 	),
-    
+	
 	fn PutMatToActiveMeditSlot obj  =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Gets the material from the inputed obj and puts in into the activeMeditslot
 		
 		Args:
-		 	obj (NODE)
+			obj (NODE)
 		
 		Returns:
 			(VOID)
@@ -98,15 +98,15 @@ public
 		--------------------------------------------------------------------_END*/
 		
 		MatEditor.mode = #basic
-        
+		
 		if ( obj != undefined ) and ( obj.material != undefined ) then
 		(
 			meditMaterials[activeMeditslot] = obj.material
 		)
-        else
-        (
-            format "***** PutMatToActiveMeditSlot could not collect a valid material *****\n"
-        )
+		else
+		(
+			format "***** PutMatToActiveMeditSlot could not collect a valid material *****\n"
+		)
 	),
 	
 	fn CollectUniqueMaterials objArr =
@@ -115,7 +115,7 @@ public
 		Collects an array of unique materials from the inputed array of objects
 		
 		Args:
-		 	objArr (array[NODE])
+			objArr (array[NODE])
 		
 		Returns:
 			(array[material])
@@ -124,7 +124,7 @@ public
 		
 		MakeUniqueArray ( for obj in objArr where obj.material != undefined collect obj.material )
 	),
-    
+	
 	fn PutSelMatsToMEdit objArr:( GetCurrentSelection() ) = 
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -132,7 +132,7 @@ public
 		to the Material Editor
 		
 		Kwargs:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			(VOID)
@@ -142,24 +142,24 @@ public
 		if ( objArr.count != 0 ) then
 		(
 			MatEditor.mode = #basic
-            
-            local matArr = this.CollectUniqueMaterials objArr
-                
-            for i = 1 to matArr.count do
-            (
-                if i > meditMaterials.count then exit
-                
-                meditMaterials[i] = matArr[i]
-            )
-            
+			
+			local matArr = this.CollectUniqueMaterials objArr
+				
+			for i = 1 to matArr.count do
+			(
+				if i > meditMaterials.count then exit
+				
+				meditMaterials[i] = matArr[i]
+			)
+			
 			if matArr.count > meditMaterials.count then messageBox "There were more materials than MEdit slots."
 		)
 		else
-        (
-            messagebox "Nothing selected......"
-        )
+		(
+			messagebox "Nothing selected......"
+		)
 	),
-    
+	
 	fn PutSceneMatsToMEdit =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -176,23 +176,23 @@ public
 			MatEditor.mode = #basic
 			
 			for t = 1 to meditMaterials.count do
-            (
-                if sceneMaterials[t] == undefined then
-                (
-                    exit
-                )
-                else
-                (
-                    meditmaterials[t] = sceneMaterials[t]
-                )
-            )
-            
+			(
+				if sceneMaterials[t] == undefined then
+				(
+					exit
+				)
+				else
+				(
+					meditmaterials[t] = sceneMaterials[t]
+				)
+			)
+			
 			if sceneMaterials.count > meditMaterials.count do messageBox "There are more materials than MEdit slots." title:"GTVFX"
 		)
-        else
-        (
-            messageBox "No materials found in scene." title:"GTVFX: Error"
-        )
+		else
+		(
+			messageBox "No materials found in scene." title:"GTVFX: Error"
+		)
 	),
 
 	fn DeleteAllViews =
@@ -209,14 +209,14 @@ public
 		local numViews = trackViewNodes[#sme].numsubs
 		for i = 1 to numViews do sme.DeleteView 1 false
 	),
-    
+	
 	fn CreateViewForMat mat =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Create a view in the Slate Material Editor for the inputed material
 		
 		Args:
-		 	mat (Material)
+			mat (Material)
 		
 		Returns:
 			VOID
@@ -225,9 +225,9 @@ public
 		
 		if ( sme.GetViewByName mat.name ) == 0 then
 		(
-            MatEditor.mode = #advanced
-            MatEditor.Open()
-            
+			MatEditor.mode = #advanced
+			MatEditor.Open()
+			
 			local viewIndex = sme.CreateView mat.name
 			local newView = sme.GetView viewIndex
 			
@@ -237,15 +237,15 @@ public
 		(
 			-- If a view with the name already exists then the user can choose to delete it and create a new one.
 			
-            if queryBox ("Node view..." + mat.name + "...already exists.\nDo you want to replace it?") then
-            (
-                sme.DeleteView ( sme.GetViewByName mat.name ) false
-                
-                this.CreateViewForMat mat
-            )
+			if queryBox ("Node view..." + mat.name + "...already exists.\nDo you want to replace it?") then
+			(
+				sme.DeleteView ( sme.GetViewByName mat.name ) false
+				
+				this.CreateViewForMat mat
+			)
 		)
 	),
-    
+	
 	fn CreateViewPerObject objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -253,20 +253,20 @@ public
 		a node view for each in the Slate Material Editor.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			VOID
 		
 		--------------------------------------------------------------------_END*/
-        
+		
 		if ( objArr.count != 0 ) then
 		(
 			MatEditor.mode = #advanced
 			MatEditor.Open()
-            
+			
 			local matArr = This.CollectUniqueMaterials objArr
-            
+			
 			for mat in matArr do
 			(
 				this.CreateViewForMat mat
@@ -277,7 +277,7 @@ public
 			messageBox "**** You must have an object selected ****"
 		)
 	),
-    
+	
 	fn CreateNodeViewByFaceID obj =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -291,7 +291,7 @@ public
 		This is usefule for working with objects with particularly complex materials
 		
 		Args:
-		 	obj (Node)
+			obj (Node)
 		
 		Returns:
 			VOID
@@ -305,18 +305,18 @@ public
 		else
 		(
 			local masterMat = obj.material
-            
+			
 			if ( ClassOf masterMat ) == multiMaterial then
 			(
 				MatEditor.mode = #advanced
 				MatEditor.Open()
 				
-                local faceIdArr = ::MeshFns.GetUniqueMatIds obj
-                
-                for id in faceIdArr do
-                (
-                    this.CreateViewForMat obj.material.materialList[id]
-                )
+				local faceIdArr = ::MeshFns.GetUniqueMatIds obj
+				
+				for id in faceIdArr do
+				(
+					this.CreateViewForMat obj.material.materialList[id]
+				)
 			)
 			else
 			(
@@ -324,7 +324,7 @@ public
 			)
 		)
 	),
-    
+	
 	fn CreateNodeViewForEachSceneMaterial =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -340,19 +340,19 @@ public
 		(
 			MatEditor.mode = #advanced
 			MatEditor.Open()
-            
+			
 			for mat in sceneMaterials do
 			(
 				this.CreateViewForMat mat
 			)
 		)
 		else
-        (
-            messageBox "No materials found in scene."
-        )
+		(
+			messageBox "No materials found in scene."
+		)
 	),
-    
-    fn GetModule =
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -381,9 +381,9 @@ public
 	),
 	
 private
-    
-    fn _init =
-    (
+	
+	fn _init =
+	(
 		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
 		
@@ -392,10 +392,10 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Pass
-    ),
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 MaterialFns = MaterialFns()

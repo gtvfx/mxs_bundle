@@ -55,10 +55,10 @@ struct LayerIsolate
 	
 public
 	
-    ro,
-    storedLayerStateArr,
-    
-    fn GetLayerStates =
+	ro,
+	storedLayerStateArr,
+	
+	fn GetLayerStates =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Stores the current layer states as nested arrays.
@@ -75,17 +75,17 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        local out = #()
-        
-        for i = 0 to layerManager.count-1 do
-        (
-            local iLayer = layerManager.getLayer i
-            append out #(iLayer.name, iLayer.on)
-        )
-        
-        out
+		local out = #()
+		
+		for i = 0 to layerManager.count-1 do
+		(
+			local iLayer = layerManager.getLayer i
+			append out #(iLayer.name, iLayer.on)
+		)
+		
+		out
 	),
-    
+	
 	fn RestoreLayerStates layerStateArr =
 	(
 		/*DOC_--------------------------------------------------------------------
@@ -94,7 +94,7 @@ public
 		was captured
 		
 		Args:
-		 	layerStateArr (Nested array data)
+			layerStateArr (Nested array data)
 		
 		--------------------------------------------------------------------_END*/
 		
@@ -106,12 +106,12 @@ public
 			)
 		)
 		else 
-        (
-            format "***** Error with layerStateArr: % *****\n" layerStateArr
-        )
+		(
+			format "***** Error with layerStateArr: % *****\n" layerStateArr
+		)
 	),
-    
-    fn IsolateLayersByObj objArr =
+	
+	fn IsolateLayersByObj objArr =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Loops through the objects in the inputed objArr and collects all the 
@@ -119,30 +119,30 @@ public
 		and turns off all layers not used by object in the objArr.
 		
 		Args:
-		 	objArr (array[Node])
+			objArr (array[Node])
 		
 		Returns:
 			(boolean) : True on success
 		
 		--------------------------------------------------------------------_END*/
 		
-        objArr = ::mxs.EnsureArgIsArray objArr
-        
+		objArr = ::mxs.EnsureArgIsArray objArr
+		
 		if objArr.count != 0 then
 		(
 			local layerArr = #()
-            
+			
 			for obj in objArr do
 			(
 				appendIfUnique layerArr obj.layer
 			)
-            
+			
 			for i = 0 to layerManager.count-1 do
 			(
 				local iLayer = layerManager.getLayer i
 				if ( findItem layerArr iLayer == 0 ) then iLayer.on = false
 			)
-            
+			
 			True
 		)
 		else
@@ -152,7 +152,7 @@ public
 		)
 	),
 
-    fn Ui =
+	fn Ui =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Constructs the MaxScript Rollout that connects logic back to the
@@ -172,49 +172,49 @@ public
 			(
 				self = pself
 			)
-            
+			
 			fn ExitIso =
 			(
 				self.RestoreLayerStates self.storedLayerStateArr
 				destroyDialog ro
 			)
-            
+			
 			on cBtn_isolate changed arg do
 			(
 				ExitIso()
 			)
-            
+			
 			on ro_layIso moved pos do
 			(
 				try( SetIniSetting ::mxs.uiSettingsIni "layIso_UI" "Position" ( pos as string ) )catch()
 			)
-            
+			
 			on ro_layIso close do
 			(
 				ExitIso()
 			)
 		)
-        
+		
 		local roPos = [850,420]
-        
-        if ::mxs != undefined then
-        (
-            if ( DoesFileExist ::mxs.uiSettingsIni ) and ( HasIniSetting ::mxs.uiSettingsIni "layIso_UI" "Position" ) then
-            (
-                roPos = ( execute ( GetIniSetting ::mxs.uiSettingsIni "layIso_UI" "Position" ) ) 
-            )
-            else 
-            (
-                roPos = [850,420]
-            )
-        )
+		
+		if ::mxs != undefined then
+		(
+			if ( DoesFileExist ::mxs.uiSettingsIni ) and ( HasIniSetting ::mxs.uiSettingsIni "layIso_UI" "Position" ) then
+			(
+				roPos = ( execute ( GetIniSetting ::mxs.uiSettingsIni "layIso_UI" "Position" ) ) 
+			)
+			else 
+			(
+				roPos = [850,420]
+			)
+		)
 		
 		createDialog ro pos:roPos
 		ro._init this
 	),
-    
-    fn Run =
-    (
+	
+	fn Run =
+	(
 		/*DOC_--------------------------------------------------------------------
 		Performs the necessary logic to store the current layer states and
 		constructs the UI to toggle the layer isolation
@@ -224,14 +224,14 @@ public
 		
 		--------------------------------------------------------------------_END*/
 		
-        this.storedLayerStateArr = this.GetLayerStates()
+		this.storedLayerStateArr = this.GetLayerStates()
 		
 		if not ( this.IsolateLayersByObj ( GetCurrentSelection() ) ) then return false
-        
-        this.Ui()
-    ),
-    
-    fn GetModule =
+		
+		this.Ui()
+	),
+	
+	fn GetModule =
 	(
 		/*DOC_--------------------------------------------------------------------
 		Get the full path to the current MaxScript file
@@ -262,8 +262,8 @@ public
 private
 	
 	fn _init =
-    (
-        /*DOC_--------------------------------------------------------------------
+	(
+		/*DOC_--------------------------------------------------------------------
 		This method is run upon instantiation of the struct
 		
 		Returns:
@@ -271,10 +271,10 @@ private
 		
 		--------------------------------------------------------------------_END*/
 		
-        -- Pass
-    ),
+		-- Pass
+	),
 
-    __init__ = _init()
+	__init__ = _init()
 )
 
 LayerIsolate = LayerIsolate()
