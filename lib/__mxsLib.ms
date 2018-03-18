@@ -17,8 +17,8 @@ __HELP__
 [Purpose]
 
 The primary purpose of this package is to facilitate a module based approach to MaxScript
-libraries.This attempts to replicate the utility of C# namespaces and the ‘Using’ operator,
-or the Python ‘import’ operator. The result isn’t one-to-one, but the use-case is similar and
+libraries.This attempts to replicate the utility of C# namespaces and the ï¿½Usingï¿½ operator,
+or the Python ï¿½importï¿½ operator. The result isnï¿½t one-to-one, but the use-case is similar and
 very functional.
 
 [Environment Variables]
@@ -44,29 +44,29 @@ very functional.
 
 - Libraries are searched for by filename
 	Sourcing in the Logger module would look like this:
-		- mxs.using “Logger”
+		- mxs.using ï¿½Loggerï¿½
 		- This will search the paths in the MXSPATH, in order, until it finds a file named 
 		Logger.ms or Logger.mse.
 		- It will then return the module and perform a FileIn operation on it
 
 - All modules should create a global variable of the same name upon being loaded
-	- Logger.ms should create a global variable ‘Logger’
+	- Logger.ms should create a global variable ï¿½Loggerï¿½
 	- This global variable is used to track if the module is already loaded or not
 
 - This global variable should either contain an instance of a Struct or it should contain the
 uninstantiated struct for objects that will be instanced by the consumer.
 
-- It’s a good practice to compose your Struct with the same name that you will instantiate it with,
+- Itï¿½s a good practice to compose your Struct with the same name that you will instantiate it with,
 if for no other reason than reducing the number of variables in the system. But this also makes
-it more intuitive as a consumer if you know that you’re going to call a global variable that
-matches the name of the module you’re sourcing.
+it more intuitive as a consumer if you know that youï¿½re going to call a global variable that
+matches the name of the module youï¿½re sourcing.
 	- For example:
 		- struct Logger ( <logic> )  
 		- Logger = Logger() -- Instantiate the struct to a global variable of the same name
 
 - You can have helper structs within the module so long as they are only used by the main 
 struct and not intended to be used individually. 
-	- This ensures that the usage of the structs are intuitive and we’re not just sourcing in 
+	- This ensures that the usage of the structs are intuitive and weï¿½re not just sourcing in 
 	random global variables without any guidance on how to use them.
 
 - Each module should contain these two methods:
@@ -76,30 +76,30 @@ struct and not intended to be used individually.
 	- The Help method is purposefully written as a static method so that it can be called on an 
 	un-instantiated object.
 - All modules should contain a Help block above the start of the code.
-	- This should just be a commented block with the text ‘__HELP__’ at the beginning and 
-	‘__END__’ to finish it off. 
+	- This should just be a commented block with the text ï¿½__HELP__ï¿½ at the beginning and 
+	ï¿½__END__ï¿½ to finish it off. 
 	- The main mxs lib has a method that parses the text file and returns this block of text and 
 	prints it to the listener window.
 	- In this way we can provide help for consuming modules without external documentation.
 - Variable scoping:
 	- All variables should have their scope declared
-		- Variables used only within a function should be declared as ‘local’
+		- Variables used only within a function should be declared as ï¿½localï¿½
 			- local foo
-		- Variables and Methods within a struct should always be called using the ‘this’ keyword.
+		- Variables and Methods within a struct should always be called using the ï¿½thisï¿½ keyword.
 			- this.foo
 			- this.foo()
-		- Global variables should always be prefixed with a double-colon, ‘::’.
+		- Global variables should always be prefixed with a double-colon, ï¿½::ï¿½.
 			- This ensures that the compiler will only search the variable from the global pool.
 			- It also makes your code easier to read as this tells the reader that the variable 
 			is coming from another source not defined in the current scope.
 			- Technical info about this can be found here:
 				- https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2015/ENU/MAXScript-Help/files/GUID-382E7583-DD2A-4DF5-B568-71502DF95ED9-htm.html
 - Module sourcing loops!
-	- If a module is sourcing in another module that, in turn, sources it, you’ll need to do a 
-	forward declaration of your modules global variable before all of your ‘using’ declarations.
+	- If a module is sourcing in another module that, in turn, sources it, youï¿½ll need to do a 
+	forward declaration of your modules global variable before all of your ï¿½usingï¿½ declarations.
 	- For example: MeshFns and MaterialFns source oneanother. In these modules, 
-	you’ll find that we define their global variables prior to our ‘using’ declarations by just 
-	defining it as an empty string. ( ::MeshFns = “” )
+	youï¿½ll find that we define their global variables prior to our ï¿½usingï¿½ declarations by just 
+	defining it as an empty string. ( ::MeshFns = ï¿½ï¿½ )
 
 
 __END__
@@ -116,7 +116,7 @@ global mxs
 		/*DOC_--------------------------------------------------------------------
 		Simple Dictionary type class for storing data in the mxsLib
 		
-		Parameters:
+		Args:
 			m_keys (array[string])
 			m_values (array[*])
 			count (integer)
@@ -873,8 +873,10 @@ global mxs
 			
 			case env of
 			(
-				(#network):
+				(#network): 
 				(
+					-- TODO: Need to add a network user dir location to the environment
+					
 					userDir = (( this.GetNetRoot() ) + sysInfo.userName )
 					if not DoesFileExist userDir then makeDir userDir
 					userDir
@@ -897,20 +899,7 @@ global mxs
 			
 			--------------------------------------------------------------------_END*/
 			
-			pathConfig.NormalizePath ( this.GetCodePath() + "/Lib/" )
-		),
-		
-		fn GetPyLibPath =
-		(
-			/*DOC_--------------------------------------------------------------------
-			Get the path to the lib python modules
-			
-			Returns:
-				If path exists (string) directory path, else undefined
-			
-			--------------------------------------------------------------------_END*/
-			local out = ((this.GetPath #maxpython)+@"\lib")
-			if DoesFileExist out then out else Undefined
+			pathConfig.NormalizePath ( this.GetCodePath() + "/lib/" )
 		),
 		
 		fn GetSysEnv =
@@ -963,7 +952,7 @@ global mxs
 			arg
 		),
 		
-		fn GetScriptDependencies mxsModule =
+		fn GetModuleDependencies mxsModule =
 		(
 			/*DOC_--------------------------------------------------------------------
 			Get a list of modules being sourced by the supplied module
@@ -978,7 +967,7 @@ global mxs
 			
 			if not ( DoesFileExist mxsModule ) then
 			(
-				format "***** GetStringBlock was unable to find the supplied file: % *****\n" mxsModule
+				format "***** GetModuleDependencies was unable to find the supplied file: % *****\n" mxsModule
 				return ""
 			)
 			
@@ -1082,6 +1071,8 @@ global mxs
 			/*DOC_--------------------------------------------------------------------
 			Returns the block of text between "*__Help__*" and "*__END__*"
 			
+			if _fn is supplied then returns the 'DOC' string of function
+			
 			Args:
 				mxsModule (string) : Path to module script file
 			
@@ -1095,7 +1086,7 @@ global mxs
 			
 			if _fn == unsupplied then
 			(
-				this.GetStringBlock mxsModule "*__HELP__" "*__END__" filterFromStr:False filterToStr:True
+				this.GetStringBlock mxsModule "*__HELP__*" "*__END__*" filterFromStr:False filterToStr:True
 			)
 			else
 			(
@@ -1397,6 +1388,11 @@ global mxs
 			Loops through each path in MXSPATH and searches for a file matching the inLibName
 			Returns the first file it finds matching the name
 			
+			Supports dot('.') separated lib names for appending subdirectories to the path
+			ie, ::mxs.using "mesh.DetachElementsByMatID" 
+			This will find a module named DetachElementsByMatID.ms in a 'mesh' subdirectory
+			of one of the directories on the MXSPATH.
+			
 			Args:
 				inLibName (string)
 			
@@ -1405,16 +1401,45 @@ global mxs
 			
 			--------------------------------------------------------------------_END*/
 			
+			-- Split the MXSPATH variable into an array of paths
 			local pathArr = ( FilterString ( this.GetPath #MXSPATH ) ";" )
 			
 			for p in pathArr do
 			(
+				-- Loop through each path in order and see if we can find a matching module.
+				-- If we find it we return exit the loop and return it
+				
 				if p[p.count] != "/" then p = ( p + "/" )
 				
+				-- Split the inLibName to support sub directories on the path
+				local libNameArr = ( FilterString inLibName "." )
+				
+				-- Assign the inLibName to be the actual modlue name, now without prepended sub directories
+				inLibName = libNameArr[libNameArr.count]
+				
+				-- If a dot separated lib name is provided we append each to the path and check if the directory exists
+				if libNameArr.count > 1 then
+				(
+					for i = 1 to libNameArr.count - 1 do
+					( -- we skip the last item as that should be the filename, not a sub directory
+						p = p + libNameArr[i] + "/"
+					)
+				)
+				
+				p = pathConfig.normalizePath p
+				
+				if not DoesFileExist p then
+				(
+					continue
+				)
+				
+				-- Collect all script files at the path
 				local fileArr = GetFiles ( p + "*.ms*" )
 				
+				-- Filter the collected files for any matching the inLibName
 				local nameFileArr = for f in fileArr where ( matchPattern ( GetFileNameFile f ) pattern:inLibName ) collect f
 				
+				-- If a file matching the name is found then we return it
 				if nameFileArr.count == 1 then
 				(
 					return nameFileArr[1]
@@ -1429,11 +1454,11 @@ global mxs
 			undefined
 		),
 		
-		fn Using inLibName inReload:( keyboard.escPressed ) =
+		fn Using inLibName reload:( keyboard.escPressed ) =
 		(
 			/*DOC_--------------------------------------------------------------------
 			Checks if the inputed library name is already loaded. If so, it continues.
-			If the file is already loaded, but the inReload flag is true then it treats the library as if it's not loaded.
+			If the file is already loaded, but the reload flag is true then it treats the library as if it's not loaded.
 			If the library is not already loaded it searches for the lib in the MXSPATH.
 			Once found it registers the library and performs a FileIn on the module.
 			
@@ -1441,7 +1466,7 @@ global mxs
 				inLibName (string) : Name of module to load
 			
 			Kwargs:
-				inReload (boolean) : If true, force a reload of the module
+				reload (boolean) : If true, force a reload of the module
 			
 			Returns:
 				if no module is found then | undefined
@@ -1449,7 +1474,7 @@ global mxs
 			--------------------------------------------------------------------_END*/
 			
 			
-			if ( this.IsLoaded inLibName) and not inReload then
+			if ( this.IsLoaded inLibName) and not reload then
 			(
 				return ( format "[%] --- Using: %\n" this.classId inLibName )
 			)
@@ -1464,7 +1489,7 @@ global mxs
 			
 			if ( DoesFileExist tFileStr ) then
 			(
-				if ( not this.IsLoaded inLibName or inReload or this.IsModuleModified tFileStr ) then
+				if ( not this.IsLoaded inLibName or reload or this.IsModuleModified tFileStr ) then
 				(
 					if ( this.printStatus ) then
 					(
@@ -1540,6 +1565,7 @@ else:
 			tEnvironment.SetPath "MXS_STARTUPPATH" ( sysenv.GetEnvironmentVariable "MXS_STARTUPPATH" )
 			tEnvironment.SetPath "MXS_ASSEMBLIES" ( sysenv.GetEnvironmentVariable "MXS_ASSEMBLIES" )
 			tEnvironment.SetPath "PYTHONPATH" ( sysenv.GetEnvironmentVariable "PYTHONPATH" )
+			tEnvironment.SetPath "MXS_STARTUP_SCRIPTS" ( sysenv.GetEnvironmentVariable "MXS_STARTUP_SCRIPTS" )
 			
 			this._environments.SetValue ( toLower( envId ) ) tEnvironment
 		),
@@ -1551,7 +1577,7 @@ else:
 			using the latest environment
 			
 			Args:
-				inReloadLibraries (boolean)
+				reloadLibraries (boolean)
 			
 			Returns:
 				(VOID)
@@ -1560,7 +1586,7 @@ else:
 			
 			for tLibName in this._libraries do
 			(
-				this.Using tLibName inReload:True
+				this.Using tLibName reload:True
 			)
 		),
 		

@@ -17,7 +17,7 @@ code base is run.
 --------------------------------------------------------------------*/
 
 
-::_maxInit = ""
+::_mxsStartup = ""
 
 
 (
@@ -156,6 +156,6 @@ sys.dont_write_bytecode=True
 	-- 	::_maxInit = WorkstationInit()
 	-- )
 
-	::_maxInit = WorkstationInit()
+	::_mxsStartup = WorkstationInit()
 
 )
