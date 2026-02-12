@@ -5,7 +5,7 @@
 echo "arg: %1"
 
 :: Set a variable within this contxt for concatenation
-set HOST_VERSION="2019"
+set HOST_VERSION="2024"
 
 
 :: Look for a MAX_HOST_VERSION variable in the environment
